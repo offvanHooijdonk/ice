@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference
+            android:key="username"
+            android:summary="Имя менеджера в БД"
+            android:title="Пользователь">
+    </EditTextPreference>
+    <EditTextPreference
+            android:key="storehouseDefaultCode"
+            android:summary="Код склада по умолчанию"
+            android:title="Код склада">
+    </EditTextPreference>
+    <EditTextPreference
+            android:key="androidExchangeNewDirPref"
+            android:summary="Адрес папки для новых запросов"
+            android:title="Адрес папки"
+            android:defaultValue="80.249.87.247/AndroidExchange/New/">
+    </EditTextPreference>
+    <EditTextPreference
+            android:key="androidExchangeOutDirPref"
+            android:summary="Адрес папки для ответов базы данных"
+            android:title="Адрес папки"
+            android:defaultValue="80.249.87.247/AndroidExchange/Out/">
+    </EditTextPreference>
+    <EditTextPreference
+            android:key="androidExchangePubDirPref"
+            android:summary="Адрес папки для выгрузки информации из БД"
+            android:title="Адрес папки"
+            android:defaultValue="80.249.87.247/AndroidExchange/Pub/">
+    </EditTextPreference>
+    <EditTextPreference
+            android:key="androidExchangeApkDirPref"
+            android:summary="Адрес папки обновлений приложения"
+            android:title="Адрес папки"
+            android:defaultValue="80.249.87.247/AndroidExchange/apk/">
+    </EditTextPreference>
+    <CheckBoxPreference
+            android:key="updateNotificationsEnabled"
+            android:summary="Включить нотификации об обновлениях файлов БД"
+            android:title="Оповещения об обновлениях"
+            android:defaultValue="true">
+    </CheckBoxPreference>
+    <!--<EditTextPreference
+            android:key="androidUpdateSecPref"
+            android:summary="Частота синронизации с БД, сек "
+            android:title="Частота синронизации"
+            android:defaultValue="30"
+            android:inputType="number">
+    </EditTextPreference>-->
+
+
+</PreferenceScreen>

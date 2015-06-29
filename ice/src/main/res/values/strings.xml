@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ICE</string>
+    <string name="contrAgents">Контрагенты</string>
+    <string name="salesPoints">Разгрузки</string>
+    <string name="ok">OK</string>
+    <string name="commercial">Рекламное предложение</string>
+    <string name="sendRequest">Отправить заявку</string>
+    <string name="storehouses">Склады</string>
+    <string name="textHintContrAgentFilter">Фильтр контрагентов</string>
+    <string name="addProduct">Добавить товар</string>
+    <string name="products">Товары</string>
+    <string name="textHintProductFilter">Фильтр товаров</string>
+    <string name="showRequest">Показать заявку</string>
+    <string name="textHintComment">Комментарий</string>
+    <string name="textHintSalespointsFilter">Фильтр разгрузок</string>
+
+
+</resources>
