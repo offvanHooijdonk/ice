@@ -1,0 +1,7 @@
+*.iml
+/import-summary.txt
+/local.properties
+/.gradle/
+/.idea/
+/build/
+/gradle/
