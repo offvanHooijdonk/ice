@@ -1,4 +1,4 @@
-package com.example.ice;
+package by.ingman.ice.retailerrequest.v2;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
@@ -7,14 +7,13 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.*;
-import com.example.ice.helpers.StaticFileNames;
-import com.example.ice.structure.ContrAgent;
-import com.example.ice.structure.ContrAgentList;
-import com.example.ice.structure.Debt;
-import com.example.ice.structure.SalePoint;
+import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
+import by.ingman.ice.retailerrequest.v2.structure.ContrAgent;
+import by.ingman.ice.retailerrequest.v2.structure.ContrAgentList;
+import by.ingman.ice.retailerrequest.v2.structure.Debt;
+import by.ingman.ice.retailerrequest.v2.structure.SalePoint;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 

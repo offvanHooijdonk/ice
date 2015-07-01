@@ -1,4 +1,4 @@
-package com.example.ice;
+package by.ingman.ice.retailerrequest.v2;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -15,7 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
-import com.example.ice.helpers.StaticFileNames;
+import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
 

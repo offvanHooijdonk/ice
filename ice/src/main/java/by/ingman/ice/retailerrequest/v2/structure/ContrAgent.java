@@ -1,7 +1,4 @@
-package com.example.ice.structure;
-
-import java.util.ArrayList;
-import java.util.LinkedList;
+package by.ingman.ice.retailerrequest.v2.structure;
 
 /**
  * Created with IntelliJ IDEA.

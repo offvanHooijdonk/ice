@@ -1,4 +1,4 @@
-package com.example.ice;
+package by.ingman.ice.retailerrequest.v2;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -13,9 +13,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import com.example.ice.helpers.DBHelper;
-import com.example.ice.helpers.StaticFileNames;
-import com.example.ice.structure.Request;
+import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
+import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
+import by.ingman.ice.retailerrequest.v2.structure.Request;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;

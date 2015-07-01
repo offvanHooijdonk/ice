@@ -1,4 +1,4 @@
-package com.example.ice;
+package by.ingman.ice.retailerrequest.v2;
 
 import android.app.*;
 import android.content.DialogInterface;
@@ -9,9 +9,9 @@ import android.os.Bundle;
 import android.text.Html;
 import android.view.View;
 import android.widget.*;
-import com.example.ice.helpers.DBHelper;
-import com.example.ice.structure.Request;
-import com.example.ice.structure.Response;
+import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
+import by.ingman.ice.retailerrequest.v2.structure.Request;
+import by.ingman.ice.retailerrequest.v2.structure.Response;
 
 import java.util.*;
 

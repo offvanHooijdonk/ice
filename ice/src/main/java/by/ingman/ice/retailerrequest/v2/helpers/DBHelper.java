@@ -1,9 +1,8 @@
-package com.example.ice.helpers;
+package by.ingman.ice.retailerrequest.v2.helpers;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.widget.Toast;
 
 /**
  * Created with IntelliJ IDEA.

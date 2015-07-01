@@ -1,4 +1,4 @@
-package com.example.ice;
+package by.ingman.ice.retailerrequest.v2;
 
 import android.os.Bundle;
 import android.preference.PreferenceActivity;

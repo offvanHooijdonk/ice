@@ -1,25 +1,19 @@
-package com.example.ice.structure;
+package by.ingman.ice.retailerrequest.v2.structure;
 
 /**
  * Created with IntelliJ IDEA.
  * User: Администратор
- * Date: 05.05.13
- * Time: 19:28
+ * Date: 09.05.13
+ * Time: 23:21
  * To change this template use File | Settings | File Templates.
  */
-public class SalePoint {
-    private String contrAgentCode;
+public class Storehouse {
     private String code;
     private String name;
 
-    public SalePoint(String contrAgentCode, String code, String name) {
-        this.contrAgentCode = contrAgentCode;
+    public Storehouse(String code, String name) {
         this.code = code;
         this.name = name;
-    }
-
-    public String getContrAgentCode() {
-        return contrAgentCode;
     }
 
     public String getCode() {

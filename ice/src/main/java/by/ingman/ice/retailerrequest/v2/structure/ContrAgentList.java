@@ -1,4 +1,4 @@
-package com.example.ice.structure;
+package by.ingman.ice.retailerrequest.v2.structure;
 
 import java.util.*;
 

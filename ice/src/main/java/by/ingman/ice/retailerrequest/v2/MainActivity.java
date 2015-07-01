@@ -1,4 +1,4 @@
-package com.example.ice;
+package by.ingman.ice.retailerrequest.v2;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -17,9 +17,9 @@ import android.text.InputType;
 import android.view.*;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
-import com.example.ice.helpers.DBHelper;
-import com.example.ice.helpers.StaticFileNames;
-import com.example.ice.structure.*;
+import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
+import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
+import by.ingman.ice.retailerrequest.v2.structure.*;
 
 import java.io.*;
 import java.net.URL;

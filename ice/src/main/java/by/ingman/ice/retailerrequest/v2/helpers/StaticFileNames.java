@@ -1,4 +1,4 @@
-package com.example.ice.helpers;
+package by.ingman.ice.retailerrequest.v2.helpers;
 
 /**
  * Created with IntelliJ IDEA.
