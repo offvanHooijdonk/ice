@@ -1,188 +1,185 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:id="@+id/scrollView">
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                  android:id="@+id/layoutMain"
-                  android:orientation="vertical"
-                  android:layout_width="fill_parent"
-                  android:layout_height="fill_parent"
-                  android:background="#575C56">
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
+    <LinearLayout
+        android:id="@+id/layoutMain"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
         <TextView
-                android:id="@+id/textViewUsername"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:layout_marginBottom="20dp">
+            android:id="@+id/textViewUsername"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:text="">
         </TextView>
 
         <DatePicker
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/datePicker"
-                android:layout_gravity="left|center_vertical"/>
+            android:id="@+id/datePicker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left|center_vertical" />
 
         <CheckBox
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/checkBoxCommercial"
-                android:text="@string/commercial"
-                android:layout_marginBottom="20dp">
+            android:id="@+id/checkBoxCommercial"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:text="@string/commercial">
         </CheckBox>
 
 
         <Button
-                android:id="@+id/buttonStorehouses"
-                android:layout_width="180dp"
-                android:layout_height="wrap_content"
-                android:text="@string/storehouses"
-                android:onClick="onclick">
+            android:id="@+id/buttonStorehouses"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:onClick="onclick"
+            android:text="@string/storehouses">
         </Button>
 
         <TextView
-                android:id="@+id/textViewStorehouse"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="">
+            android:id="@+id/textViewStorehouse"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="">
         </TextView>
 
         <EditText
-                android:id="@+id/editTextContrAgentFilter"
-                android:layout_width="180dp"
-                android:layout_height="wrap_content"
-                android:inputType="text"
-                android:hint="@string/textHintContrAgentFilter"
-                android:textSize="14sp"
-                android:layout_marginTop="20dp"
-                android:focusable="true"
-                android:focusableInTouchMode="true"/>
+            android:id="@+id/editTextContrAgentFilter"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:hint="@string/textHintContrAgentFilter"
+            android:inputType="text"
+            android:textSize="14sp" />
 
         <Button
-                android:id="@+id/buttonContrAgentsDialog"
-                android:layout_width="180dp"
-                android:layout_height="wrap_content"
-                android:text="@string/contrAgents"
-                android:onClick="onclick">
+            android:id="@+id/buttonContrAgentsDialog"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:onClick="onclick"
+            android:text="@string/contrAgents">
         </Button>
 
         <TextView
-                android:id="@+id/textViewContrAgent"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="">
+            android:id="@+id/textViewContrAgent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="">
         </TextView>
 
         <TextView
-                android:id="@+id/textViewContrAgentRelationship"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="">
+            android:id="@+id/textViewContrAgentRelationship"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="">
         </TextView>
 
 
         <EditText
-                android:id="@+id/editTextSalespointsFilter"
-                android:layout_width="180dp"
-                android:layout_height="wrap_content"
-                android:inputType="text"
-                android:hint="@string/textHintSalespointsFilter"
-                android:textSize="14sp"
-                android:layout_marginTop="20dp"
-                android:focusable="true"
-                android:focusableInTouchMode="true"/>
+            android:id="@+id/editTextSalespointsFilter"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:hint="@string/textHintSalespointsFilter"
+            android:inputType="text"
+            android:textSize="14sp" />
 
         <Button
-                android:id="@+id/buttonSalespoints"
-                android:layout_width="180dp"
-                android:layout_height="wrap_content"
-                android:text="@string/salesPoints"
-                android:onClick="onclick">
+            android:id="@+id/buttonSalespoints"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:onClick="onclick"
+            android:text="@string/salesPoints">
         </Button>
 
         <TextView
-                android:id="@+id/textViewSalePoint"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:layout_marginBottom="30dp">
+            android:id="@+id/textViewSalePoint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="30dp"
+            android:text="">
         </TextView>
 
         <EditText
-                android:layout_width="180dp"
-                android:layout_height="wrap_content"
-                android:id="@+id/commentEditText"
-                android:layout_marginBottom="20dp"
-                android:hint="@string/textHintComment"
-                android:textSize="14sp"
-                android:layout_marginTop="20dp"
-                android:focusable="true"
-                android:focusableInTouchMode="true"/>
+            android:id="@+id/commentEditText"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:layout_marginTop="20dp"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:hint="@string/textHintComment"
+            android:textSize="14sp" />
 
 
         <LinearLayout
-                android:id="@+id/layoutProducts"
-                android:orientation="vertical"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content">
+            android:id="@+id/layoutProducts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
             <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp">
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal">
 
                 <EditText
-                        android:id="@+id/editTextProductFilter"
-                        android:layout_width="180dp"
-                        android:layout_height="wrap_content"
-                        android:inputType="text"
-                        android:hint="@string/textHintProductFilter"
-                        android:textSize="14sp"
-                        android:focusable="true"
-                        android:focusableInTouchMode="true"
-                        android:layout_gravity="center_vertical">
+                    android:id="@+id/editTextProductFilter"
+                    android:layout_width="180dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:hint="@string/textHintProductFilter"
+                    android:inputType="text"
+                    android:textSize="14sp">
                 </EditText>
 
                 <CheckBox
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Только цифры"
-                        android:id="@+id/checkBoxProductFilterType"
-                        android:checked="true"
-                        android:layout_gravity="center_vertical"/>
+                    android:id="@+id/checkBoxProductFilterType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:checked="true"
+                    android:text="Только цифры" />
             </LinearLayout>
 
             <Button
-                    android:id="@+id/buttonAddProduct"
-                    android:layout_width="180dp"
-                    android:layout_height="wrap_content"
-                    android:text="@string/addProduct"
-                    android:onClick="onclick"
-                    android:layout_marginTop="20dp"
-                    >
+                android:id="@+id/buttonAddProduct"
+                android:layout_width="180dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:onClick="onclick"
+                android:text="@string/addProduct">
             </Button>
         </LinearLayout>
 
         <TextView
-                android:id="@+id/textViewFinal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:layout_marginBottom="30dp"
-                android:layout_marginTop="30dp">
+            android:id="@+id/textViewFinal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="30dp"
+            android:layout_marginTop="30dp"
+            android:text="">
         </TextView>
 
         <Button
-                android:id="@+id/buttonSendRequest"
-                android:layout_width="180dp"
-                android:layout_height="wrap_content"
-                android:text="@string/sendRequest"
-                android:onClick="onclick"
-                android:layout_marginTop="20dp">
+            android:id="@+id/buttonSendRequest"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:onClick="onclick"
+            android:text="@string/sendRequest">
         </Button>
 
     </LinearLayout>
