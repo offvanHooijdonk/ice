@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "by.ingman.ice.retailerrequest.v2"
-        minSdkVersion 7
+        minSdkVersion 16
         targetSdkVersion 22
     }
 

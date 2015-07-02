@@ -2,6 +2,7 @@ package by.ingman.ice.retailerrequest.v2;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.*;
@@ -24,12 +25,16 @@ import by.ingman.ice.retailerrequest.v2.structure.*;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements DatePickerDialog.OnDateSetListener {
 
-    DatePicker datePicker;
+    private MainActivity that;
+
+    TextView textDate;
     CheckBox checkBoxCommercial;
     EditText sortClientEditText;
     TextView usernameText;
@@ -45,6 +50,7 @@ public class MainActivity extends Activity {
     EditText sortProductEditText;
     CheckBox checkBoxProductFilterType;
     EditText commentEditText;
+    private Calendar requestDate = null;
 
 
     final int DIALOG_CONTRAGENTS = 1;
@@ -89,6 +95,7 @@ public class MainActivity extends Activity {
         //установка лайоута
         setContentView(R.layout.main);
 
+        that = this;
         //создаем dbhelper
         dbHelper = new DBHelper(this);
 
@@ -108,12 +115,18 @@ public class MainActivity extends Activity {
         //sect--------------------------------------
         //Секция инициализации вьюх
         {
-            datePicker = (DatePicker) findViewById(R.id.datePicker);
-            final Calendar c = Calendar.getInstance();
-            datePicker.init(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), new DatePicker.OnDateChangedListener() {
+            requestDate = Calendar.getInstance();
+            textDate = (TextView) findViewById(R.id.textDate);
+            textDate.setText(Request.getDateFormat().format(requestDate.getTime()));
+
+            textDate.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onDateChanged(DatePicker datePicker, int i, int i2, int i3) {
-                    refreshFinalView();
+                public void onClick(View v) {
+                    DatePickerDialog dateDialog = new DatePickerDialog(that, that,
+                            requestDate.get(Calendar.YEAR),
+                            requestDate.get(Calendar.MONTH),
+                            requestDate.get(Calendar.DAY_OF_MONTH));
+                    dateDialog.show();
                 }
             });
 
@@ -238,13 +251,13 @@ public class MainActivity extends Activity {
             sb.append(" Менеджер: ").append(username).append("\n\r\n\r");
         }
 
-        int day = datePicker.getDayOfMonth();
-        int month = datePicker.getMonth();
-        int year = datePicker.getYear();
+        int day = requestDate.get(Calendar.DAY_OF_MONTH);
+        int month = requestDate.get(Calendar.MONTH); // month starts with 0 in Calendar
+        int year = requestDate.get(Calendar.YEAR);
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, day);
         Date date = calendar.getTime();
-        sb.append("Дата: " + Request.getDateFormat().format(date) + "\n\r\n\r");
+        sb.append("Дата: ").append(Request.getDateFormat().format(date)).append("\n\r\n\r");
         textViewFinal.setText(sb.toString());
 
 
@@ -345,6 +358,19 @@ public class MainActivity extends Activity {
         return super.onCreateOptionsMenu(menu);
     }
 
+    @Override
+    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+        if (requestDate == null) {
+            requestDate = Calendar.getInstance();
+        }
+        requestDate.set(Calendar.YEAR, year);
+        requestDate.set(Calendar.MONTH, monthOfYear);
+        requestDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+        textDate.setText(Request.getDateFormat().format(requestDate.getTime()));
+
+        refreshFinalView();
+    }
+
     private class UpdateVersionTask1 extends AsyncTask<String, Integer, String> {
         @Override
         protected String doInBackground(String... sUrl) {
@@ -440,9 +466,9 @@ public class MainActivity extends Activity {
             SQLiteDatabase db = dbHelper.getWritableDatabase();
             ContentValues cv = new ContentValues();
 
-            int day = datePicker.getDayOfMonth();
-            int month = datePicker.getMonth();
-            int year = datePicker.getYear();
+            int day = requestDate.get(Calendar.DAY_OF_MONTH);
+            int month = requestDate.get(Calendar.MONTH); // month starts with 0 in Calendar
+            int year = requestDate.get(Calendar.YEAR);
             Calendar calendar = Calendar.getInstance();
             calendar.set(year, month, day);
             Date date = calendar.getTime();

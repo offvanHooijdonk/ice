@@ -18,11 +18,19 @@
             android:text="">
         </TextView>
 
-        <DatePicker
-            android:id="@+id/datePicker"
+        <TextView
+            android:id="@+id/textDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="left|center_vertical" />
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="12dp"
+            android:padding="6dp"
+            android:text="@string/requestDate"
+            android:textSize="24sp"
+            android:background="?android:selectableItemBackground"
+            style="?android:attr/spinnerStyle"/>
 
         <CheckBox
             android:id="@+id/checkBoxCommercial"
@@ -151,7 +159,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:checked="true"
-                    android:text="Только цифры" />
+                    android:text="@string/numbersOnly" />
             </LinearLayout>
 
             <Button

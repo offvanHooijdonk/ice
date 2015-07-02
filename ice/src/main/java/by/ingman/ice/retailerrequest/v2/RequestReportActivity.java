@@ -126,7 +126,7 @@ public class RequestReportActivity extends Activity {
     private void sendNotification(String str) {
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-        Notification notif = new Notification(R.drawable.icon, "Text in status bar",
+        Notification notif = new Notification(R.drawable.ic_launcher, "Text in status bar",
                 System.currentTimeMillis());
 
         notif.setLatestEventInfo(this, "Notification's title", str,

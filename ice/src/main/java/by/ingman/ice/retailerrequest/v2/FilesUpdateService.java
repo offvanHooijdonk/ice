@@ -139,7 +139,7 @@ public class FilesUpdateService extends Service {
     }
 
     private void sendNotification(String title, String str) {
-        Notification notif = new Notification(R.drawable.icon, "\"Ингман\", оповещение",
+        Notification notif = new Notification(R.drawable.ic_launcher, "\"Ингман\", оповещение",
                 System.currentTimeMillis());
 
         notif.setLatestEventInfo(this, title, str,

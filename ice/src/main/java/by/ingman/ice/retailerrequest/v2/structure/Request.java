@@ -42,7 +42,7 @@ public class Request {
     }
 
     public static DateFormat getDateFormat() {
-        return new SimpleDateFormat("dd.MM.yy");
+        return SimpleDateFormat.getDateInstance(DateFormat.SHORT);
     }
 
     public Request(String id, String manager, boolean isCommercial, ContrAgent contrAgent, SalePoint salePoint,
