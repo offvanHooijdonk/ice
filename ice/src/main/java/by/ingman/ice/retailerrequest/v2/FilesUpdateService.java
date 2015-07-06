@@ -11,8 +11,11 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.widget.Toast;
+
 import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.NotificationsUtil;
 import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
@@ -42,6 +45,7 @@ public class FilesUpdateService extends Service {
     NotificationManager notificationManager;
     int k = 0;
     SharedPreferences sharedPreferences;
+    private Context that;
 
     DBHelper dbHelper;
     SQLiteDatabase db;
@@ -56,7 +60,8 @@ public class FilesUpdateService extends Service {
 
     public void onCreate() {
         super.onCreate();
-        notifUtil = new NotificationsUtil(getApplicationContext());
+        this.that = this;
+        notifUtil = new NotificationsUtil(that);
         executorService = Executors.newFixedThreadPool(1);
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         dbHelper = new DBHelper(this);
@@ -141,6 +146,9 @@ public class FilesUpdateService extends Service {
                 }
             }
         } catch (Exception e) {
+            notifUtil.showErrorNotification("Ошибка при загрузке данных", "Ошибка загрузки файла данных.");
+
+            //Toast.makeText(that, "Ошибка при загрузке данных. " + e.toString(), Toast.LENGTH_LONG).show();
             if (enabledNotifications()) {
                 notifUtil.dismissFileProgressNotification(StaticFileNames.DEBTS_CSV_SD);
                 notifUtil.dismissFileProgressNotification(StaticFileNames.RESTS_CSV_SD);
@@ -172,7 +180,7 @@ public class FilesUpdateService extends Service {
                 System.currentTimeMillis());
 
         notif.setLatestEventInfo(this, title, str,
-                PendingIntent.getActivity(getApplicationContext(), 0, new Intent(), 0));
+                PendingIntent.getActivity(that, 0, new Intent(), 0));
 
         notif.defaults = Notification.DEFAULT_ALL;
         notif.flags |= Notification.FLAG_AUTO_CANCEL;

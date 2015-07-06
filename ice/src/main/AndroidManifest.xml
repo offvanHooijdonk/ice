@@ -27,7 +27,6 @@
         <activity
             android:name="by.ingman.ice.retailerrequest.v2.MainActivity"
             android:configChanges="keyboardHidden|orientation"
-            android:label="@string/app_name"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

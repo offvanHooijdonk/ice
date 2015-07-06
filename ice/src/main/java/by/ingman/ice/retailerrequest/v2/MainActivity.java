@@ -97,7 +97,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
         that = this;
 
-        getActionBar().setTitle(R.string.form_title);
+        PreferenceManager.setDefaultValues(that, R.xml.pref, false);
         //создаем dbhelper
         dbHelper = new DBHelper(this);
 
@@ -380,7 +380,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         requestDate.set(Calendar.YEAR, year);
             requestDate.set(Calendar.MONTH, monthOfYear);
             requestDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-            textDate.setText(Request.getDateFormat().format(requestDate.getTime()));
+        textDate.setText(Request.getDateFormat().format(requestDate.getTime()));
 
         refreshFinalView();
     }

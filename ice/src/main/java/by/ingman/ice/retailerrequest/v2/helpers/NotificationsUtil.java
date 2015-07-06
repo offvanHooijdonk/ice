@@ -13,6 +13,9 @@ import by.ingman.ice.retailerrequest.v2.R;
 public class NotificationsUtil {
     private static final int NOTIF_PROGRESS_ID = 0;
     private static final int NOTIF_COMPLETED_ID = 1;
+    private static final int NOTIF_ERROR_ID = 2;
+
+    private static final String NOTIF_ERROR_TAG = "error_notification";
 
     private Context ctx;
     private NotificationManager notificationManager;
@@ -44,6 +47,15 @@ public class NotificationsUtil {
                 .setAutoCancel(true);
 
         getNotificationManager().notify(tag, NOTIF_COMPLETED_ID, builder.build());
+    }
+
+    public void showErrorNotification(String title, String message) {
+        Notification.Builder builder = new Notification.Builder(ctx).setTicker(title).setContentTitle(title).setContentText(message)
+                .setSmallIcon(android.R.drawable.stat_notify_error).setLargeIcon(BitmapFactory.decodeResource(ctx.getResources(), R
+                        .drawable.ic_launcher))
+                .setAutoCancel(true);
+
+        getNotificationManager().notify(NOTIF_ERROR_TAG, NOTIF_ERROR_ID, builder.build());
     }
 
     private NotificationManager getNotificationManager() {
