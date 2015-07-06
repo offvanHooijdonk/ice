@@ -17,5 +17,9 @@
     <string name="textHintComment">Комментарий</string>
     <string name="textHintSalespointsFilter">Фильтр разгрузок</string>
 
+    <string name="form_title">Заявка</string>
 
+    <string name="menu_settings">Настройки</string>
+    <string name="menu_report">Отчёт по заявкам</string>
+    <string name="menu_refresh">Обновить</string>
 </resources>

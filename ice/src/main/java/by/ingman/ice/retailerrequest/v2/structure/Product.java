@@ -4,9 +4,9 @@ public class Product {
     private String storehouseCode;
     private String code;
     private String name;
-    private String packs;
-    private String rest;
-    private String price;
+    private Double packs;
+    private Integer rest;
+    private Integer price;
     private int countInPack;
     private String storehousePacks;
     private String storehouseRest;
@@ -14,12 +14,13 @@ public class Product {
 
 
 
-    public Product(String storehouseCode, String code, String name, String storehousePacks, String storehouseRest, String price, int countInPack, double weight) {
+    public Product(String storehouseCode, String code, String name, String storehousePacks, String storehouseRest,
+                   Integer price, int countInPack, double weight) {
         this.storehouseCode = storehouseCode;
         this.code = code;
         this.name = name;
-        this.packs = "0";
-        this.rest = "0";
+        this.packs = 0.0;
+        this.rest = 0;
         this.price = price;
         this.countInPack = countInPack;
         this.storehousePacks = storehousePacks;
@@ -31,8 +32,8 @@ public class Product {
         this.storehouseCode = p.getStorehouseCode();
         this.code = p.getCode();
         this.name = p.getName();
-        this.packs = "0";
-        this.rest = "0";
+        this.packs = 0.0;
+        this.rest = 0;
         this.price = p.getPrice();
         this.countInPack = p.getCountInPack();
         this.storehousePacks = p.storehousePacks;
@@ -60,23 +61,23 @@ public class Product {
         return name;
     }
 
-    public String getPacks() {
+    public Double getPacks() {
         return packs;
     }
 
-    public String getRest() {
+    public Integer getRest() {
         return rest;
     }
 
-    public String getPrice() {
+    public Integer getPrice() {
         return price;
     }
 
-    public void setPacks(String packs) {
+    public void setPacks(Double packs) {
         this.packs = packs;
     }
 
-    public void setRest(String rest) {
+    public void setRest(Integer rest) {
         this.rest = rest;
     }
 

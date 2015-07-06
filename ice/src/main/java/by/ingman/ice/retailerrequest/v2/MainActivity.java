@@ -111,10 +111,10 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
         //инициализация настроек
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
         //sect--------------------------------------
         //Секция инициализации вьюх
         {
+            // request date init
             requestDate = Calendar.getInstance();
             textDate = (TextView) findViewById(R.id.textDate);
             textDate.setText(Request.getDateFormat().format(requestDate.getTime()));
@@ -296,6 +296,8 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         double totalWeight = 0;
 
         //товары
+        Long totalSumm = 0l;
+        DecimalFormat dfSumm = new DecimalFormat("#,###");
         if (selectedProducts.size() == 0) {
             sb.append("Товар не выбран\n\r\n\r");
             requestIsReady = false;
@@ -308,22 +310,26 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                 sb.append("\tПо цене ").append(p.getPrice()).append("\n\r");
                 sb.append("\tУпаковок: ").append(p.getPacks()).append("\n\r");
                 sb.append("\tШтук: ").append(p.getRest()).append("\n\r");
+                long prodSumm = p.getRest() * p.getPrice();
+                sb.append("\tСумма: ").append(dfSumm.format(prodSumm)).append("\n\r");
+                totalSumm += prodSumm;
 
-                if (Integer.parseInt(p.getStorehouseRest()) < Integer.parseInt(p.getRest())) {
+                if (Integer.parseInt(p.getStorehouseRest()) < p.getRest()) {
                     sb.append("\tПРОВЕРЬТЕ КОЛИЧЕСТВО\n\r");
                     requestIsReady = false;
                 }
 
-                totalCount += Integer.valueOf(p.getRest());
-                totalPacks += Float.valueOf(p.getPacks());
-                totalWeight += p.getWeight()*Integer.valueOf(p.getRest());
+                totalCount += p.getRest();
+                totalPacks += p.getPacks();
+                totalWeight += p.getWeight()*p.getRest();
             }
         }
 
         DecimalFormat df = new DecimalFormat("0.00");
         sb.append("\n\n\tВСЕГО: " + df.format(totalPacks) + " уп., " + totalCount + " шт., " + df.format(totalWeight) + " кг");
+        sb.append("\n\tСУММА: " + dfSumm.format(totalSumm));
 
-        //финальное отображение
+                //финальное отображение
         textViewFinal.setText(sb.toString());
 
         //кнопка отправки заявки доступна, если все параметры введены
@@ -338,24 +344,30 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         super.onResume();
     }
 
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuItem mi = menu.add(0, 1, 0, "Настройки");
-        mi.setIntent(new Intent(this, PrefActivity.class));
-        MenuItem mi2 = menu.add(0, 2, 0, "Отчёт по заявкам");
-        mi2.setIntent(new Intent(this, RequestReportActivity.class));
-        MenuItem mi3 = menu.add(0, 3, 0, "Обновить");
-        /*mi3.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem menuItem) {
-                Toast.makeText(getApplicationContext(), "click", Toast.LENGTH_SHORT).show();
+        getMenuInflater().inflate(R.menu.main, menu);
 
-                UpdateVersionTask1 downloadFile = new UpdateVersionTask1();
-                downloadFile.execute("the url to the file you want to download");
-                return false;  //To change body of implemented methods use File | Settings | File Templates.
-            }
-        });*/
-        mi3.setIntent(new Intent(this, ApkUpdateActivity.class));
-        return super.onCreateOptionsMenu(menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.report: {
+                Intent intent = new Intent(this, RequestReportActivity.class);
+                startActivity(intent);
+            } break;
+            case R.id.refresh: {
+                Intent intent = new Intent(this, ApkUpdateActivity.class);
+                startActivity(intent);
+            } break;
+            case R.id.settings: {
+                Intent intent = new Intent(this, PrefActivity.class);
+                startActivity(intent);
+            } break;
+        }
+        return true;
     }
 
     @Override
@@ -364,9 +376,9 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             requestDate = Calendar.getInstance();
         }
         requestDate.set(Calendar.YEAR, year);
-        requestDate.set(Calendar.MONTH, monthOfYear);
-        requestDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-        textDate.setText(Request.getDateFormat().format(requestDate.getTime()));
+            requestDate.set(Calendar.MONTH, monthOfYear);
+            requestDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+            textDate.setText(Request.getDateFormat().format(requestDate.getTime()));
 
         refreshFinalView();
     }
@@ -530,14 +542,18 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                 if (storehouse.getCode().equals(storehouseCode)) {
                     for (Product p : selectedProducts.values()) {
                         if (p.getCode().equals(productCode)) {
-                            Product product = new Product(stringArray[0], stringArray[2], stringArray[3], stringArray[4], stringArray[5], stringArray[6], Integer.valueOf(stringArray[7]), Double.parseDouble(stringArray[8]));
+                            Product product = new Product(stringArray[0], stringArray[2], stringArray[3],
+                                    stringArray[4], stringArray[5], Integer.valueOf(stringArray[6]), Integer.valueOf
+                                    (stringArray[7]), Double.parseDouble(stringArray[8]));
                             double packs;
                             int count;
                             StringBuilder newLine = new StringBuilder();
-                            if ((packs = df.parse(product.getStorehousePacks()).doubleValue() - Double.parseDouble(p.getPacks())) < 0) {
+                            if ((packs = df.parse(product.getStorehousePacks()).doubleValue() - Double.valueOf(p.getPacks()
+                            )) < 0) {
                                 packs = 0;
                             }
-                            if ((count = Integer.parseInt(product.getStorehouseRest()) - Integer.parseInt(p.getRest())) < 0) {
+                            if ((count = Integer.parseInt(product.getStorehouseRest()) - p.getRest()) <
+                                    0) {
                                 count = 0;
                             }
                             newLine.append(stringArray[0]).append(";")
@@ -599,7 +615,8 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         LinearLayout productLayout = new LinearLayout(this);
         productLayout.setOrientation(LinearLayout.VERTICAL);
         productLayout.setId(productCountIds++); //0
-        LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT);
+        LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout
+                .LayoutParams.MATCH_PARENT);
         llp.setMargins(0, 0, 0, 40);
         productLayout.setLayoutParams(llp);
         productLayout.setBackgroundColor(Color.parseColor("#FFF2C4"));
@@ -696,16 +713,16 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                     if (editable == null || editable.toString() == null || editable.toString().equals("")) {
                         return false;
                     }
-                    int packs;
+                    double packs;
                     try {
-                        packs = Integer.parseInt(editable.toString());
+                        packs = Double.valueOf(editable.toString());
                     } catch (NumberFormatException e) {
                         writeFileSD("errorMain", new Date() + "\n\r" + joinStackTrace(e));
                         return false;
                     }
                     Product p = selectedProducts.get(view.getId() - 4);
                     EditText editTextRest = (EditText) findViewById(view.getId() + 1);
-                    int count = packs * p.getCountInPack();
+                    int count = (int) packs * p.getCountInPack();
 
                     /*//проверка на количество на складе
                     if (Integer.parseInt(p.getStorehouseRest()) < count) {
@@ -720,8 +737,8 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
 
                     editTextRest.setText(String.valueOf(count));
-                    p.setPacks(String.valueOf(packs));
-                    p.setRest(String.valueOf(count));
+                    p.setPacks(packs);
+                    p.setRest(count);
                     selectedProducts.put(view.getId() - 4, p);
 
                     TextView textView = (TextView) findViewById(view.getId() - 1);
@@ -801,8 +818,8 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                     DecimalFormat df = new DecimalFormat("0.00");
                     String packsString = df.format(packs).replaceAll(",", ".");
                     editTextPacks.setText(packsString);
-                    p.setPacks(packsString);
-                    p.setRest(String.valueOf(count));
+                    p.setPacks(Double.valueOf(packsString));
+                    p.setRest(count);
                     selectedProducts.put(view.getId() - 5, p);
 
 
@@ -1102,9 +1119,9 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                     } else {
                         textViewContrAgentRelationship.setText(debt.getText() + ": " + String.format("%,d", Long.valueOf(debt.getDebt())) + " / " + String.format("%,d", Long.valueOf(debt.getOverdueDebt())));
                         if (!debt.getOverdueDebt().equals("0")) {
-                            textViewContrAgentRelationship.setTextColor(Color.parseColor("#FF7A7A"));
+                            textViewContrAgentRelationship.setTextColor(Color.parseColor("#F44336"));
                         } else {
-                            textViewContrAgentRelationship.setTextColor(Color.WHITE);
+                            textViewContrAgentRelationship.setTextColor(Color.parseColor("#0091EA"));
                         }
                     }
 
@@ -1185,11 +1202,11 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
                     EditText editTextPacks = (EditText) findViewById(currentProductId + 4);
                     editTextPacks.setEnabled(true);
-                    editTextPacks.setText(product.getPacks());
+                    editTextPacks.setText(String.valueOf(product.getPacks()));
 
                     EditText editTextRest = (EditText) findViewById(currentProductId + 5);
                     editTextRest.setEnabled(true);
-                    editTextRest.setText(product.getRest());
+                    editTextRest.setText(String.valueOf(product.getRest()));
 
                     Button productButton = (Button) findViewById(currentProductId + 1);
                     productButton.setEnabled(false);
@@ -1303,7 +1320,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                             stringArray[3],
                             stringArray[4],
                             stringArray[5],
-                            stringArray[6],
+                            Integer.valueOf(stringArray[6]),
                             Integer.valueOf(stringArray[7]),
                             Double.parseDouble(stringArray[8]));
                     products.add(product);

@@ -4,6 +4,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -33,8 +34,8 @@ public class Request {
     private String storehouseName;
     private String productCode;
     private String productName;
-    private String productPacksCount;
-    private String productCount;
+    private Double productPacksCount;
+    private Integer productCount;
     private String comment;
 
     public static String generateNewId() {
@@ -42,7 +43,7 @@ public class Request {
     }
 
     public static DateFormat getDateFormat() {
-        return SimpleDateFormat.getDateInstance(DateFormat.SHORT);
+        return SimpleDateFormat.getDateInstance(DateFormat.SHORT, new Locale("ru", "RU"));
     }
 
     public Request(String id, String manager, boolean isCommercial, ContrAgent contrAgent, SalePoint salePoint,
@@ -60,7 +61,7 @@ public class Request {
         this.storehouseName = storehouse.getName();
         this.productCode = product.getCode();
         this.productName = product.getName();
-        this.productPacksCount = product.getPacks().replaceAll(",", ".");
+        this.productPacksCount = product.getPacks();//.replaceAll(",", ".");
         this.productCount = product.getRest();
         if (comment.length() > 200) {
             comment = comment.substring(0, 200);
@@ -82,8 +83,8 @@ public class Request {
         storehouseName = array[9];
         productCode = array[10];
         productName = array[11];
-        productPacksCount = array[12];
-        productCount = array[13];
+        productPacksCount = Double.valueOf(array[12]);
+        productCount = Integer.valueOf(array[13]);
         comment = array[14];
         ArrayList<String> products = new ArrayList<String>();
         for (int i = 10; i < array.length; i += 14) {
