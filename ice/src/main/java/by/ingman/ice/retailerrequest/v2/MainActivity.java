@@ -96,6 +96,8 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         setContentView(R.layout.main);
 
         that = this;
+
+        getActionBar().setTitle(R.string.form_title);
         //создаем dbhelper
         dbHelper = new DBHelper(this);
 

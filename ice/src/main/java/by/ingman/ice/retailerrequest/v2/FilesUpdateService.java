@@ -14,6 +14,7 @@ import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
+import by.ingman.ice.retailerrequest.v2.helpers.NotificationsUtil;
 import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
 import by.ingman.ice.retailerrequest.v2.structure.Request;
 import jcifs.smb.SmbException;
@@ -44,6 +45,7 @@ public class FilesUpdateService extends Service {
 
     DBHelper dbHelper;
     SQLiteDatabase db;
+    private NotificationsUtil notifUtil;
 
     Date debtDate = null, restsDate = null, clientsDate = null;
 
@@ -54,6 +56,7 @@ public class FilesUpdateService extends Service {
 
     public void onCreate() {
         super.onCreate();
+        notifUtil = new NotificationsUtil(getApplicationContext());
         executorService = Executors.newFixedThreadPool(1);
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         dbHelper = new DBHelper(this);
@@ -104,6 +107,9 @@ public class FilesUpdateService extends Service {
                     doUpdate = true;
                 }
                 if (doUpdate) {
+                    if (enabledNotifications()) {
+                        notifUtil.showFileProgressNotification("Обновление данных", getFileDescr(filename) + " обновляется", filename);
+                    }
                     //updating file
                     SmbFileInputStream is = new SmbFileInputStream(smbFile);
                     FileOutputStream fos = openFileOutput(filename + "_temp", Context.MODE_PRIVATE);
@@ -114,31 +120,54 @@ public class FilesUpdateService extends Service {
                     is.close();
                     fos.close();
 
+                    if (enabledNotifications()) {
+                        notifUtil.dismissFileProgressNotification(filename);
+                    }
                     getFileStreamPath(filename + "_temp").renameTo(getFileStreamPath(filename));
                     deleteFile(filename + "_temp");
 
                     String notif = null;
                     if (filename.equals(StaticFileNames.DEBTS_CSV_SD)) {
                         debtDate = remoteDate;
-                        notif = "Файл задолженностей обновлён";
                     } else if (filename.equals(StaticFileNames.RESTS_CSV_SD)) {
                         restsDate = remoteDate;
-                        notif = "Файл остатков обновлён";
                     } else if (filename.equals(StaticFileNames.CLIENTS_CSV_SD)) {
                         clientsDate = remoteDate;
-                        notif = "Файл клиентов обновлён";
                     }
-                    if (notif != null && sharedPreferences.getBoolean("updateNotificationsEnabled", true) ) {
-                        sendNotification("Файл обновлён",notif);
+                    notif = getFileDescr(filename) + " обновлён";
+                    if (enabledNotifications()) {
+                        notifUtil.showFileCompletedNotification("Файл обновлён", notif, filename);
                     }
                 }
             }
         } catch (Exception e) {
-            //writeFileSD("errorService", new Date() + "\n\r" + e.toString());
+            if (enabledNotifications()) {
+                notifUtil.dismissFileProgressNotification(StaticFileNames.DEBTS_CSV_SD);
+                notifUtil.dismissFileProgressNotification(StaticFileNames.RESTS_CSV_SD);
+                notifUtil.dismissFileProgressNotification(StaticFileNames.CLIENTS_CSV_SD);
+            }
         }
     }
 
+    private boolean enabledNotifications() {
+        return sharedPreferences.getBoolean("updateNotificationsEnabled", true);
+    }
+
+    private String getFileDescr(String filename) {
+        String descr = "Файл";
+        if (filename.equals(StaticFileNames.DEBTS_CSV_SD)) {
+            descr = "Файл задолженностей";
+        } else if (filename.equals(StaticFileNames.RESTS_CSV_SD)) {
+            descr = "Файл остатков";
+        } else if (filename.equals(StaticFileNames.CLIENTS_CSV_SD)) {
+            descr = "Файл клиентов";
+        }
+
+        return  descr;
+    }
+
     private void sendNotification(String title, String str) {
+        // TODO move all notifications to NotificationsUtil
         Notification notif = new Notification(R.drawable.ic_launcher, "\"Ингман\", оповещение",
                 System.currentTimeMillis());
 
