@@ -58,6 +58,10 @@ public class NotificationsUtil {
         getNotificationManager().notify(NOTIF_ERROR_TAG, NOTIF_ERROR_ID, builder.build());
     }
 
+    public void dismissFileErrorNotifications() {
+        getNotificationManager().cancel(NOTIF_PROGRESS_ID);
+    }
+
     private NotificationManager getNotificationManager() {
         if (notificationManager == null) {
             notificationManager = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);

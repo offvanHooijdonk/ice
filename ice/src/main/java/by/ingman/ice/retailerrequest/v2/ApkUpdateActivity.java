@@ -15,12 +15,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.NotActiveException;
+import java.util.Arrays;
+
 import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
-
-import java.io.*;
-import java.util.Arrays;
 
 /**
  * Created with IntelliJ IDEA.
@@ -96,9 +99,9 @@ public class ApkUpdateActivity extends Activity {
 
                     checkNetworkConnected();
 
-                    stopService(new Intent(getApplicationContext(), FilesUpdateService.class));
+                    displayProgressDialog();
 
-                    progressBar.setVisibility(View.VISIBLE);
+                    stopService(new Intent(getApplicationContext(), FilesUpdateService.class));
 
                     for (String filename : StaticFileNames.getFilenamesArray()) {
                         if (Arrays.asList(fileList()).contains(filename)) {
@@ -113,8 +116,10 @@ public class ApkUpdateActivity extends Activity {
 
                 } catch (NotActiveException e) {
                     Toast.makeText(getApplicationContext(), "Нет связи с интернетом", Toast.LENGTH_SHORT).show();
+                    closeProgressDialog();
                 } catch (Exception e) {
                     Toast.makeText(getApplicationContext(), "Невозможно обновить", Toast.LENGTH_SHORT).show();
+                    closeProgressDialog();
                 }
             }
         });
@@ -142,21 +147,31 @@ public class ApkUpdateActivity extends Activity {
 
         protected void onPostExecute(Void result) {
             progressBar.setVisibility(View.GONE);
-            progressDialog.cancel();
+            closeProgressDialog();
             Toast.makeText(getApplicationContext(), "Файлы обновлены успешно", Toast.LENGTH_SHORT).show();
         }
 
         protected void onPreExecute() {
-            progressDialog = new ProgressDialog(ApkUpdateActivity.this);
-            progressDialog.setTitle("Данные обновляются");
-            progressDialog.setMessage("Дождитесь обновления файлов");
-            progressDialog.setCancelable(false);
-            progressDialog.show();
+
         }
     };
 
 
+    private void displayProgressDialog() {
+        progressDialog = new ProgressDialog(ApkUpdateActivity.this);
+        progressDialog.setTitle("Данные обновляются");
+        progressDialog.setMessage("Дождитесь обновления файлов");
+        progressDialog.setCancelable(true);
+        progressDialog.show();
+        progressBar.setVisibility(View.VISIBLE);
+    }
 
+    private void closeProgressDialog() {
+        if (progressDialog != null) {
+            progressDialog.cancel();
+        }
+        progressBar.setVisibility(View.GONE);
+    }
 
     private void checkNetworkConnected() throws NotActiveException {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);

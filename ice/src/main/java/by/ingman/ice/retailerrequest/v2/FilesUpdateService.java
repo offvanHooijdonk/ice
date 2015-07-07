@@ -11,10 +11,25 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
-import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.widget.Toast;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.NotificationsUtil;
@@ -24,13 +39,6 @@ import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
-
-import java.io.*;
-import java.net.MalformedURLException;
-import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created with IntelliJ IDEA.
@@ -89,6 +97,7 @@ public class FilesUpdateService extends Service {
 
     public void updatePubFiles() {
         try {
+            notifUtil.dismissFileErrorNotifications();
             for (String filename : StaticFileNames.getFilenamesArray()) {
                 boolean doUpdate = false;
                 String url = sharedPreferences.getString("androidExchangePubDirPref", "");
@@ -149,11 +158,9 @@ public class FilesUpdateService extends Service {
             notifUtil.showErrorNotification("Ошибка при загрузке данных", "Ошибка загрузки файла данных.");
 
             //Toast.makeText(that, "Ошибка при загрузке данных. " + e.toString(), Toast.LENGTH_LONG).show();
-            if (enabledNotifications()) {
-                notifUtil.dismissFileProgressNotification(StaticFileNames.DEBTS_CSV_SD);
-                notifUtil.dismissFileProgressNotification(StaticFileNames.RESTS_CSV_SD);
-                notifUtil.dismissFileProgressNotification(StaticFileNames.CLIENTS_CSV_SD);
-            }
+            notifUtil.dismissFileProgressNotification(StaticFileNames.DEBTS_CSV_SD);
+            notifUtil.dismissFileProgressNotification(StaticFileNames.RESTS_CSV_SD);
+            notifUtil.dismissFileProgressNotification(StaticFileNames.CLIENTS_CSV_SD);
         }
     }
 

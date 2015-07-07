@@ -5,30 +5,75 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.*;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.InputType;
-import android.view.*;
+import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.*;
-import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
-import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
-import by.ingman.ice.retailerrequest.v2.structure.*;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.DatePicker;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
-import java.io.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URL;
 import java.net.URLConnection;
-import java.text.DateFormat;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+
+import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
+import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
+import by.ingman.ice.retailerrequest.v2.structure.ContrAgent;
+import by.ingman.ice.retailerrequest.v2.structure.ContrAgentList;
+import by.ingman.ice.retailerrequest.v2.structure.Debt;
+import by.ingman.ice.retailerrequest.v2.structure.Product;
+import by.ingman.ice.retailerrequest.v2.structure.Request;
+import by.ingman.ice.retailerrequest.v2.structure.SalePoint;
+import by.ingman.ice.retailerrequest.v2.structure.Storehouse;
 
 public class MainActivity extends Activity implements DatePickerDialog.OnDateSetListener {
 
@@ -85,6 +130,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
     private String lastValueProductFilter;
     private String lastValueClientsFilter;
+    private Gson gson;
 
     ProgressDialog mProgressDialog;
 
@@ -100,6 +146,8 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         PreferenceManager.setDefaultValues(that, R.xml.pref, false);
         //создаем dbhelper
         dbHelper = new DBHelper(this);
+
+        gson = new GsonBuilder().create();
 
         imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
@@ -504,7 +552,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                 cv.put("is_req", 1);
                 cv.put("req_id", request.getId());
                 cv.put("date", request.getDate());
-                cv.put("req", request.toStringForSending());
+                cv.put("req", gson.toJson(request));
                 cv.put("sent", 0);
                 db.insert(DBHelper.TABLE_REQUESTS_NAME, null, cv);
 
@@ -621,7 +669,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                 .LayoutParams.MATCH_PARENT);
         llp.setMargins(0, 0, 0, 40);
         productLayout.setLayoutParams(llp);
-        productLayout.setBackgroundColor(Color.parseColor("#FFF2C4"));
+        productLayout.setBackgroundColor(that.getResources().getColor(R.color.productBckg));
         layout.addView(productLayout);
 
 
@@ -657,7 +705,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         TextView textView = new TextView(this);
         textView.setId(2000 + productCountIds++);  //3
         productLayout.addView(textView);
-        textView.setTextColor(Color.BLACK);
+        textView.setTextColor(that.getResources().getColor(android.R.color.primary_text_light));
 
         //горизонтальный лайоут для количества товаров
         LinearLayout layoutProductCount = new LinearLayout(this);
@@ -747,11 +795,11 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                     textView.setText(p.getTextViewText());
 
                     if (Integer.parseInt(p.getStorehouseRest()) < count) {
-                        ((EditText) view).setTextColor(Color.RED);
-                        editTextRest.setTextColor(Color.RED);
+                        ((EditText) view).setTextColor(that.getResources().getColor(R.color.warnTextColor));
+                        editTextRest.setTextColor(that.getResources().getColor(R.color.warnTextColor));
                     } else {
-                        ((EditText) view).setTextColor(Color.BLACK);
-                        editTextRest.setTextColor(Color.BLACK);
+                        ((EditText) view).setTextColor(that.getResources().getColor(android.R.color.primary_text_light));
+                        editTextRest.setTextColor(that.getResources().getColor(android.R.color.primary_text_light));
                     }
 
                     refreshFinalView();
@@ -828,11 +876,11 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                     TextView textView = (TextView) findViewById(view.getId() - 2);
                     textView.setText(p.getTextViewText());
                     if (Integer.parseInt(p.getStorehouseRest()) < count) {
-                        ((EditText) view).setTextColor(Color.RED);
-                        editTextPacks.setTextColor(Color.RED);
+                        ((EditText) view).setTextColor(that.getResources().getColor(R.color.warnTextColor));
+                        editTextPacks.setTextColor(that.getResources().getColor(R.color.warnTextColor));
                     } else {
-                        ((EditText) view).setTextColor(Color.BLACK);
-                        editTextPacks.setTextColor(Color.BLACK);
+                        ((EditText) view).setTextColor(that.getResources().getColor(android.R.color.primary_text_light));
+                        editTextPacks.setTextColor(that.getResources().getColor(android.R.color.primary_text_light));
                     }
 
                     refreshFinalView();
@@ -1121,9 +1169,9 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                     } else {
                         textViewContrAgentRelationship.setText(debt.getText() + ": " + String.format("%,d", Long.valueOf(debt.getDebt())) + " / " + String.format("%,d", Long.valueOf(debt.getOverdueDebt())));
                         if (!debt.getOverdueDebt().equals("0")) {
-                            textViewContrAgentRelationship.setTextColor(Color.parseColor("#F44336"));
+                            textViewContrAgentRelationship.setTextColor(that.getResources().getColor(R.color.warnTextColor));
                         } else {
-                            textViewContrAgentRelationship.setTextColor(Color.parseColor("#0091EA"));
+                            textViewContrAgentRelationship.setTextColor(that.getResources().getColor(R.color.successTextColor));
                         }
                     }
 
