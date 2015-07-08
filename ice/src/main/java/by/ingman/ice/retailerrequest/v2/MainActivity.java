@@ -135,7 +135,9 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
     ProgressDialog mProgressDialog;
 
 
-    /** Called when the activity is first created. */
+    /**
+     * Called when the activity is first created.
+     */
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //установка лайоута
@@ -184,14 +186,14 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
             sortClientEditText = (EditText) findViewById(R.id.editTextContrAgentFilter);
             sortClientEditText.setOnKeyListener(new View.OnKeyListener() {
-            public boolean onKey(View view, int keyCode, KeyEvent event) {
-                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                    showDialog(DIALOG_CONTRAGENTS);
-                    return true;
+                public boolean onKey(View view, int keyCode, KeyEvent event) {
+                    if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                            (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                        showDialog(DIALOG_CONTRAGENTS);
+                        return true;
+                    }
+                    return false;
                 }
-                return false;
-            }
             });
 
 
@@ -225,7 +227,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
             contrAgentTextView = (TextView) findViewById(R.id.textViewContrAgent);
 
-            salePointTextView  = (TextView) findViewById(R.id.textViewSalePoint);
+            salePointTextView = (TextView) findViewById(R.id.textViewSalePoint);
 
             textViewContrAgentRelationship = (TextView) findViewById(R.id.textViewContrAgentRelationship);
 
@@ -371,7 +373,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
                 totalCount += p.getRest();
                 totalPacks += p.getPacks();
-                totalWeight += p.getWeight()*p.getRest();
+                totalWeight += p.getWeight() * p.getRest();
             }
         }
 
@@ -379,7 +381,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         sb.append("\n\n\tВСЕГО: " + df.format(totalPacks) + " уп., " + totalCount + " шт., " + df.format(totalWeight) + " кг");
         sb.append("\n\tСУММА: " + dfSumm.format(totalSumm));
 
-                //финальное отображение
+        //финальное отображение
         textViewFinal.setText(sb.toString());
 
         //кнопка отправки заявки доступна, если все параметры введены
@@ -407,15 +409,18 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             case R.id.report: {
                 Intent intent = new Intent(this, RequestReportActivity.class);
                 startActivity(intent);
-            } break;
+            }
+            break;
             case R.id.refresh: {
                 Intent intent = new Intent(this, ApkUpdateActivity.class);
                 startActivity(intent);
-            } break;
+            }
+            break;
             case R.id.settings: {
                 Intent intent = new Intent(this, PrefActivity.class);
                 startActivity(intent);
-            } break;
+            }
+            break;
         }
         return true;
     }
@@ -658,7 +663,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
     private void addProduct() {
         int width = (findViewById(R.id.buttonStorehouses)).getWidth();
-        ViewGroup.LayoutParams tempParams;
+        //ViewGroup.LayoutParams tempParams;
 
         //полный лайоут товара (для его удаления, если что)
         LinearLayout layout = (LinearLayout) findViewById(R.id.layoutProducts);
@@ -669,6 +674,8 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                 .LayoutParams.MATCH_PARENT);
         llp.setMargins(0, 0, 0, 40);
         productLayout.setLayoutParams(llp);
+        int paddingPx = that.getResources().getDimensionPixelSize(R.dimen.product_layout_padding);
+        productLayout.setPadding(paddingPx, 0, paddingPx, 0);
         productLayout.setBackgroundColor(that.getResources().getColor(R.color.productBckg));
         layout.addView(productLayout);
 
@@ -685,9 +692,10 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         productButton.setId(2000 + productCountIds++); //1
         layoutProductButton.addView(productButton);
         //setting width for button
-        tempParams = productButton.getLayoutParams();
-        tempParams.width = width + 100;
-        productButton.setLayoutParams(tempParams);
+        //tempParams = productButton.getLayoutParams();
+        productButton.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT, 3));
+        //productButton.setLayoutParams(tempParams);
 
         //кнопка "Удалить товар"
         Button deleteProductButton = new Button(this);
@@ -696,9 +704,9 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         deleteProductButton.setOnClickListener(getOnClickDeleteProductDialog(deleteProductButton));
         layoutProductButton.addView(deleteProductButton);
         //setting width for button
-        tempParams = deleteProductButton.getLayoutParams();
-        tempParams.width = width - 100;
-        deleteProductButton.setLayoutParams(tempParams);
+        deleteProductButton.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT, 2));
+        //deleteProductButton.setLayoutParams(tempParams);
 
 
         //textView с информацией по товару
@@ -721,9 +729,11 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         editTextProductPacksCount.setFocusableInTouchMode(true);
         layoutProductCount.addView(editTextProductPacksCount);
         //setting width
-        tempParams = editTextProductPacksCount.getLayoutParams();
-        tempParams.width = width;
-        editTextProductPacksCount.setLayoutParams(tempParams);
+        //tempParams = editTextProductPacksCount.getLayoutParams();
+        //tempParams.width = width;
+        //editTextProductPacksCount.setLayoutParams(tempParams);
+        editTextProductPacksCount.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT, 1));
         /*editTextProductPacksCount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -810,7 +820,6 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         });
 
 
-
         //editText количество штук
         EditText editTextProductCount = new EditText(this);
         editTextProductCount.setInputType(InputType.TYPE_CLASS_NUMBER);
@@ -819,9 +828,11 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         editTextProductCount.setFocusableInTouchMode(true);
         layoutProductCount.addView(editTextProductCount);
         //setting width
-        tempParams = editTextProductCount.getLayoutParams();
-        tempParams.width = width;
-        editTextProductCount.setLayoutParams(tempParams);
+        //tempParams = editTextProductCount.getLayoutParams();
+        //tempParams.width = width;
+        //editTextProductCount.setLayoutParams(tempParams);
+        editTextProductCount.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT, 1));
         /*editTextProductCount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -863,7 +874,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                     int count = Integer.parseInt(editable.toString());
                     Product p = selectedProducts.get(view.getId() - 5);
                     EditText editTextPacks = (EditText) findViewById(view.getId() - 1);
-                    double packs = (double)count / p.getCountInPack();
+                    double packs = (double) count / p.getCountInPack();
                     //editTextPacks.setText(String.valueOf(packs));
                     DecimalFormat df = new DecimalFormat("0.00");
                     String packsString = df.format(packs).replaceAll(",", ".");
@@ -925,8 +936,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             writer = new StringWriter();
             joinStackTrace(e, writer);
             return writer.toString();
-        }
-        finally {
+        } finally {
             if (writer != null)
                 try {
                     writer.close();
@@ -952,8 +962,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                 if (e != null)
                     printer.println("Caused by:\r\n");
             }
-        }
-        finally {
+        } finally {
             if (printer != null)
                 printer.close();
         }
@@ -1107,7 +1116,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
     //-------------------------------------------------------------------------------------
 
     //показать продукты
-    View.OnClickListener getOnClickShowProdutsDialog(final Button button)  {
+    View.OnClickListener getOnClickShowProdutsDialog(final Button button) {
         return new View.OnClickListener() {
             public void onClick(View v) {
                 readStorehousesAndProductsFromSD();
@@ -1118,7 +1127,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
     }
 
     //удалить секцию "продукты"
-    View.OnClickListener getOnClickDeleteProductDialog(final Button button)  {
+    View.OnClickListener getOnClickDeleteProductDialog(final Button button) {
         return new View.OnClickListener() {
             public void onClick(View v) {
                 int selectedProductId = button.getId() - 2;
@@ -1127,7 +1136,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                 }
                 //remove from main view
                 LinearLayout productLayout = (LinearLayout) button.getParent().getParent();
-                ((LinearLayout)productLayout.getParent()).removeView(productLayout);
+                ((LinearLayout) productLayout.getParent()).removeView(productLayout);
 
                 refreshFinalView();
             }
@@ -1275,8 +1284,6 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             refreshFinalView();
         }
     };
-
-
 
 
     //sect----------------------------------------------------------------------------------
@@ -1479,7 +1486,6 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             e.printStackTrace();
         }
     }
-
 
 
 }

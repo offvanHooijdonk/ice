@@ -24,7 +24,7 @@
     <string name="menu_refresh">Обновление</string>
 
     <string name="notif_request_success_title">Заявка отправлена</string>
-    <string name="notif_request_success_message">Заявка для {0} отправлена</string>
+    <string name="notif_request_success_message">Заявка для %s отправлена</string>
     <string name="show_all_contragents">Показать всех</string>
     <string name="show_contragents_button">Показать</string>
     <string name="reportDate">Дата отчёта</string>

@@ -64,7 +64,11 @@ public class NotificationsUtil {
         String tag = request.getId();
         String title = ctx.getResources().getString(R.string.notif_request_success_title);
         String message = ctx.getResources().getString(R.string.notif_request_success_message, request.getContrAgentName());
+
+        Notification.BigTextStyle bigTextStyle = new Notification.BigTextStyle().setBigContentTitle(title).bigText(message);
+
         Notification.Builder builder = new Notification.Builder(ctx).setTicker(title).setContentTitle(title).setContentText(message)
+                .setStyle(bigTextStyle)
                 .setSmallIcon(R.drawable.ic_action_accept).setLargeIcon(BitmapFactory.decodeResource(ctx.getResources(), R.drawable.ic_launcher))
                 .setAutoCancel(true);
 

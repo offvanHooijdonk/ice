@@ -35,7 +35,7 @@ public class Connector {
         connection.setAutoCommit(false);*/
 
         //Connection connection = DriverManager.getConnection("jdbc:sqlserver://192.168.1.3:1433;databaseName=ice", "sa", "0");
-        Connection connection = DriverManager.getConnection("jdbc:jtds:sqlserver://192.168.1.3:1433:/ice", "sa", "0");
+        Connection connection = DriverManager.getConnection("jdbc:jtds:sqlserver://192.168.1.3:1433/ice", "sa", "0");
 
         return connection;
     }

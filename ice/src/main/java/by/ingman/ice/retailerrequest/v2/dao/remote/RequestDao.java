@@ -18,7 +18,7 @@ public class RequestDao {
 
         if (conn != null) {
             try {
-                PreparedStatement stat = conn.prepareStatement("INSERT INTO requests(REQ_ID, AGENT_NAME, " +
+                PreparedStatement stat = conn.prepareStatement("INSERT INTO ice_requests(REQ_ID, AGENT_NAME, " +
                         "REQUEST_DATE, IS_COMMERCIAL, CONTRAGENT_CODE, SALE_POINT_CODE, STORE_HOUSE_CODE, PRODUCT_CODE, " +
                         "PRODUCT_PACKS_NUM, PRODUCT_NUM, COMMENT) " +
                         "VALUES(?,?,?,?,?,?,?,?,?,?,?)");
