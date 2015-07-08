@@ -66,6 +66,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
+import by.ingman.ice.retailerrequest.v2.helpers.GsonHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
 import by.ingman.ice.retailerrequest.v2.structure.ContrAgent;
 import by.ingman.ice.retailerrequest.v2.structure.ContrAgentList;
@@ -147,7 +148,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         //создаем dbhelper
         dbHelper = new DBHelper(this);
 
-        gson = new GsonBuilder().create();
+        gson = GsonHelper.createGson();
 
         imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
@@ -551,7 +552,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                         comment);
                 cv.put("is_req", 1);
                 cv.put("req_id", request.getId());
-                cv.put("date", request.getDate());
+                cv.put("date", Request.getDateFormat().format(request.getDate()));
                 cv.put("req", gson.toJson(request));
                 cv.put("sent", 0);
                 db.insert(DBHelper.TABLE_REQUESTS_NAME, null, cv);

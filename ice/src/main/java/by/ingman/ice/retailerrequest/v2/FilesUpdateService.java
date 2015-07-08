@@ -14,6 +14,8 @@ import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -25,13 +27,18 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import by.ingman.ice.retailerrequest.v2.dao.remote.RequestDao;
 import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
+import by.ingman.ice.retailerrequest.v2.helpers.GsonHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.NotificationsUtil;
 import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
 import by.ingman.ice.retailerrequest.v2.structure.Request;
@@ -58,8 +65,11 @@ public class FilesUpdateService extends Service {
     DBHelper dbHelper;
     SQLiteDatabase db;
     private NotificationsUtil notifUtil;
+    private RequestDao requestDao;
 
     Date debtDate = null, restsDate = null, clientsDate = null;
+
+    private Gson gson;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -69,7 +79,10 @@ public class FilesUpdateService extends Service {
     public void onCreate() {
         super.onCreate();
         this.that = this;
+
+        gson = GsonHelper.createGson();
         notifUtil = new NotificationsUtil(that);
+        requestDao = new RequestDao();
         executorService = Executors.newFixedThreadPool(1);
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         dbHelper = new DBHelper(this);
@@ -85,7 +98,7 @@ public class FilesUpdateService extends Service {
 
 
     private Date getDateForFilename(String filename) {
-        if (filename.equals(StaticFileNames.RESTS_CSV_SD)){
+        if (filename.equals(StaticFileNames.RESTS_CSV_SD)) {
             return restsDate;
         } else if (filename.equals(StaticFileNames.CLIENTS_CSV_SD)) {
             return clientsDate;
@@ -101,11 +114,11 @@ public class FilesUpdateService extends Service {
             for (String filename : StaticFileNames.getFilenamesArray()) {
                 boolean doUpdate = false;
                 String url = sharedPreferences.getString("androidExchangePubDirPref", "");
-                if (url.charAt(url.length()-1) != '/') {
+                if (url.charAt(url.length() - 1) != '/') {
                     url = url.concat("/");
                 }
                 Date remoteDate = null;
-                SmbFile smbFile = new SmbFile("smb://" + url +  filename);
+                SmbFile smbFile = new SmbFile("smb://" + url + filename);
                 if (Arrays.asList(fileList()).contains(filename)) {
                     Date localDate = new Date(getFileStreamPath(filename).lastModified());
                     Date prevRemoteDate = getDateForFilename(filename);
@@ -178,7 +191,7 @@ public class FilesUpdateService extends Service {
             descr = "Файл клиентов";
         }
 
-        return  descr;
+        return descr;
     }
 
     private void sendNotification(String title, String str) {
@@ -195,12 +208,12 @@ public class FilesUpdateService extends Service {
         notificationManager.notify(k++, notif);
     }
 
-    private HashMap<String, String> readUnsentRequests() {
+    private Map<String, List<Request>> readUnsentRequests() {
         String selection = "sent=0 and is_req>0";
         Cursor c = db.query(DBHelper.TABLE_REQUESTS_NAME, null, selection, null, null, null, null);
         String reqId = "";
         String req = "";
-        HashMap<String, String> requests = new HashMap<String, String>();
+        Map<String, List<Request>> requests = new HashMap<String, List<Request>>();
 
         if (c != null) {
             if (c.moveToFirst()) {
@@ -213,13 +226,13 @@ public class FilesUpdateService extends Service {
                             reqId = c.getString(c.getColumnIndex(columnName));
                         }
                     }
+                    Request request = gson.fromJson(req, Request.class);
                     if (requests.containsKey(reqId)) {
-                        String banch = requests.get(reqId);
-                        banch = banch.concat("\n");
-                        banch = banch.concat(req);
-                        requests.put(reqId, banch);
+                        requests.get(reqId).add(request);
                     } else {
-                        requests.put(reqId, req);
+                        List<Request> reqList = new ArrayList<>();
+                        reqList.add(request);
+                        requests.put(reqId, reqList);
                     }
                 } while (c.moveToNext());
             }
@@ -243,7 +256,7 @@ public class FilesUpdateService extends Service {
                             //проверить, есть ли уже ответы в базе
                             String answersSelection = "req_id=\"" + reqId + "\" and is_req=0";
                             Cursor answersCursor = db.query(DBHelper.TABLE_REQUESTS_NAME, new String[]{"req_id"}, answersSelection, null, null, null, null);
-                            if (answersCursor!= null && answersCursor.getCount() == 0) {
+                            if (answersCursor != null && answersCursor.getCount() == 0) {
                                 if (!requestIds.contains(reqId)) {
                                     requestIds.add(reqId);
                                 }
@@ -264,7 +277,7 @@ public class FilesUpdateService extends Service {
         db.update(DBHelper.TABLE_REQUESTS_NAME, cv, "req_id = ?", new String[]{reqId});
     }
 
-    private boolean createRemoteRequest(String reqId, String req) throws MalformedURLException {
+    /*private boolean createRemoteRequest(String reqId, String req) throws MalformedURLException {
         String url = sharedPreferences.getString("androidExchangeNewDirPref", "");
         if (url.charAt(url.length()-1) != '/') {
             url = url.concat("/");
@@ -295,28 +308,9 @@ public class FilesUpdateService extends Service {
             }
             return false;
         }
-        /*try {
-            SmbFile smbFile = new SmbFile(reqId + ".csv");
-            if (!smbFile.exists()) {
-                smbFile.createNewFile();
-            }
-            SmbFileOutputStream smbfos = new SmbFileOutputStream(smbFile);
-            smbfos.write(req.getBytes("windows-1251"));
-
-            smbfos.close();
-
-            SmbFile newSmbFile = new SmbFile("smb://" + url +  reqId + ".csv");
-            newSmbFile.createNewFile();
-            smbFile.copyTo(newSmbFile);
-            smbFile.delete();
-
-        } catch (Exception e) {
-            //sendNotification("Отправка невозможна");
-            return false;
-        }*/
         sendNotification("Заявка отправлена", "");
         return true;
-    }
+    }*/
 
     private void readRemoteAnswer(String filename) {
         try {
@@ -363,20 +357,23 @@ public class FilesUpdateService extends Service {
 
 
                     //reading unsent requests
-                    HashMap<String, String> requests = readUnsentRequests();
-                    /*if (requests.size() > 0) {
-                        sendNotification(requests.size() + " readed");
-                    }*/
+                    Map<String, List<Request>> requests = readUnsentRequests();
 
                     //sending unsent requests and marking as sent
                     for (String reqId : requests.keySet()) {
-                        boolean result = createRemoteRequest(reqId, requests.get(reqId));
-                        if (result) {
+                        List<Request> list = requests.get(reqId);
+                        //createRemoteRequest(reqId, requests.get(reqId));
+                        boolean success = requestDao.batchAddRequests(list);
+                        if (success) {
                             markRequestSent(reqId);
+                            // TODO show notification
+                            if (list.size() > 0) { // just make sure, though else case should not be possible
+                                Request reqInfo = list.get(0);
+                                notifUtil.showRequestSentNotification(reqInfo);
+                            }
                         }
                     }
 
-                    //!todo read answers
                     // вычитать отправленные заявки на сегодня без ответа
                     ArrayList<String> sentRequestIds = readSentRequestIdsWithoutAnswer();
                     //writeFileSD("ssstest","swa " + sentRequestIds.size() + sentRequestIds.get(0) + "    " + sentRequestIds.get(1));

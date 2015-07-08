@@ -1,6 +1,7 @@
 package by.ingman.ice.retailerrequest.v2.structure;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,7 +25,7 @@ public class Request {
 
     private String id;
     private String manager;
-    private String date;
+    private Date date;
     private String isCommercial;
     private String contrAgentCode;
     private String contrAgentName;
@@ -51,7 +52,7 @@ public class Request {
     {
         this.id = id;
         this.manager = manager;
-        this.date = getDateFormat().format(date);
+        this.date = date;
         this.isCommercial = isCommercial ? "1" : "0";
         this.contrAgentCode = contrAgent.getCode();
         this.contrAgentName = contrAgent.getName();
@@ -69,11 +70,11 @@ public class Request {
         this.comment = comment;
     }
 
-    public Request(String request) {
+    public Request(String request) throws ParseException {
         String[] array = request.split(";");
         id = array[0];
         manager = array[1];
-        date = array[2];
+        date = getDateFormat().parse(array[2]);
         isCommercial = array[3];
         contrAgentCode = array[4];
         contrAgentName = array[5];
@@ -159,8 +160,60 @@ public class Request {
         return id;
     }
 
-    public String getDate() {
+    public Date getDate() {
         return date;
+    }
+
+    public String getManager() {
+        return manager;
+    }
+
+    public String getIsCommercial() {
+        return isCommercial;
+    }
+
+    public String getContrAgentCode() {
+        return contrAgentCode;
+    }
+
+    public String getContrAgentName() {
+        return contrAgentName;
+    }
+
+    public String getSalePointCode() {
+        return salePointCode;
+    }
+
+    public String getSalePointName() {
+        return salePointName;
+    }
+
+    public String getStorehouseCode() {
+        return storehouseCode;
+    }
+
+    public String getStorehouseName() {
+        return storehouseName;
+    }
+
+    public String getProductCode() {
+        return productCode;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public Double getProductPacksCount() {
+        return productPacksCount;
+    }
+
+    public Integer getProductCount() {
+        return productCount;
+    }
+
+    public String getComment() {
+        return comment;
     }
 
     public String toStringForSending() {

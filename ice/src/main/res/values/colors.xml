@@ -5,5 +5,5 @@
 
     <color name="warnTextColor">#F44336</color>
     <color name="successTextColor">#0091EA</color>
-    <color name="productBckg">#ECEFF1</color>
+    <color name="productBckg">#FFF3E0</color>
 </resources>

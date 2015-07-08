@@ -22,4 +22,7 @@
     <string name="menu_settings">Настройки</string>
     <string name="menu_report">Отчёт по заявкам</string>
     <string name="menu_refresh">Обновить</string>
+
+    <string name="notif_request_success_title">Заявка отправлена</string>
+    <string name="notif_request_success_message">Заявка для {0} отправлена</string>
 </resources>
