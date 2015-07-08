@@ -18,10 +18,18 @@ public class RequestDao {
 
         if (conn != null) {
             try {
+                PreparedStatement stat = conn.prepareStatement("INSERT INTO requests(REQ_ID, AGENT_NAME, " +
+                        "REQUEST_DATE, IS_COMMERCIAL, CONTRAGENT_CODE, SALE_POINT_CODE, STORE_HOUSE_CODE, PRODUCT_CODE, " +
+                        "PRODUCT_PACKS_NUM, PRODUCT_NUM, COMMENT) " +
+                        "VALUES(?,?,?,?,?,?,?,?,?,?,?)");
+
                 for (Request r : requests) {
-                    success = success && addRequest(r, conn);
+                    addRequestToBatch(r, stat);
                 }
-            } catch (SQLException e) {
+
+                stat.executeBatch();
+                success = true;
+            } catch (Exception e) {
                 success = false;
                 try {
                     if (conn.isClosed()) {
@@ -52,7 +60,7 @@ public class RequestDao {
         return success;
     }
 
-    private boolean addRequest(Request request, Connection conn) throws SQLException {
+    /*private boolean addRequest(Request request, Connection conn) throws SQLException {
         boolean success;
 
         if (conn != null) {
@@ -73,6 +81,8 @@ public class RequestDao {
             stat.setInt(10, request.getProductCount());
             stat.setString(11, request.getComment());
 
+            stat.addBatch();
+
             int rows = stat.executeUpdate();
 
             success = rows > 0;
@@ -81,6 +91,23 @@ public class RequestDao {
         }
 
         return success;
+    }*/
+
+    private void addRequestToBatch(Request request, PreparedStatement stat) throws Exception {
+        stat.setString(1, request.getId());
+        stat.setString(2, request.getManager());
+        stat.setDate(3, new Date(request.getDate().getTime()));
+        stat.setBoolean(4, Boolean.valueOf(request.getIsCommercial()));
+        stat.setString(5, request.getContrAgentCode());
+        stat.setString(6, request.getSalePointCode());
+        stat.setString(7, request.getStorehouseCode());
+        stat.setString(8, request.getProductCode());
+        stat.setDouble(9, request.getProductPacksCount());
+        stat.setInt(10, request.getProductCount());
+        stat.setString(11, request.getComment());
+
+        stat.addBatch();
+
     }
 
     private Connection getConnection() {

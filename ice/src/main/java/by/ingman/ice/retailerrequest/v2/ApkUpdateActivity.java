@@ -51,7 +51,7 @@ public class ApkUpdateActivity extends Activity {
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
-        apkUpdateButton = (Button) findViewById(R.id.apkupdatebutton);
+        apkUpdateButton = (Button) findViewById(R.id.apkUpdateButton);
         apkUpdateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -91,7 +91,7 @@ public class ApkUpdateActivity extends Activity {
            }
         });
 
-        pubFilesUpdateButton = (Button) findViewById(R.id.pubfilesupdatebutton);
+        pubFilesUpdateButton = (Button) findViewById(R.id.pubFilesUpdateButton);
         pubFilesUpdateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

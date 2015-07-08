@@ -2,44 +2,48 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical"
-              android:layout_width="fill_parent"
-              android:layout_height="fill_parent">
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:paddingBottom="@dimen/activity_vertical_margin"
+              android:paddingLeft="@dimen/activity_horizontal_margin"
+              android:paddingRight="@dimen/activity_horizontal_margin"
+              android:paddingTop="@dimen/activity_vertical_margin">
 
     <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Обновить программу"
-            android:id="@+id/apkupdatebutton"
-            android:layout_gravity="left|center_vertical"
+            android:text="@string/update_app"
+            android:id="@+id/apkUpdateButton"
+            android:layout_gravity="start|center_vertical"
             />
 
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Скачать и установить последнюю версию программы"
+            android:text="@string/update_app_comment"
             android:id="@+id/textView1"
-            android:layout_gravity="left|center_vertical"
+            android:layout_gravity="start|center_vertical"
             android:layout_marginBottom="20dp"/>
 
     <ProgressBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/progressBar"
-            android:layout_gravity="left|center_vertical"
+            android:layout_gravity="start|center_vertical"
             android:visibility="gone"/>
 
     <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Обновить данные по базе"
-            android:id="@+id/pubfilesupdatebutton"
-            android:layout_gravity="left|center_vertical"
+            android:text="@string/update_data_files_button"
+            android:id="@+id/pubFilesUpdateButton"
+            android:layout_gravity="start|center_vertical"
             />
 
     <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Данная функция должна использоваться только для исправления ошибок обновления данных. При наличии связи с Интернетом данные обновляются автоматически."
+            android:text="@string/update_data_files_disclaimer"
             android:id="@+id/textView"
             android:textColor="#7b1216"
             android:layout_marginBottom="20dp"/>

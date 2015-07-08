@@ -21,8 +21,15 @@
 
     <string name="menu_settings">Настройки</string>
     <string name="menu_report">Отчёт по заявкам</string>
-    <string name="menu_refresh">Обновить</string>
+    <string name="menu_refresh">Обновление</string>
 
     <string name="notif_request_success_title">Заявка отправлена</string>
     <string name="notif_request_success_message">Заявка для {0} отправлена</string>
+    <string name="show_all_contragents">Показать всех</string>
+    <string name="show_contragents_button">Показать</string>
+    <string name="reportDate">Дата отчёта</string>
+    <string name="update_app">Обновить программу</string>
+    <string name="update_app_comment">Скачать и установить последнюю версию программы</string>
+    <string name="update_data_files_button">Обновить данные по базе</string>
+    <string name="update_data_files_disclaimer">Данная функция должна использоваться только для исправления ошибок обновления данных. При наличии связи с Интернетом данные обновляются автоматически.</string>
 </resources>

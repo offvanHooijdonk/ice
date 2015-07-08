@@ -1,6 +1,11 @@
 package by.ingman.ice.retailerrequest.v2;
 
-import android.app.*;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.DatePickerDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -8,12 +13,17 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.View;
-import android.widget.*;
+import android.widget.DatePicker;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+
 import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
 import by.ingman.ice.retailerrequest.v2.structure.Request;
 import by.ingman.ice.retailerrequest.v2.structure.Response;
-
-import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -22,62 +32,48 @@ import java.util.*;
  * Time: 16:10
  * To change this template use File | Settings | File Templates.
  */
-public class RequestReportActivity extends Activity {
+public class RequestReportActivity extends Activity implements DatePickerDialog.OnDateSetListener {
+    private RequestReportActivity that;
+
     LinearLayout mainLayout;
     LinearLayout reqLayout;
-    DatePicker datePicker;
-    Date date;
-    //TextView textView;
     SQLiteDatabase db;
     DBHelper dbHelper;
     int k = 25;
     HashMap<String, String> requests = new HashMap<String, String>();
+    private TextView textDate;
+    private Calendar reportDate;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.requestreport);
 
+        that = this;
+
         mainLayout = (LinearLayout) findViewById(R.id.linearLayoutCAReportMain);
-
         reqLayout = (LinearLayout) findViewById(R.id.linearLayoutCAReportReq);
-        //reqLayout = new LinearLayout(this);
-        //reqLayout.setOrientation(LinearLayout.VERTICAL);
-        //mainLayout.addView(reqLayout);
 
-        datePicker = (DatePicker) findViewById(R.id.datePickerRRerport);
-        final Calendar c = Calendar.getInstance();
-        datePicker.init(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), getOnDateChangedListener());
-
-        //textView = (TextView) findViewById(R.id.textViewRRreportRequests);
+        textDate = (TextView) findViewById(R.id.textDate);
+        reportDate = Calendar.getInstance();
+        textDate.setText(Request.getDateFormat().format(reportDate.getTime()));
+        textDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DatePickerDialog dateDialog = new DatePickerDialog(that, that,
+                        reportDate.get(Calendar.YEAR),
+                        reportDate.get(Calendar.MONTH),
+                        reportDate.get(Calendar.DAY_OF_MONTH));
+                dateDialog.show();
+            }
+        });
 
         dbHelper = new DBHelper(this);
         db = dbHelper.getWritableDatabase();
 
-        date = new Date();
         //вычитываем один раз все запросы
-        requests = readRequestsForDate();
-        //values = (ArrayList<String>) requests.values();
+        requests = readRequestsForDate(reportDate.getTime());
         //главный метод
-        showRequestsForDate(date);
-    }
-
-    public DatePicker.OnDateChangedListener getOnDateChangedListener() {
-        return new DatePicker.OnDateChangedListener() {
-            @Override
-            public void onDateChanged(DatePicker datePicker, int i, int i2, int i3) {
-                int day = datePicker.getDayOfMonth();
-                int month = datePicker.getMonth();
-                int year =  datePicker.getYear();
-
-                Calendar calendar = Calendar.getInstance();
-                calendar.set(year, month, day);
-
-                date = calendar.getTime();
-
-                requests = readRequestsForDate();
-                showRequestsForDate(date);
-            }
-        };
+        showRequestsForDate(reportDate.getTime());
     }
 
     private void showRequestsForDate(Date date) {
@@ -161,7 +157,7 @@ public class RequestReportActivity extends Activity {
         return response;
     }
 
-    private HashMap<String, String> readRequestsForDate() {
+    private HashMap<String, String> readRequestsForDate(Date date) {
         String selection = "is_req>0 and date=\"" + Request.getDateFormat().format(date) + "\"";
         Cursor c = db.query(DBHelper.TABLE_REQUESTS_NAME, null, selection, null, null, null, null);
         String reqId = "";
@@ -193,5 +189,19 @@ public class RequestReportActivity extends Activity {
         }
 
         return requests;
+    }
+
+    @Override
+    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+        if (reportDate == null) {
+            reportDate = Calendar.getInstance();
+        }
+        reportDate.set(Calendar.YEAR, year);
+        reportDate.set(Calendar.MONTH, monthOfYear);
+        reportDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+        textDate.setText(Request.getDateFormat().format(reportDate.getTime()));
+
+        requests = readRequestsForDate(reportDate.getTime());
+        showRequestsForDate(reportDate.getTime());
     }
 }

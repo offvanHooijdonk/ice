@@ -37,7 +37,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -427,8 +426,8 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             requestDate = Calendar.getInstance();
         }
         requestDate.set(Calendar.YEAR, year);
-            requestDate.set(Calendar.MONTH, monthOfYear);
-            requestDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+        requestDate.set(Calendar.MONTH, monthOfYear);
+        requestDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
         textDate.setText(Request.getDateFormat().format(requestDate.getTime()));
 
         refreshFinalView();
