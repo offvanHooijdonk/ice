@@ -42,6 +42,7 @@
         <activity
             android:name="by.ingman.ice.retailerrequest.v2.RequestReportActivity"
             android:label="@string/menu_report"
+            android:screenOrientation="portrait"
             android:parentActivityName=".MainActivity"/>
         <activity
             android:name="by.ingman.ice.retailerrequest.v2.ApkUpdateActivity"

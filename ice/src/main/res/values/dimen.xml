@@ -8,4 +8,6 @@
 
     <dimen name="date_pick_text_size">24sp</dimen>
     <dimen name="date_pick_padding">8dp</dimen>
+
+    <dimen name="land_block_border_padding">4dp</dimen>
 </resources>

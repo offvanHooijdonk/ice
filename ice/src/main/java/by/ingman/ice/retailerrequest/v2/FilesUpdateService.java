@@ -76,7 +76,7 @@ public class FilesUpdateService extends Service {
 
         gson = GsonHelper.createGson();
         notifUtil = new NotificationsUtil(that);
-        requestDao = new RequestDao();
+        requestDao = new RequestDao(that);
         executorService = Executors.newFixedThreadPool(1);
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         dbHelper = new DBHelper(this);

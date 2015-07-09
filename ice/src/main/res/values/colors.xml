@@ -5,6 +5,8 @@
 
     <color name="warnTextColor">#F44336</color>
     <color name="successTextColor">#0091EA</color>
-    <color name="datePickTextColor">#1E88E5</color>
+    <color name="datePickTextColor">#1976D2</color>
     <color name="productBckg">#FFE0B2</color>
+
+    <color name="themeAccent">#00BFA5</color>
 </resources>

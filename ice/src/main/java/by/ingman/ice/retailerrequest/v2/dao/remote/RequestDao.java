@@ -1,5 +1,7 @@
 package by.ingman.ice.retailerrequest.v2.dao.remote;
 
+import android.content.Context;
+
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -12,6 +14,13 @@ import by.ingman.ice.retailerrequest.v2.structure.Request;
  * Created by off on 07.07.2015.
  */
 public class RequestDao {
+
+    private Context ctx;
+
+    public RequestDao(Context context) {
+        this.ctx = context;
+    }
+
     public boolean batchAddRequests(List<Request> requests) {
         boolean success = true;
         Connection conn = getConnection();
@@ -60,39 +69,6 @@ public class RequestDao {
         return success;
     }
 
-    /*private boolean addRequest(Request request, Connection conn) throws SQLException {
-        boolean success;
-
-        if (conn != null) {
-
-            PreparedStatement stat = conn.prepareStatement("INSERT INTO requests(REQ_ID, AGENT_NAME, " +
-                    "REQUEST_DATE, IS_COMMERCIAL, CONTRAGENT_CODE, SALE_POINT_CODE, STORE_HOUSE_CODE, PRODUCT_CODE, " +
-                    "PRODUCT_PACKS_NUM, PRODUCT_NUM, COMMENT) " +
-                    "VALUES(?,?,?,?,?,?,?,?,?,?,?)");
-            stat.setString(1, request.getId());
-            stat.setString(2, request.getManager());
-            stat.setDate(3, new Date(request.getDate().getTime()));
-            stat.setBoolean(4, Boolean.valueOf(request.getIsCommercial()));
-            stat.setString(5, request.getContrAgentCode());
-            stat.setString(6, request.getSalePointCode());
-            stat.setString(7, request.getStorehouseCode());
-            stat.setString(8, request.getProductCode());
-            stat.setDouble(9, request.getProductPacksCount());
-            stat.setInt(10, request.getProductCount());
-            stat.setString(11, request.getComment());
-
-            stat.addBatch();
-
-            int rows = stat.executeUpdate();
-
-            success = rows > 0;
-        } else {
-            success = false;
-        }
-
-        return success;
-    }*/
-
     private void addRequestToBatch(Request request, PreparedStatement stat) throws Exception {
         stat.setString(1, request.getId());
         stat.setString(2, request.getManager());
@@ -111,7 +87,7 @@ public class RequestDao {
     }
 
     private Connection getConnection() {
-        Connector c = new Connector();
+        Connector c = new Connector(ctx);
         Connection conn = null;
         try {
             conn = c.getConnection();
