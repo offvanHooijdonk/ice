@@ -1,10 +1,12 @@
 package by.ingman.ice.retailerrequest.v2.structure;
 
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -17,11 +19,10 @@ import java.util.UUID;
  */
 public class Request {
 
-    private static final String SEPARATOR = ";";
     private static final String NEWLINE_HTML = "<br>";
     private static final String NEWLINE = "\n";
 
-
+    private static DecimalFormat decimalFormat = new DecimalFormat("#.###");
 
     private String id;
     private String manager;
@@ -103,56 +104,38 @@ public class Request {
         }
     }
 
-    public static String parseRequest(String request) {
-        String[] array = request.split(";");
+    public static String toReportString(Request request) {
         StringBuilder sb = new StringBuilder();
         sb.append("<b>ЗАЯВКА</b><br>")
-                //.append("<b>ID: </b>").append(array[0]).append(NEWLINE_HTML)
-                //.append("<b>Менеджер: </b>").append(array[1]).append(NEWLINE_HTML)
-                //.append("<b>Дата: </b>").append(array[2]).append(NEWLINE_HTML)
-                //.append("<b>Реклама: </b>").append(array[3]).append(NEWLINE_HTML)
-                .append("<b>Клиент: </b>").append(array[4]).append(" ").append(array[5]).append(NEWLINE_HTML)
-                .append("<b>Разгрузка: </b>").append(array[6]).append(" ").append(array[7]).append(NEWLINE_HTML);
-                //.append("<b>Склад: </b>").append(array[8]).append(" ").append(array[9]);
-        /*for (int i = 10; i < array.length; i += 14) {
-            StringBuilder sbProd = new StringBuilder();
-            sbProd.append("<br><b>Товар</b>: ")
-                    .append(array[i])
-                    .append(" ")
-                    .append(array[i + 1])
-                    .append("<br><b>Упаковок</b> ")
-                    .append(array[i + 2])
-                    .append(", <b>штук</b> ")
-                    .append(array[i + 3]);
-            sb.append(sbProd.toString());*//*
-        }*/
+                .append("<b>Клиент: </b>").append(request.getContrAgentCode()).append(" ").append(request.getContrAgentName()).append(NEWLINE_HTML)
+                .append("<b>Разгрузка: </b>").append(request.getSalePointCode()).append(" ").append(request.getSalePointName()).append(NEWLINE_HTML);
         return sb.toString();
     }
 
-    public static String parseRequestFully(String request) {
-        String[] array = request.split(";");
+    public static String toReportVerboseString(List<Request> requests) {
+        Request request = requests.get(0);
         StringBuilder sb = new StringBuilder();
         sb.append("ЗАЯВКА\n")
-                .append("ID: ").append(array[0]).append(NEWLINE)
-                .append("Менеджер: ").append(array[1]).append(NEWLINE)
-                .append("Дата: ").append(array[2]).append(NEWLINE)
-                .append("Реклама: ").append(array[3]).append(NEWLINE)
-                .append("Клиент: ").append(array[4]).append(" ").append(array[5]).append(NEWLINE)
-                .append("Разгрузка: ").append(array[6]).append(" ").append(array[7]).append(NEWLINE)
-                .append("Склад: ").append(array[8]).append(" ").append(array[9]).append(NEWLINE);
-        for (int i = 10; i < array.length; i += 15) {
+                .append("ID: ").append(request.getId()).append(NEWLINE)
+                .append("Менеджер: ").append(request.getManager()).append(NEWLINE)
+                .append("Дата: ").append(Request.getDateFormat().format(request.getDate())).append(NEWLINE)
+                .append("Реклама: ").append(request.getIsCommercial()).append(NEWLINE)
+                .append("Клиент: ").append(request.getContrAgentCode()).append(" ").append(request.getContrAgentName()).append(NEWLINE)
+                .append("Разгрузка: ").append(request.getSalePointCode()).append(" ").append(request.getSalePointName()).append(NEWLINE)
+                .append("Склад: ").append(request.getStorehouseCode()).append(" ").append(request.getStorehouseName()).append(NEWLINE);
+        for (Request r : requests) {
             StringBuilder sbProd = new StringBuilder();
             sbProd.append("Товар: ")
-                    .append(array[i])
+                    .append(r.getProductCode())
                     .append(" ")
-                    .append(array[i + 1]).append(NEWLINE)
+                    .append(r.getProductName()).append(NEWLINE)
                     .append("упаковок ")
-                    .append(array[i + 2]).append(NEWLINE)
+                    .append(decimalFormat.format(r.getProductPacksCount())).append(NEWLINE)
                     .append("штук ")
-                    .append(array[i + 3]).append(NEWLINE);
+                    .append(r.getProductCount()).append(NEWLINE);
             sb.append(sbProd.toString());
         }
-        sb.append("Комментарий: ").append(array[array.length-1]);
+        sb.append("Комментарий: ").append(request.getComment());
         return sb.toString();
     }
 
@@ -214,26 +197,6 @@ public class Request {
 
     public String getComment() {
         return comment;
-    }
-
-    public String toStringForSending() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(id).append(SEPARATOR)
-                .append(manager).append(SEPARATOR)
-                .append(date).append(SEPARATOR)
-                .append(isCommercial).append(SEPARATOR)
-                .append(contrAgentCode).append(SEPARATOR)
-                .append(contrAgentName).append(SEPARATOR)
-                .append(salePointCode).append(SEPARATOR)
-                .append(salePointName).append(SEPARATOR)
-                .append(storehouseCode).append(SEPARATOR)
-                .append(storehouseName).append(SEPARATOR)
-                .append(productCode).append(SEPARATOR)
-                .append(productName).append(SEPARATOR)
-                .append(productPacksCount).append(SEPARATOR)
-                .append(productCount).append(SEPARATOR)
-                .append(comment == null ||  comment.equals("") ? " " : comment);
-        return sb.toString();
     }
 
 }

@@ -12,7 +12,6 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -22,7 +21,6 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -38,22 +36,16 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.URL;
-import java.net.URLConnection;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -129,7 +121,6 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
     InputMethodManager imm;
 
     private String lastValueProductFilter;
-    private String lastValueClientsFilter;
     private Gson gson;
 
     ProgressDialog mProgressDialog;
@@ -438,63 +429,6 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         refreshFinalView();
     }
 
-    private class UpdateVersionTask1 extends AsyncTask<String, Integer, String> {
-        @Override
-        protected String doInBackground(String... sUrl) {
-            try {
-
-
-                // download the file
-                //SmbFile smbFile = new SmbFile("smb://" + "80.249.87.247/AndroidExchange/apk/ice.apk");
-                //int fileLength = smbFile.getContentLength();
-
-                //SmbFileInputStream input = new SmbFileInputStream(smbFile);
-                //FileOutputStream output = new FileOutputStream("1newice.apk");
-
-                URL url = new URL("http://lib.ru/TOLKIEN/vlastelin1.txt");
-                URLConnection connection = url.openConnection();
-                connection.connect();
-                // this will be useful so that you can show a typical 0-100% progress bar
-                int fileLength = connection.getContentLength();
-
-                // download the file
-                InputStream input = new BufferedInputStream(url.openStream());
-                OutputStream output = new FileOutputStream("/sdcard/file_name.extension");
-
-
-                byte data[] = new byte[1024];
-                long total = 0;
-                int count;
-                while ((count = input.read(data)) != -1) {
-                    total += count;
-                    // publishing the progress....
-                    publishProgress((int) (total * 100 / fileLength));
-                    output.write(data, 0, count);
-                }
-
-                output.flush();
-                output.close();
-                input.close();
-            } catch (Exception e) {
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            Toast.makeText(getApplicationContext(), "preex", Toast.LENGTH_SHORT).show();
-            mProgressDialog.show();
-        }
-
-        /*@Override
-        protected void onProgressUpdate(Integer... progress) {
-            super.onProgressUpdate(progress);
-            mProgressDialog.setProgress(progress[0]);
-        }*/
-    }
-
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -642,28 +576,10 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         Intent intent = getIntent();
         finish();
         startActivity(intent);
-        /*setDefaultStorehouse();
-        contrAgent = null;
-        contrAgentTextView.setText("");
-        textViewContrAgentRelationship.setText("");
-        salePoint = null;
-        salePointTextView.setText("");*//*
-        String s = "test";
-        for (Integer id : selectedProducts.keySet()) {
-            s = s.concat(" " + id.toString());
-            //Toast.makeText(getApplicationContext(), id, Toast.LENGTH_SHORT).show();
-*//*
-            LinearLayout productLayout = (LinearLayout) findViewById(id);
-            ((LinearLayout)productLayout.getParent()).removeView(productLayout);*//*
-        }
-        Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
-        //selectedProducts = new HashMap<Integer, Product>();
-        //refreshFinalView();*/
     }
 
     private void addProduct() {
         int width = (findViewById(R.id.buttonStorehouses)).getWidth();
-        //ViewGroup.LayoutParams tempParams;
 
         //полный лайоут товара (для его удаления, если что)
         LinearLayout layout = (LinearLayout) findViewById(R.id.layoutProducts);
@@ -692,10 +608,8 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         productButton.setId(2000 + productCountIds++); //1
         layoutProductButton.addView(productButton);
         //setting width for button
-        //tempParams = productButton.getLayoutParams();
         productButton.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT, 3));
-        //productButton.setLayoutParams(tempParams);
 
         //кнопка "Удалить товар"
         Button deleteProductButton = new Button(this);
@@ -706,8 +620,6 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         //setting width for button
         deleteProductButton.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT, 2));
-        //deleteProductButton.setLayoutParams(tempParams);
-
 
         //textView с информацией по товару
         TextView textView = new TextView(this);
@@ -729,39 +641,8 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         editTextProductPacksCount.setFocusableInTouchMode(true);
         layoutProductCount.addView(editTextProductPacksCount);
         //setting width
-        //tempParams = editTextProductPacksCount.getLayoutParams();
-        //tempParams.width = width;
-        //editTextProductPacksCount.setLayoutParams(tempParams);
         editTextProductPacksCount.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-        /*editTextProductPacksCount.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Editable editable = ((EditText) view).getText();
-                if (editable == null || editable.toString() == null || editable.toString().equals("")) {
-                    return;
-                }
-                int packs;
-                try {
-                packs = Integer.parseInt(editable.toString());
-                } catch (NumberFormatException e) {
-                    writeFileSD("errorMain", new Date() + "\n\r" + e.toString());
-                    return;
-                }
-                Product p = selectedProducts.get(view.getId() - 4);
-                EditText editTextRest = (EditText) findViewById(view.getId() + 1);
-                int count = packs * p.getCountInPack();
-                editTextRest.setText(String.valueOf(count));
-                p.setPacks(String.valueOf(packs));
-                p.setRest(String.valueOf(count));
-                selectedProducts.put(view.getId() - 4, p);
-
-                TextView textView = (TextView) findViewById(view.getId() - 1);
-                textView.setText(p.getTextViewText());
-
-                refreshFinalView();
-            }
-        });*/
         editTextProductPacksCount.setEnabled(false);
         editTextProductPacksCount.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View view, int keyCode, KeyEvent event) {
@@ -783,18 +664,6 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                     Product p = selectedProducts.get(view.getId() - 4);
                     EditText editTextRest = (EditText) findViewById(view.getId() + 1);
                     int count = (int) packs * p.getCountInPack();
-
-                    /*//проверка на количество на складе
-                    if (Integer.parseInt(p.getStorehouseRest()) < count) {
-                        Toast.makeText(getApplicationContext(),
-                                "Недостаточно остатков на складе",
-                                Toast.LENGTH_SHORT).show();
-                        ((EditText) view).setText("");
-                        editTextRest.setText("");
-                        view.requestFocus();
-                        return true;
-                    }*/
-
 
                     editTextRest.setText(String.valueOf(count));
                     p.setPacks(packs);
@@ -828,42 +697,13 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         editTextProductCount.setFocusableInTouchMode(true);
         layoutProductCount.addView(editTextProductCount);
         //setting width
-        //tempParams = editTextProductCount.getLayoutParams();
-        //tempParams.width = width;
-        //editTextProductCount.setLayoutParams(tempParams);
         editTextProductCount.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-        /*editTextProductCount.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Editable editable = ((EditText) view).getText();
-                if (editable == null || editable.toString() == null || editable.toString().equals("")) {
-                    return;
-                }
-                int count = Integer.parseInt(editable.toString());
-                Product p = selectedProducts.get(view.getId() - 5);
-                EditText editTextPacks = (EditText) findViewById(view.getId() - 1);
-                double packs = (double)count / p.getCountInPack();
-                //editTextPacks.setText(String.valueOf(packs));
-                DecimalFormat df = new DecimalFormat("0.00");
-                String packsString = df.format(packs).replaceAll(",", ".");
-                editTextPacks.setText(packsString);
-                p.setPacks(packsString);
-                p.setRest(String.valueOf(count));
-                selectedProducts.put(view.getId() - 5, p);
-
-                TextView textView = (TextView) findViewById(view.getId() - 2);
-                textView.setText(p.getTextViewText());
-
-                refreshFinalView();
-            }
-        });*/
         editTextProductCount.setEnabled(false);
         editTextProductCount.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View view, int keyCode, KeyEvent event) {
                 // If the event is a key-down event on the "enter" button
 
-                //try {
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
                         (keyCode == KeyEvent.KEYCODE_ENTER)) {
                     // Perform action on key press
@@ -897,9 +737,6 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                     refreshFinalView();
                     return true;
                 }
-                /*}catch (Exception e) {
-                    writeFileSD("err", joinStackTrace(e));
-                }*/
                 return false;
             }
         });
@@ -955,12 +792,14 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
                 printer.println(e);
                 StackTraceElement[] trace = e.getStackTrace();
-                for (int i = 0; i < trace.length; i++)
-                    printer.println("\tat " + trace[i]);
+                for (StackTraceElement aTrace : trace) {
+                    printer.println("\tat " + aTrace);
+                }
 
                 e = e.getCause();
-                if (e != null)
+                if (e != null) {
                     printer.println("Caused by:\r\n");
+                }
             }
         } finally {
             if (printer != null)
@@ -1311,7 +1150,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             }
             if (contragentsDate == null || localContragentsDate == null || localContragentsDate.after(contragentsDate)) {
                 // открываем поток для чтения
-                InputStreamReader isr = new InputStreamReader(openFileInput(StaticFileNames.CLIENTS_CSV_SD), "CP-1251");  //new FileInputStream(sdFile), "CP-1251");
+                InputStreamReader isr = new InputStreamReader(openFileInput(StaticFileNames.CLIENTS_CSV_SD), "CP-1251");
                 BufferedReader br = new BufferedReader(isr);
                 String string;
                 String stringArray[];
@@ -1486,6 +1325,5 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             e.printStackTrace();
         }
     }
-
 
 }

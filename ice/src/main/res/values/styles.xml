@@ -6,16 +6,23 @@
             res/values-vXX/styles.xml, while customizations related to
             backward-compatibility can go here.
         -->
-        <item name="android:actionBarStyle">@style/customActionBar</item>
+        <item name="android:actionBarStyle">@style/AppBaseTheme.CustomActionBar</item>
     </style>
 
-    <style name="customActionBar" parent="android:Widget.Holo.Light.ActionBar">
+    <style name="AppBaseTheme.CustomActionBar" parent="android:Widget.Holo.Light.ActionBar">
         <item name="android:background">@color/action_bar_indigo</item>
-        <item name="android:titleTextStyle">@style/customTheme.ActionBar.Text</item>
+        <item name="android:titleTextStyle">@style/AppBaseTheme.CustomActionBar.Text</item>
     </style>
 
-    <style name="customTheme.ActionBar.Text" parent="@android:style/TextAppearance">
+    <style name="AppBaseTheme.CustomActionBar.Text" parent="@android:style/TextAppearance">
         <item name="android:textColor">@color/actionBarTextColor</item>
         <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="AppBaseTheme.DatePickerText">
+        <item name="android:textSize">@dimen/date_pick_text_size</item>
+        <item name="android:textColor">@color/datePickTextColor</item>
+        <item name="android:padding">@dimen/date_pick_padding</item>
+        <item name="android:background">?android:selectableItemBackground</item>
     </style>
 </resources>

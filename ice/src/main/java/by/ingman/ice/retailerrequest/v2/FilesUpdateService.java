@@ -1,8 +1,6 @@
 package by.ingman.ice.retailerrequest.v2;
 
-import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentValues;
 import android.content.Context;
@@ -24,10 +22,8 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -42,10 +38,8 @@ import by.ingman.ice.retailerrequest.v2.helpers.GsonHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.NotificationsUtil;
 import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
 import by.ingman.ice.retailerrequest.v2.structure.Request;
-import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
-import jcifs.smb.SmbFileOutputStream;
 
 /**
  * Created with IntelliJ IDEA.
@@ -170,7 +164,6 @@ public class FilesUpdateService extends Service {
         } catch (Exception e) {
             notifUtil.showErrorNotification("Ошибка при загрузке данных", "Ошибка загрузки файла данных.");
 
-            //Toast.makeText(that, "Ошибка при загрузке данных. " + e.toString(), Toast.LENGTH_LONG).show();
             notifUtil.dismissFileProgressNotification(StaticFileNames.DEBTS_CSV_SD);
             notifUtil.dismissFileProgressNotification(StaticFileNames.RESTS_CSV_SD);
             notifUtil.dismissFileProgressNotification(StaticFileNames.CLIENTS_CSV_SD);
@@ -192,20 +185,6 @@ public class FilesUpdateService extends Service {
         }
 
         return descr;
-    }
-
-    private void sendNotification(String title, String str) {
-        // TODO move all notifications to NotificationsUtil
-        Notification notif = new Notification(R.drawable.ic_launcher, "\"Ингман\", оповещение",
-                System.currentTimeMillis());
-
-        notif.setLatestEventInfo(this, title, str,
-                PendingIntent.getActivity(that, 0, new Intent(), 0));
-
-        notif.defaults = Notification.DEFAULT_ALL;
-        notif.flags |= Notification.FLAG_AUTO_CANCEL;
-        // отправляем
-        notificationManager.notify(k++, notif);
     }
 
     private Map<String, List<Request>> readUnsentRequests() {
@@ -277,42 +256,8 @@ public class FilesUpdateService extends Service {
         db.update(DBHelper.TABLE_REQUESTS_NAME, cv, "req_id = ?", new String[]{reqId});
     }
 
-    /*private boolean createRemoteRequest(String reqId, String req) throws MalformedURLException {
-        String url = sharedPreferences.getString("androidExchangeNewDirPref", "");
-        if (url.charAt(url.length()-1) != '/') {
-            url = url.concat("/");
-        }
-
-        SmbFile smbFile = new SmbFile("smb://" + url +  reqId + ".tmp");
-        SmbFile csvFile = new SmbFile("smb://" + url +  reqId + ".csv");
-
-
-        try {
-            if (!smbFile.exists()) {
-                smbFile.createNewFile();
-            }
-            SmbFileOutputStream smbfos = new SmbFileOutputStream(smbFile);
-            smbfos.write(req.getBytes("windows-1251"));
-
-            smbfos.close();
-            smbFile.copyTo(csvFile);
-            if (smbFile.getContentLength() == 0 || csvFile.getContentLength() != smbFile.getContentLength()) {
-                throw new IOException("file creating error");
-            }
-            smbFile.delete();
-        } catch (Exception e) {
-            try {
-                smbFile.delete();
-                csvFile.delete();
-            } catch (SmbException se) {
-            }
-            return false;
-        }
-        sendNotification("Заявка отправлена", "");
-        return true;
-    }*/
-
-    private void readRemoteAnswer(String filename) {
+    private void readRemoteAnswer(String requestId) {
+        String filename = requestId;
         try {
             String url = sharedPreferences.getString("androidExchangeOutDirPref", "");
             if (url.charAt(url.length() - 1) != '/') {
@@ -329,6 +274,8 @@ public class FilesUpdateService extends Service {
                 fileContent.append(new String(buffer, "windows-1251"));
             is.close();
 
+            Request requestSingle = dbHelper.getSingleRequestByRequestId(requestId);
+
             ContentValues cv = new ContentValues();
             cv.put("is_req", 0);
             cv.put("req_id", filename);
@@ -336,7 +283,8 @@ public class FilesUpdateService extends Service {
             cv.put("req", fileContent.toString());
             cv.put("sent", 0);
             db.insert(DBHelper.TABLE_REQUESTS_NAME, null, cv);
-            sendNotification("Получен ответ на заявку", "");
+
+            notifUtil.showResponseNotification(requestSingle);
         } catch (Exception e) {
             //writeFileSD("errorService", new Date() + "\n\r" + e.toString());
         }
@@ -353,10 +301,6 @@ public class FilesUpdateService extends Service {
                 try {
                     //updating public files from remote db
                     updatePubFiles();
-                    ///sendNotification("check pub");
-
-
-                    //reading unsent requests
                     Map<String, List<Request>> requests = readUnsentRequests();
 
                     //sending unsent requests and marking as sent
@@ -366,7 +310,7 @@ public class FilesUpdateService extends Service {
                         boolean success = requestDao.batchAddRequests(list);
                         if (success) {
                             markRequestSent(reqId);
-                            // TODO show notification
+
                             if (list.size() > 0) { // just make sure, though else case should not be possible
                                 Request reqInfo = list.get(0);
                                 notifUtil.showRequestSentNotification(reqInfo);
@@ -376,21 +320,18 @@ public class FilesUpdateService extends Service {
 
                     // вычитать отправленные заявки на сегодня без ответа
                     ArrayList<String> sentRequestIds = readSentRequestIdsWithoutAnswer();
-                    //writeFileSD("ssstest","swa " + sentRequestIds.size() + sentRequestIds.get(0) + "    " + sentRequestIds.get(1));
                     // для каждой поискать ответ в удалённой бд
                     // и если есть, записать его в базу и вывести оповещение
                     for (String reqId : sentRequestIds) {
                         readRemoteAnswer(reqId);
                     }
 
-                    //int secSleep = sharedPreferences.getInt("androidUpdateSecPref", 30);
                     TimeUnit.SECONDS.sleep(30);
 
 
                 } catch (Exception e) {
                     //writeFileSD("error", e.toString());
                     try {
-                        //int secSleep = sharedPreferences.getInt("androidUpdateSecPref", 30);
                         TimeUnit.SECONDS.sleep(30);
                     } catch (InterruptedException e1) {
                         //writeFileSD("errorService", new Date() + "\n\r" + e.toString());

@@ -47,6 +47,8 @@ public class ApkUpdateActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.apkupdate);
 
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
@@ -64,7 +66,6 @@ public class ApkUpdateActivity extends Activity {
 
                     SmbFileInputStream is = new SmbFileInputStream(smbFile);
 
-                    //file.createNewFile();
                     FileOutputStream fos = openFileOutput("ice.apk", Context.MODE_WORLD_READABLE);//new FileOutputStream(getApplicationContext().getFilesDir().getPath() + "/ice.apk");
 
                     byte buffer[] = new byte[8192];

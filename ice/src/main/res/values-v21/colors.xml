@@ -2,4 +2,8 @@
 <resources>
     <color name="action_bar_indigo">#3F51B5</color>
     <color name="actionBarTextColor">@android:color/white</color>
+
+    <color name="themePrimary">@color/action_bar_indigo</color>
+    <color name="themePrimaryDark">#303F9F</color>
+    <color name="themeAccent">#00BFA5</color>
 </resources>

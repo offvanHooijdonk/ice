@@ -3,11 +3,7 @@ package by.ingman.ice.retailerrequest.v2;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -17,11 +13,17 @@ import android.widget.DatePicker;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
+import by.ingman.ice.retailerrequest.v2.helpers.GsonHelper;
 import by.ingman.ice.retailerrequest.v2.structure.Request;
 import by.ingman.ice.retailerrequest.v2.structure.Response;
 
@@ -40,15 +42,20 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
     SQLiteDatabase db;
     DBHelper dbHelper;
     int k = 25;
-    HashMap<String, String> requests = new HashMap<String, String>();
+    Map<String, List<Request>> requests = new HashMap();
     private TextView textDate;
     private Calendar reportDate;
+    private Gson gson;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.requestreport);
 
         that = this;
+
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+
+        gson = GsonHelper.createGson();
 
         mainLayout = (LinearLayout) findViewById(R.id.linearLayoutCAReportMain);
         reqLayout = (LinearLayout) findViewById(R.id.linearLayoutCAReportReq);
@@ -77,10 +84,6 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
     }
 
     private void showRequestsForDate(Date date) {
-        //mainLayout.removeView(reqLayout);
-        //reqLayout = new LinearLayout(this);
-        //mainLayout.addView(reqLayout);
-        //mainLayout = new LinearLayout(this);
         reqLayout.removeAllViews();
         if (requests.size() == 0) {
             TextView textView = new TextView(this);
@@ -90,7 +93,8 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
             for (final String reqId : requests.keySet()) {
                 String s = "";
                 TextView textView = new TextView(RequestReportActivity.this);
-                s = s.concat(Request.parseRequest(requests.get(reqId)));
+
+                s = s.concat(Request.toReportString(requests.get(reqId).get(0)));
 
                 Response response = readResponseByReqId(reqId);
                 if (response == null) {
@@ -110,28 +114,13 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
                                 // continue with delete
                             }
                         });
-                        adb.setMessage(Request.parseRequestFully(requests.get(reqId)));
+                        adb.setMessage(Request.toReportVerboseString(requests.get(reqId)));
                         adb.show();
                     }
                 });
                 reqLayout.addView(textView);
             }
         }
-    }
-
-    private void sendNotification(String str) {
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-        Notification notif = new Notification(R.drawable.ic_launcher, "Text in status bar",
-                System.currentTimeMillis());
-
-        notif.setLatestEventInfo(this, "Notification's title", str,
-                PendingIntent.getActivity(getApplicationContext(), 0, new Intent(), 0));
-
-        notif.defaults = Notification.DEFAULT_ALL;
-        notif.flags |= Notification.FLAG_AUTO_CANCEL;
-        // отправляем
-        notificationManager.notify(k++, notif);
     }
 
     private Response readResponseByReqId(String reqId) {
@@ -152,17 +141,17 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
                     }
                 }
             }
+            answersCursor.close();
         }
-        answersCursor.close();
         return response;
     }
 
-    private HashMap<String, String> readRequestsForDate(Date date) {
+    private Map<String, List<Request>> readRequestsForDate(Date date) {
         String selection = "is_req>0 and date=\"" + Request.getDateFormat().format(date) + "\"";
         Cursor c = db.query(DBHelper.TABLE_REQUESTS_NAME, null, selection, null, null, null, null);
         String reqId = "";
         String req = "";
-        HashMap<String, String> requests = new HashMap<String, String>();
+        Map<String, List<Request>> requests = new HashMap<>();
 
         if (c != null) {
             if (c.moveToFirst()) {
@@ -175,14 +164,11 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
                             reqId = c.getString(c.getColumnIndex(columnName));
                         }
                     }
-                    if (requests.containsKey(reqId)) {
-                        String banch = requests.get(reqId);
-                        banch = banch.concat(";");
-                        banch = banch.concat(req);
-                        requests.put(reqId, banch);
-                    } else {
-                        requests.put(reqId, req);
+                    Request request = gson.fromJson(req, Request.class);
+                    if (!requests.containsKey(reqId)) {
+                        requests.put(reqId, new ArrayList<Request>());
                     }
+                    requests.get(reqId).add(request);
                 } while (c.moveToNext());
             }
             c.close();

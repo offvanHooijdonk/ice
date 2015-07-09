@@ -27,7 +27,8 @@
         <activity
             android:name="by.ingman.ice.retailerrequest.v2.MainActivity"
             android:configChanges="keyboardHidden|orientation"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -35,17 +36,19 @@
         </activity>
         <activity
             android:name="by.ingman.ice.retailerrequest.v2.PrefActivity"
-            android:label="@string/menu_settings">
+            android:label="@string/menu_settings"
+            android:parentActivityName=".MainActivity">
         </activity>
-        <activity android:name="by.ingman.ice.retailerrequest.v2.ContragentsReportActivity"/>
         <activity
             android:name="by.ingman.ice.retailerrequest.v2.RequestReportActivity"
-            android:label="@string/menu_report"/>
+            android:label="@string/menu_report"
+            android:parentActivityName=".MainActivity"/>
         <activity
             android:name="by.ingman.ice.retailerrequest.v2.ApkUpdateActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/menu_refresh"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MainActivity"/>
 
         <service android:name="by.ingman.ice.retailerrequest.v2.FilesUpdateService"/>
     </application>

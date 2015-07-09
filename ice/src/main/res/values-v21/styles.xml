@@ -6,15 +6,21 @@
             res/values-vXX/styles.xml, while customizations related to
             backward-compatibility can go here.
         -->
-        <item name="android:actionBarStyle">@style/customActionBar</item>
+        <item name="android:actionBarStyle">@style/AppBaseTheme.CustomActionBar</item>
+        <item name="android:colorPrimary">@color/themePrimary</item>
+        <!--   darker variant for the status bar and contextual app bars -->
+        <item name="android:colorPrimaryDark">@color/themePrimaryDark</item>
+        <!--   theme UI controls like checkboxes and text fields -->
+        <item name="android:colorAccent">@color/themeAccent</item>
+        <item name="android:statusBarColor">@color/themePrimaryDark</item>
     </style>
 
-    <style name="customActionBar" parent="android:Widget.Material.Light.ActionBar">
+    <style name="AppBaseTheme.CustomActionBar" parent="android:Widget.Material.Light.ActionBar">
         <item name="android:background">@color/action_bar_indigo</item>
-        <item name="android:titleTextStyle">@style/customTheme.ActionBar.Text</item>
+        <item name="android:titleTextStyle">@style/AppBaseTheme.CustomActionBar.Text</item>
     </style>
 
-    <style name="customTheme.ActionBar.Text" parent="@android:style/TextAppearance">
+    <style name="AppBaseTheme.CustomActionBar.Text" parent="@android:style/TextAppearance">
         <item name="android:textColor">@color/actionBarTextColor</item>
         <item name="android:textSize">20sp</item>
     </style>
