@@ -8,20 +8,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 
 import com.google.gson.Gson;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -286,7 +278,7 @@ public class FilesUpdateService extends Service {
 
             notifUtil.showResponseNotification(requestSingle);
         } catch (Exception e) {
-            //writeFileSD("errorService", new Date() + "\n\r" + e.toString());
+            // TODO log
         }
 
     }
@@ -330,57 +322,16 @@ public class FilesUpdateService extends Service {
 
 
                 } catch (Exception e) {
-                    //writeFileSD("error", e.toString());
+                    //TODO log
                     try {
                         TimeUnit.SECONDS.sleep(30);
                     } catch (InterruptedException e1) {
-                        //writeFileSD("errorService", new Date() + "\n\r" + e.toString());
+                        //TODO log
                     }
                 }
             }
         }
 
-
-        void stop() {
-        }
     }
 
-    private void writeFileSD(String name, String data) {
-        // проверяем доступность SD
-        if (!Environment.getExternalStorageState().equals(
-                Environment.MEDIA_MOUNTED)) {
-            return;
-        }
-        // получаем путь к SD
-        File sdPath = Environment.getExternalStorageDirectory();
-        // добавляем свой каталог к пути
-        sdPath = new File(sdPath.getAbsolutePath() + "/");// + DIR_SD);
-        // формируем объект File, который содержит путь к файлу
-        File sdFile = new File(sdPath, name + ".csv");
-        try {
-            if (!sdFile.exists()) {
-                sdFile.createNewFile();
-            }
-            InputStreamReader isr = new InputStreamReader(new FileInputStream(sdFile), "CP-1251");
-            BufferedReader br = new BufferedReader(isr);
-            String string;
-            String res = "";
-            // читаем содержимое
-            while ((string = br.readLine()) != null) {
-                res = res.concat(string);
-            }
-            isr.close();
-            br.close();
-            // открываем поток для записи
-            BufferedWriter bw = new BufferedWriter(new FileWriter(sdFile));
-            // пишем данные
-            bw.write(res);
-            bw.newLine();
-            bw.write(data);
-            // закрываем поток
-            bw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }
