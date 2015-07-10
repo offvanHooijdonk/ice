@@ -13,7 +13,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.InputType;
@@ -36,16 +35,12 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 
+import org.apache.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -56,6 +51,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 
+import by.ingman.ice.retailerrequest.v2.helpers.ConfigureLog4J;
 import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.GsonHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
@@ -125,19 +121,23 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
     ProgressDialog mProgressDialog;
 
+    static {
+        ConfigureLog4J.configure();
+    }
+
+    private final Logger log = Logger.getLogger(MainActivity.class);
 
     /**
      * Called when the activity is first created.
      */
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //установка лайоута
         setContentView(R.layout.main);
 
         that = this;
 
         PreferenceManager.setDefaultValues(that, R.xml.pref, false);
-        //создаем dbhelper
+
         dbHelper = new DBHelper(this);
 
         gson = GsonHelper.createGson();
@@ -435,30 +435,26 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
     }
 
     public void onclick(View v) {
-        try {
-            switch (v.getId()) {
-                case R.id.buttonContrAgentsDialog:
-                    readContrAgentsFromSD();
-                    readDebtsFromSD();
-                    showDialog(DIALOG_CONTRAGENTS);
-                    break;
-                case R.id.buttonSalespoints:
-                    showDialog(DIALOG_SALESPOINTS);
-                    break;
-                case R.id.buttonStorehouses:
-                    readStorehousesAndProductsFromSD();
-                    showDialog(DIALOG_STOREHOUSES);
-                    break;
-                case R.id.buttonAddProduct:
-                    addProduct();
-                    break;
-                case R.id.buttonSendRequest:
-                    sendRequest();
-                default:
-                    break;
-            }
-        } catch (Exception e) {
-            writeFileSD("errorMain", new Date() + "\n\r" + joinStackTrace(e));
+        switch (v.getId()) {
+            case R.id.buttonContrAgentsDialog:
+                readContrAgentsFromSD();
+                readDebtsFromSD();
+                showDialog(DIALOG_CONTRAGENTS);
+                break;
+            case R.id.buttonSalespoints:
+                showDialog(DIALOG_SALESPOINTS);
+                break;
+            case R.id.buttonStorehouses:
+                readStorehousesAndProductsFromSD();
+                showDialog(DIALOG_STOREHOUSES);
+                break;
+            case R.id.buttonAddProduct:
+                addProduct();
+                break;
+            case R.id.buttonSendRequest:
+                sendRequest();
+            default:
+                break;
         }
     }
 
@@ -500,7 +496,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                 clearForm();
             }
         } catch (Exception e) {
-            writeFileSD("errorMain", new Date() + "\n\r" + joinStackTrace(e));
+            log.error("Error saving request to local DB.", e);
         }
 
     }
@@ -568,7 +564,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             getFileStreamPath(StaticFileNames.RESTS_CSV_SD + "temp").renameTo(getFileStreamPath(StaticFileNames.RESTS_CSV_SD));
 
         } catch (Exception e) {
-            writeFileSD("errorMain", new Date() + "\n\r" + joinStackTrace(e));
+            log.error("Error updating local rests", e);
         }
     }
 
@@ -658,7 +654,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                     try {
                         packs = Double.valueOf(editable.toString());
                     } catch (NumberFormatException e) {
-                        writeFileSD("errorMain", new Date() + "\n\r" + joinStackTrace(e));
+                        log.error("Error converting packs count to number", e);
                         return false;
                     }
                     Product p = selectedProducts.get(view.getId() - 4);
@@ -764,47 +760,6 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         layout.removeView(buttonAddProduct);
         layout.addView(buttonAddProduct);
 
-    }
-
-
-    public static String joinStackTrace(Throwable e) {
-        StringWriter writer = null;
-        try {
-            writer = new StringWriter();
-            joinStackTrace(e, writer);
-            return writer.toString();
-        } finally {
-            if (writer != null)
-                try {
-                    writer.close();
-                } catch (IOException e1) {
-                    // ignore
-                }
-        }
-    }
-
-    public static void joinStackTrace(Throwable e, StringWriter writer) {
-        PrintWriter printer = null;
-        try {
-            printer = new PrintWriter(writer);
-
-            while (e != null) {
-
-                printer.println(e);
-                StackTraceElement[] trace = e.getStackTrace();
-                for (StackTraceElement aTrace : trace) {
-                    printer.println("\tat " + aTrace);
-                }
-
-                e = e.getCause();
-                if (e != null) {
-                    printer.println("Caused by:\r\n");
-                }
-            }
-        } finally {
-            if (printer != null)
-                printer.close();
-        }
     }
 
 
@@ -1167,7 +1122,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                 br.close();
             }
         } catch (Exception e) {
-            writeFileSD("errorMain", new Date() + "\n\r" + joinStackTrace(e));
+            log.error("Error reading contragents from file", e);
         }
     }
 
@@ -1240,7 +1195,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                 br.close();
             }
         } catch (Exception e) {
-            writeFileSD("errorMain", new Date() + "\n\r" + joinStackTrace(e));
+            log.error("Error reading stoks and products from file.");
         }
     }
 
@@ -1283,46 +1238,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                 br.close();
             }
         } catch (Exception e) {
-            writeFileSD("errorMain", new Date() + "\n\r" + joinStackTrace(e));
-        }
-    }
-
-
-    private void writeFileSD(String name, String data) {
-        // проверяем доступность SD
-        if (!Environment.getExternalStorageState().equals(
-                Environment.MEDIA_MOUNTED)) {
-            return;
-        }
-        // получаем путь к SD
-        File sdPath = Environment.getExternalStorageDirectory();
-        // добавляем свой каталог к пути
-        sdPath = new File(sdPath.getAbsolutePath() + "/");// + DIR_SD);
-        // формируем объект File, который содержит путь к файлу
-        File sdFile = new File(sdPath, name + ".csv");
-        try {
-            if (!sdFile.exists()) {
-                sdFile.createNewFile();
-            }
-            InputStreamReader isr = new InputStreamReader(new FileInputStream(sdFile), "UTF-8");
-            BufferedReader br = new BufferedReader(isr);
-            String string;
-            String res = "";
-            // читаем содержимое
-            while ((string = br.readLine()) != null) {
-                res = res.concat(string);
-            }
-            isr.close();
-            br.close();
-            // открываем поток для записи
-            BufferedWriter bw = new BufferedWriter(new FileWriter(sdFile));
-            // пишем данные
-            bw.write(res + "\n\r");
-            bw.write(data);
-            // закрываем поток
-            bw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error reading debts from file", e);
         }
     }
 

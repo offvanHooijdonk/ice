@@ -2,6 +2,8 @@ package by.ingman.ice.retailerrequest.v2.dao.remote;
 
 import android.content.Context;
 
+import org.apache.log4j.Logger;
+
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -14,6 +16,7 @@ import by.ingman.ice.retailerrequest.v2.structure.Request;
  * Created by off on 07.07.2015.
  */
 public class RequestDao {
+    private final Logger log = Logger.getLogger(RequestDao.class);
 
     private Context ctx;
 
@@ -39,6 +42,7 @@ public class RequestDao {
                 stat.executeBatch();
                 success = true;
             } catch (Exception e) {
+                log.error("Error batch inserting request to remote DB.", e);
                 success = false;
                 try {
                     if (conn.isClosed()) {
@@ -46,7 +50,7 @@ public class RequestDao {
                         conn.close();
                     }
                 } catch (SQLException e1) {
-                    // TODO log
+                    log.error("Error closing connection to remote DB after insert failure.", e1);
                 }
             } finally {
                 try {
@@ -59,11 +63,12 @@ public class RequestDao {
                         conn.close();
                     }
                 } catch (SQLException e) {
-                    // TODO log
+                    log.error("Error closing connection to remote DB after successful insert.", e);
                 }
             }
         } else {
             success = false;
+            log.error("Connection to remote DB is null.");
         }
 
         return success;
@@ -92,8 +97,7 @@ public class RequestDao {
         try {
             conn = c.getConnection();
         } catch (SQLException e) {
-            // TODO log
-            e.printStackTrace();
+            log.error("Error getting connection to remote DB with url " + c.getConnectionURL(), e);
         }
 
         return conn;

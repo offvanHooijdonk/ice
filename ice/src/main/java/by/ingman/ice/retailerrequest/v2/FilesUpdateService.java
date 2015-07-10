@@ -13,6 +13,8 @@ import android.preference.PreferenceManager;
 
 import com.google.gson.Gson;
 
+import org.apache.log4j.Logger;
+
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +43,7 @@ import jcifs.smb.SmbFileInputStream;
  * To change this template use File | Settings | File Templates.
  */
 public class FilesUpdateService extends Service {
+    private final Logger log = Logger.getLogger(FilesUpdateService.class);
 
     ExecutorService executorService;
     NotificationManager notificationManager;
@@ -71,9 +74,9 @@ public class FilesUpdateService extends Service {
         requestDao = new RequestDao(that);
         executorService = Executors.newFixedThreadPool(1);
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        dbHelper = new DBHelper(this);
+        dbHelper = new DBHelper(that);
         db = dbHelper.getWritableDatabase();
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(that);
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -154,6 +157,7 @@ public class FilesUpdateService extends Service {
                 }
             }
         } catch (Exception e) {
+            log.error("Error loading gdata files", e);
             notifUtil.showErrorNotification("Ошибка при загрузке данных", "Ошибка загрузки файла данных.");
 
             notifUtil.dismissFileProgressNotification(StaticFileNames.DEBTS_CSV_SD);
@@ -278,7 +282,7 @@ public class FilesUpdateService extends Service {
 
             notifUtil.showResponseNotification(requestSingle);
         } catch (Exception e) {
-            // TODO log
+            log.error("Error reading remote answer.", e);
         }
 
     }
@@ -322,11 +326,11 @@ public class FilesUpdateService extends Service {
 
 
                 } catch (Exception e) {
-                    //TODO log
+                    log.error("Error in file updating thread", e);
                     try {
                         TimeUnit.SECONDS.sleep(30);
                     } catch (InterruptedException e1) {
-                        //TODO log
+                        log.error("Error while putting service thread to sleep", e1);
                     }
                 }
             }

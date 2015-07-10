@@ -42,7 +42,7 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
     SQLiteDatabase db;
     DBHelper dbHelper;
     int k = 25;
-    Map<String, List<Request>> requests = new HashMap();
+    Map<String, List<Request>> requests = new HashMap<>();
     private TextView textDate;
     private Calendar reportDate;
     private Gson gson;
