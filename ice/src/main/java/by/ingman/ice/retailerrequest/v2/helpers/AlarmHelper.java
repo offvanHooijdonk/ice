@@ -19,7 +19,7 @@ public class AlarmHelper {
     private static SharedPreferences sharedPreferences;
 
     public static void createExchangeAlarm(Context ctx) {
-        int intervalSec = getSharedPreferences(ctx).getInt("exchangeFrequency", 30);
+        int intervalSec = Integer.valueOf(getSharedPreferences(ctx).getString("exchangeFrequency", "30"));
         Calendar startTime = Calendar.getInstance();
         startTime.add(Calendar.SECOND, intervalSec);
 

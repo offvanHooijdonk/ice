@@ -1,7 +1,7 @@
 package by.ingman.ice.retailerrequest.v2.remote.exchange;
 
+import android.app.IntentService;
 import android.app.NotificationManager;
-import android.app.Service;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -39,7 +39,7 @@ import jcifs.smb.SmbFileInputStream;
  * Time: 21:32
  * To change this template use File | Settings | File Templates.
  */
-public class ExchangeDataService extends Service {
+public class ExchangeDataService extends IntentService {
     private final Logger log = Logger.getLogger(ExchangeDataService.class);
 
     ExecutorService executorService;
@@ -58,9 +58,22 @@ public class ExchangeDataService extends Service {
     private Gson gson;
     ExchangeUtil util;
 
+    /**
+     * Creates an IntentService.  Invoked by your subclass's constructor.
+     *
+     */
+    public ExchangeDataService() {
+        super("ExchangeDataService");
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    protected void onHandleIntent(Intent intent) {
+        doExchangeData();
     }
 
     public void onCreate() {
@@ -78,15 +91,15 @@ public class ExchangeDataService extends Service {
         util = new ExchangeUtil(that);
     }
 
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        /*FilesUpdateThread filesUpdateThread = new FilesUpdateThread();
-        executorService.execute(filesUpdateThread);*/
+    /*public int onStartCommand(Intent intent, int flags, int startId) {
+        *//*FilesUpdateThread filesUpdateThread = new FilesUpdateThread();
+        executorService.execute(filesUpdateThread);*//*
 
         doExchangeData();
 
         //return super.onStartCommand(intent, flags, startId);
         return START_STICKY;
-    }
+    }*/
 
     private void doExchangeData() {
         try {
