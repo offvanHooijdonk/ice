@@ -1,4 +1,4 @@
-package by.ingman.ice.retailerrequest.v2.dao.remote;
+package by.ingman.ice.retailerrequest.v2.remote.dao;
 
 import android.content.Context;
 

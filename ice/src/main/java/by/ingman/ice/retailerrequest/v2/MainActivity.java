@@ -55,6 +55,7 @@ import by.ingman.ice.retailerrequest.v2.helpers.ConfigureLog4J;
 import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.GsonHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
+import by.ingman.ice.retailerrequest.v2.remote.exchange.ExchangeDataService;
 import by.ingman.ice.retailerrequest.v2.structure.ContrAgent;
 import by.ingman.ice.retailerrequest.v2.structure.ContrAgentList;
 import by.ingman.ice.retailerrequest.v2.structure.Debt;
@@ -145,7 +146,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
         //запускаем сервис обновления файлов
-        startService(new Intent(this, FilesUpdateService.class));
+        startService(new Intent(this, ExchangeDataService.class));
 
         //вычитываем при старте
         readContrAgentsFromSD();

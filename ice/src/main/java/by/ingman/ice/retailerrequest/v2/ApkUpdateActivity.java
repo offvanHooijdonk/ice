@@ -21,7 +21,9 @@ import java.io.FileOutputStream;
 import java.io.NotActiveException;
 import java.util.Arrays;
 
+import by.ingman.ice.retailerrequest.v2.helpers.AlarmHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
+import by.ingman.ice.retailerrequest.v2.remote.exchange.ExchangeDataService;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
 
@@ -38,14 +40,15 @@ public class ApkUpdateActivity extends Activity {
     ProgressBar progressBar;
     ClearTask clearTask;
     ProgressDialog progressDialog;
-
-
+    private Context ctx;
     SharedPreferences sharedPreferences;
 
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.apkupdate);
+
+        this.ctx = this;
 
         getActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -102,7 +105,9 @@ public class ApkUpdateActivity extends Activity {
 
                     displayProgressDialog();
 
-                    stopService(new Intent(getApplicationContext(), FilesUpdateService.class));
+                    //stopService(new Intent(getApplicationContext(), ExchangeDataService.class));
+                    // cancel alarm for the next service call
+                    AlarmHelper.cancelExchangeAlarm(ctx);
 
                     for (String filename : StaticFileNames.getFilenamesArray()) {
                         if (Arrays.asList(fileList()).contains(filename)) {
@@ -129,7 +134,7 @@ public class ApkUpdateActivity extends Activity {
     class ClearTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... integers) {
-            startService(new Intent(getApplicationContext(), FilesUpdateService.class));
+            startService(new Intent(getApplicationContext(), ExchangeDataService.class));
 
             boolean allFilesUpdated = false;
             while (!allFilesUpdated) {

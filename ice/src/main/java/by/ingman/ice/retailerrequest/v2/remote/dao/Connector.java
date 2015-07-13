@@ -1,4 +1,4 @@
-package by.ingman.ice.retailerrequest.v2.dao.remote;
+package by.ingman.ice.retailerrequest.v2.remote.dao;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -26,7 +26,6 @@ public class Connector {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(ctx);
 
         try {
-            //Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             Class.forName("net.sourceforge.jtds.jdbc.Driver");
         } catch (ClassNotFoundException e) {
             log.error("Failed to load remote DB driver", e);

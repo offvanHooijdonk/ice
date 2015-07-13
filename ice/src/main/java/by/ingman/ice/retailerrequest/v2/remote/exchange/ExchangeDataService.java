@@ -1,4 +1,4 @@
-package by.ingman.ice.retailerrequest.v2;
+package by.ingman.ice.retailerrequest.v2.remote.exchange;
 
 import android.app.NotificationManager;
 import android.app.Service;
@@ -19,18 +19,15 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
-import by.ingman.ice.retailerrequest.v2.dao.remote.RequestDao;
+import by.ingman.ice.retailerrequest.v2.helpers.AlarmHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.GsonHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.NotificationsUtil;
 import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
+import by.ingman.ice.retailerrequest.v2.remote.dao.RequestDao;
 import by.ingman.ice.retailerrequest.v2.structure.Request;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
@@ -42,8 +39,8 @@ import jcifs.smb.SmbFileInputStream;
  * Time: 21:32
  * To change this template use File | Settings | File Templates.
  */
-public class FilesUpdateService extends Service {
-    private final Logger log = Logger.getLogger(FilesUpdateService.class);
+public class ExchangeDataService extends Service {
+    private final Logger log = Logger.getLogger(ExchangeDataService.class);
 
     ExecutorService executorService;
     NotificationManager notificationManager;
@@ -59,6 +56,7 @@ public class FilesUpdateService extends Service {
     Date debtDate = null, restsDate = null, clientsDate = null;
 
     private Gson gson;
+    ExchangeUtil util;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -77,14 +75,40 @@ public class FilesUpdateService extends Service {
         dbHelper = new DBHelper(that);
         db = dbHelper.getWritableDatabase();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(that);
+        util = new ExchangeUtil(that);
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
-        FilesUpdateThread filesUpdateThread = new FilesUpdateThread();
-        executorService.execute(filesUpdateThread);
-        return super.onStartCommand(intent, flags, startId);
+        /*FilesUpdateThread filesUpdateThread = new FilesUpdateThread();
+        executorService.execute(filesUpdateThread);*/
+
+        doExchangeData();
+
+        //return super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
     }
 
+    private void doExchangeData() {
+        try {
+            // updating public files from remote db
+            updatePubFiles();
+
+            // send unsent requests
+            util.sendRequests();
+
+            // вычитать отправленные заявки на сегодня без ответа
+            ArrayList<String> sentRequestIds = readSentRequestIdsWithoutAnswer();
+
+            // check for an answer in remote DB and show notification for those having an answer
+            for (String reqId : sentRequestIds) {
+                readRemoteAnswer(reqId);
+            }
+        } catch (Exception e) {
+            log.error("Error in file updating service", e);
+        } finally {
+            AlarmHelper.createExchangeAlarm(this);
+        }
+    }
 
     private Date getDateForFilename(String filename) {
         if (filename.equals(StaticFileNames.RESTS_CSV_SD)) {
@@ -183,40 +207,6 @@ public class FilesUpdateService extends Service {
         return descr;
     }
 
-    private Map<String, List<Request>> readUnsentRequests() {
-        String selection = "sent=0 and is_req>0";
-        Cursor c = db.query(DBHelper.TABLE_REQUESTS_NAME, null, selection, null, null, null, null);
-        String reqId = "";
-        String req = "";
-        Map<String, List<Request>> requests = new HashMap<String, List<Request>>();
-
-        if (c != null) {
-            if (c.moveToFirst()) {
-                do {
-                    for (String columnName : c.getColumnNames()) {
-                        if (columnName.equals("req")) {
-                            req = c.getString(c.getColumnIndex(columnName));
-                        }
-                        if (columnName.equals("req_id")) {
-                            reqId = c.getString(c.getColumnIndex(columnName));
-                        }
-                    }
-                    Request request = gson.fromJson(req, Request.class);
-                    if (requests.containsKey(reqId)) {
-                        requests.get(reqId).add(request);
-                    } else {
-                        List<Request> reqList = new ArrayList<>();
-                        reqList.add(request);
-                        requests.put(reqId, reqList);
-                    }
-                } while (c.moveToNext());
-            }
-            c.close();
-        }
-
-        return requests;
-    }
-
     private ArrayList<String> readSentRequestIdsWithoutAnswer() {
         String selection = "sent>0 and is_req>0";
         Cursor c = db.query(DBHelper.TABLE_REQUESTS_NAME, null, selection, null, null, null, null);
@@ -287,7 +277,7 @@ public class FilesUpdateService extends Service {
 
     }
 
-    class FilesUpdateThread implements Runnable {
+    /*class FilesUpdateThread implements Runnable {
 
         public FilesUpdateThread() {
         }
@@ -314,6 +304,9 @@ public class FilesUpdateService extends Service {
                         }
                     }
 
+                    // send unsent requests
+                    util.sendRequests();
+
                     // вычитать отправленные заявки на сегодня без ответа
                     ArrayList<String> sentRequestIds = readSentRequestIdsWithoutAnswer();
                     // для каждой поискать ответ в удалённой бд
@@ -336,6 +329,6 @@ public class FilesUpdateService extends Service {
             }
         }
 
-    }
+    }*/
 
 }

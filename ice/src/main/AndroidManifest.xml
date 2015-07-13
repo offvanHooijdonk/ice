@@ -51,6 +51,6 @@
             android:screenOrientation="portrait"
             android:parentActivityName=".MainActivity"/>
 
-        <service android:name="by.ingman.ice.retailerrequest.v2.FilesUpdateService"/>
+        <service android:name=".remote.exchange.ExchangeDataService"/>
     </application>
 </manifest>

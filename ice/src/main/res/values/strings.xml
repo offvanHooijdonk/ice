@@ -34,4 +34,24 @@
     <string name="update_data_files_button">Обновить данные по базе</string>
     <string name="update_data_files_disclaimer">Данная функция должна использоваться только для исправления ошибок обновления данных. При наличии связи с Интернетом данные обновляются автоматически.</string>
     <string name="textHintContrAgentFilter">Фильтр контрагентов</string>
+    <string name="pref_default_storehouse_summ">Код склада по умолчанию</string>
+    <string name="pref_manager_db">Пользователь</string>
+    <string name="pref_default_storehouse_title">Код склада</string>
+    <string name="pref_manager_db_summ">Имя менеджера в БД</string>
+    <string name="pref_notif_enable_summ">Включить оповещения об обновлениях базы данных (оповещения о заявках приходят в любом случае)</string>
+    <string name="pref_notif_enable_title">Оповещения об обновлениях</string>
+    <string name="pref_apk_update_folder_summ">Адрес папки обновлений приложения</string>
+    <string name="pref_apk_update_folder">Адрес папки</string>
+    <string name="pref_cat_DB_options_summ">Настройки подключения к удалённой базе заявок</string>
+    <string name="pref_cat_DP_options_title">База данных заявок</string>
+    <string name="pref_screen_sys_options_title">Системные настройки</string>
+    <string name="pref_screen_sys_options_summ">Меняются только при изменении на сервере</string>
+    <string name="pref_db_host_title">Хост (IP/имя)</string>
+    <string name="pref_db_port_title">Порт</string>
+    <string name="pref_db_name_title">Имя базы</string>
+    <string name="pref_db_username_title">Имя пользователя в базе</string>
+    <string name="pref_db_username_summ">Не связано с именем менеджера в приложении</string>
+    <string name="pref_db_password_title">Пароль</string>
+    <string name="pref_exchange_frequency_summ">Время в секундах</string>
+    <string name="pref_exchange_frequency_title">Интервал обновления данных</string>
 </resources>

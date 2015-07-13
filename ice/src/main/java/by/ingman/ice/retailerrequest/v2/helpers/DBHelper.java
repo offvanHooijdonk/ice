@@ -6,6 +6,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import by.ingman.ice.retailerrequest.v2.structure.Request;
 
 /**
@@ -64,5 +69,45 @@ public class DBHelper extends SQLiteOpenHelper {
         cursor.close();
 
         return request;
+    }
+
+    public Map<String, List<Request>> readUnsentRequests() {
+        String selection = "sent=0 and is_req>0";
+        Cursor c = getReadableDatabase().query(DBHelper.TABLE_REQUESTS_NAME, null, selection, null, null, null, null);
+        String reqId = "";
+        String req = "";
+        Map<String, List<Request>> requests = new HashMap<String, List<Request>>();
+
+        if (c != null) {
+            if (c.moveToFirst()) {
+                do {
+                    for (String columnName : c.getColumnNames()) {
+                        if (columnName.equals("req")) {
+                            req = c.getString(c.getColumnIndex(columnName));
+                        }
+                        if (columnName.equals("req_id")) {
+                            reqId = c.getString(c.getColumnIndex(columnName));
+                        }
+                    }
+                    Request request = GsonHelper.createGson().fromJson(req, Request.class);
+                    if (requests.containsKey(reqId)) {
+                        requests.get(reqId).add(request);
+                    } else {
+                        List<Request> reqList = new ArrayList<>();
+                        reqList.add(request);
+                        requests.put(reqId, reqList);
+                    }
+                } while (c.moveToNext());
+            }
+            c.close();
+        }
+
+        return requests;
+    }
+
+    public void markRequestSent(String reqId) {
+        ContentValues cv = new ContentValues();
+        cv.put("sent", 1);
+        getWritableDatabase().update(DBHelper.TABLE_REQUESTS_NAME, cv, "req_id = ?", new String[]{reqId});
     }
 }
