@@ -169,7 +169,7 @@ public class ExchangeDataService extends IntentService {
         return null;
     }
 
-    public void updatePubFiles() {
+    public void updatePubFiles() throws Exception {
         try {
             notifUtil.dismissFileErrorNotifications();
             for (String filename : StaticFileNames.getFilenamesArray()) {
@@ -229,13 +229,14 @@ public class ExchangeDataService extends IntentService {
                 }
             }
         } catch (Exception e) {
-            // TODO do not catch exceptions here
             log.error("Error loading data files", e);
             notifUtil.showErrorNotification("Ошибка при загрузке данных", "Ошибка загрузки файла данных.");
 
             notifUtil.dismissFileProgressNotification(StaticFileNames.DEBTS_CSV_SD);
             notifUtil.dismissFileProgressNotification(StaticFileNames.RESTS_CSV_SD);
             notifUtil.dismissFileProgressNotification(StaticFileNames.CLIENTS_CSV_SD);
+
+            throw new Exception(e);
         }
     }
 
