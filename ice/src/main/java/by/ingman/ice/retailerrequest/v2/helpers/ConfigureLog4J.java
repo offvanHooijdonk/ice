@@ -11,18 +11,20 @@ import de.mindpipe.android.logging.log4j.LogConfigurator;
  */
 public class ConfigureLog4J {
     public static final String LOG_FILE_PATH = "/icev2/main.log";
-    public static final long LOG_FILE_MAX_SIZE = 50 * 1024;
+    public static final long LOG_FILE_MAX_SIZE = 5 * 1024 * 1024;
 
     public static void configure() {
         final LogConfigurator logConfigurator = new LogConfigurator();
 
         logConfigurator.setFileName(Environment.getExternalStorageDirectory() + LOG_FILE_PATH);
-        logConfigurator.setRootLevel(Level.WARN);
+        logConfigurator.setRootLevel(Level.INFO);
         logConfigurator.setUseLogCatAppender(false);
         logConfigurator.setUseFileAppender(true);
+        logConfigurator.setFilePattern("[%p] %d{dd.MM.yyyy HH:mm:ss,SSS} %l - %m%n");
         logConfigurator.setMaxFileSize(LOG_FILE_MAX_SIZE);
         // Set log level of a specific logger
         logConfigurator.setLevel("org.apache", Level.ERROR);
+
         logConfigurator.configure();
     }
 }

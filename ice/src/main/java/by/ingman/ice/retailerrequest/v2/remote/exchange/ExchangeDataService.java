@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import by.ingman.ice.retailerrequest.v2.helpers.AlarmHelper;
+import by.ingman.ice.retailerrequest.v2.helpers.ConfigureLog4J;
 import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.GsonHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.NotificationsUtil;
@@ -40,7 +41,15 @@ import jcifs.smb.SmbFileInputStream;
  * To change this template use File | Settings | File Templates.
  */
 public class ExchangeDataService extends IntentService {
+
+    static {
+        ConfigureLog4J.configure();
+    }
+
     private final Logger log = Logger.getLogger(ExchangeDataService.class);
+
+    // for test
+    private static int messIndex = 0;
 
     ExecutorService executorService;
     NotificationManager notificationManager;
@@ -59,7 +68,7 @@ public class ExchangeDataService extends IntentService {
     ExchangeUtil util;
 
     /**
-     * Creates an IntentService.  Invoked by your subclass's constructor.
+     * Creates an IntentService. Invoked by your subclass's constructor.
      *
      */
     public ExchangeDataService() {
@@ -73,6 +82,8 @@ public class ExchangeDataService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        // FIXME this log is for test
+        log.info("Test: service launched");
         doExchangeData();
     }
 
