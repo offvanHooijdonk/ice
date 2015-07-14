@@ -975,7 +975,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                         if (!debt.getOverdueDebt().equals("0")) {
                             textViewContrAgentRelationship.setTextColor(that.getResources().getColor(R.color.warnTextColor));
                         } else {
-                            textViewContrAgentRelationship.setTextColor(that.getResources().getColor(R.color.successTextColor));
+                            textViewContrAgentRelationship.setTextColor(that.getResources().getColor(R.color.infoTextColor));
                         }
                     }
 

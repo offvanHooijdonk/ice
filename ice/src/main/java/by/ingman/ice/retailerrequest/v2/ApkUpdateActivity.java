@@ -8,12 +8,14 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.ResultReceiver;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -38,11 +40,11 @@ public class ApkUpdateActivity extends Activity {
     Button apkUpdateButton;
     Button pubFilesUpdateButton;
     ProgressBar progressBar;
-    ClearTask clearTask;
+    private TextView textSuccess;
+    private TextView textFail;
     ProgressDialog progressDialog;
     private Context ctx;
-    SharedPreferences sharedPreferences;
-
+    private SharedPreferences sharedPreferences;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,6 +57,11 @@ public class ApkUpdateActivity extends Activity {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        textSuccess = (TextView) findViewById(R.id.textSuccess);
+        textFail = (TextView) findViewById(R.id.textFail);
+
+        textSuccess.setVisibility(View.GONE);
+        textFail.setVisibility(View.GONE);
 
         apkUpdateButton = (Button) findViewById(R.id.apkUpdateButton);
         apkUpdateButton.setOnClickListener(new View.OnClickListener() {
@@ -104,15 +111,17 @@ public class ApkUpdateActivity extends Activity {
             @Override
             public void onClick(View view) {
                 try {
-
                     checkNetworkConnected();
 
-                    displayProgressDialog();
+                    displayFailureMessage(false);
+                    displaySuccessMessage(false);
+                    displayProgressDialog(true);
 
                     stopService(new Intent(getApplicationContext(), ExchangeDataService.class));
                     // cancel alarm for the next service call
                     AlarmHelper.cancelExchangeAlarm(ctx);
 
+                    // TODO move all prepare/run logic to separate class
                     for (String filename : StaticFileNames.getFilenamesArray()) {
                         if (Arrays.asList(fileList()).contains(filename)) {
                             getFileStreamPath(filename).delete();
@@ -121,66 +130,43 @@ public class ApkUpdateActivity extends Activity {
 
                     Toast.makeText(getApplicationContext(), "Подготовка прошла успешно, файлы будут обновлены в течении нескольких минут", Toast.LENGTH_SHORT).show();
 
-                    clearTask = new ClearTask();
-                    clearTask.execute();
-
+                    Intent intent = new Intent(getApplicationContext(), ExchangeDataService.class);
+                    ServiceResultReceiver receiver = new ServiceResultReceiver();
+                    intent.putExtra(ExchangeDataService.EXTRA_RECEIVER, receiver);
+                    startService(intent);
                 } catch (NotActiveException e) {
                     Toast.makeText(getApplicationContext(), "Нет связи с интернетом", Toast.LENGTH_SHORT).show();
-                    closeProgressDialog();
+                    displayFailureMessage(true);
+                    displayProgressDialog(false);
                 } catch (Exception e) {
                     Toast.makeText(getApplicationContext(), "Невозможно обновить", Toast.LENGTH_SHORT).show();
-                    closeProgressDialog();
+                    displayFailureMessage(true);
+                    displayProgressDialog(false);
                 }
             }
         });
     }
 
-    class ClearTask extends AsyncTask<Void, Void, Void> {
-        @Override
-        protected Void doInBackground(Void... integers) {
-            startService(new Intent(getApplicationContext(), ExchangeDataService.class));
-
-            boolean allFilesUpdated = false;
-            while (!allFilesUpdated) {
-                int i = 0;
-                for (String filename : StaticFileNames.getFilenamesArray()) {
-                    if (Arrays.asList(fileList()).contains(filename)) {
-                        i++;
-                    }
-                }
-                if (i >= StaticFileNames.getFilenamesArray().length) {
-                    allFilesUpdated = true;
-                }
+    private void displayProgressDialog(boolean display) {
+        if (display) {
+            progressDialog = new ProgressDialog(ApkUpdateActivity.this);
+            progressDialog.setTitle(ctx.getString(R.string.progress_dialog_title));
+            progressDialog.setMessage(ctx.getString(R.string.progress_dialog_message));
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        } else {
+            if (progressDialog != null) {
+                progressDialog.cancel();
             }
-            return null;
         }
-
-        protected void onPostExecute(Void result) {
-            progressBar.setVisibility(View.GONE);
-            closeProgressDialog();
-            Toast.makeText(getApplicationContext(), "Файлы обновлены успешно", Toast.LENGTH_SHORT).show();
-        }
-
-        protected void onPreExecute() {
-
-        }
-    };
-
-
-    private void displayProgressDialog() {
-        progressDialog = new ProgressDialog(ApkUpdateActivity.this);
-        progressDialog.setTitle("Данные обновляются");
-        progressDialog.setMessage("Дождитесь обновления файлов");
-        progressDialog.setCancelable(true);
-        progressDialog.show();
-        progressBar.setVisibility(View.VISIBLE);
     }
 
-    private void closeProgressDialog() {
-        if (progressDialog != null) {
-            progressDialog.cancel();
-        }
-        progressBar.setVisibility(View.GONE);
+    private void displaySuccessMessage(boolean display) {
+        textSuccess.setVisibility(display ? View.VISIBLE : View.GONE);
+    }
+
+    private void displayFailureMessage(boolean display) {
+        textFail.setVisibility(display ? View.VISIBLE : View.GONE);
     }
 
     private void checkNetworkConnected() throws NotActiveException {
@@ -189,6 +175,26 @@ public class ApkUpdateActivity extends Activity {
         if (ni == null) {
             // There are no active networks.
             throw new NotActiveException("No network");
+        }
+    }
+
+    public class ServiceResultReceiver extends ResultReceiver {
+
+        public ServiceResultReceiver() {
+            super(new Handler());
+        }
+
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+            super.onReceiveResult(resultCode, resultData);
+
+            if (resultCode == Activity.RESULT_OK) {
+                displaySuccessMessage(true);
+            } else {
+                displayFailureMessage(true);
+            }
+
+            displayProgressDialog(false);
         }
     }
 }

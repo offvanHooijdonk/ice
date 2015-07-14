@@ -54,4 +54,8 @@
     <string name="pref_db_password_title">Пароль</string>
     <string name="pref_exchange_frequency_summ">Время в секундах</string>
     <string name="pref_exchange_frequency_title">Интервал обновления данных</string>
+    <string name="progress_dialog_title">Данные обновляются</string>
+    <string name="progress_dialog_message">Дождитесь обновления файлов</string>
+    <string name="data_update_success">Обновлено успешно</string>
+    <string name="data_update_fail">Не удалось загрузить данные</string>
 </resources>

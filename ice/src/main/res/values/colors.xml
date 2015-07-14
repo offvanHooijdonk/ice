@@ -4,7 +4,8 @@
     <color name="actionBarTextColor">@android:color/white</color>
 
     <color name="warnTextColor">#F44336</color>
-    <color name="successTextColor">#0091EA</color>
+    <color name="infoTextColor">#0091EA</color>
+    <color name="successTextColor">#00C853</color>
     <color name="datePickTextColor">#1976D2</color>
     <color name="productBckg">#FFE0B2</color>
 

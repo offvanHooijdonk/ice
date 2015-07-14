@@ -1,5 +1,6 @@
 package by.ingman.ice.retailerrequest.v2.remote.exchange;
 
+import android.app.Activity;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.content.ContentValues;
@@ -9,6 +10,8 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.IBinder;
+import android.os.Parcelable;
+import android.os.ResultReceiver;
 import android.preference.PreferenceManager;
 
 import com.google.gson.Gson;
@@ -22,6 +25,7 @@ import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import by.ingman.ice.retailerrequest.v2.ApkUpdateActivity;
 import by.ingman.ice.retailerrequest.v2.helpers.AlarmHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.ConfigureLog4J;
 import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
@@ -48,6 +52,8 @@ public class ExchangeDataService extends IntentService {
 
     private final Logger log = Logger.getLogger(ExchangeDataService.class);
 
+    public static final String EXTRA_RECEIVER = "extra_receiver";
+
     // for test
     private static int messIndex = 0;
 
@@ -65,7 +71,9 @@ public class ExchangeDataService extends IntentService {
     Date debtDate = null, restsDate = null, clientsDate = null;
 
     private Gson gson;
-    ExchangeUtil util;
+    private ExchangeUtil util;
+    private ResultReceiver receiver = null;
+    private boolean forcedUpdate = false;
 
     /**
      * Creates an IntentService. Invoked by your subclass's constructor.
@@ -84,6 +92,19 @@ public class ExchangeDataService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         // FIXME this log is for test
         log.info("Test: service launched");
+
+        Parcelable p = intent.getParcelableExtra(EXTRA_RECEIVER);/*Extras().containsKey(EXTRA_RECEIVER) ? intent
+                .getExtras()
+                .getParcelable(EXTRA_RECEIVER) : null;*/
+
+        if (p == null) {
+            receiver = null;
+            forcedUpdate = false;
+        } else {
+            receiver = (ResultReceiver) p;
+            forcedUpdate = true;
+        }
+
         doExchangeData();
     }
 
@@ -129,7 +150,13 @@ public class ExchangeDataService extends IntentService {
             }
         } catch (Exception e) {
             log.error("Error in file updating service", e);
+            if (receiver != null) {
+                receiver.send(Activity.RESULT_CANCELED, null);
+            }
         } finally {
+            if (receiver != null) {
+                receiver.send(Activity.RESULT_OK, null);
+            }
             AlarmHelper.createExchangeAlarm(this);
         }
     }

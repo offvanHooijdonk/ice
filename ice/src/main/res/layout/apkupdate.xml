@@ -45,8 +45,25 @@
             android:layout_height="wrap_content"
             android:text="@string/update_data_files_disclaimer"
             android:id="@+id/textView"
-            android:textColor="#7b1216"
+            android:textColor="@color/warnTextColor"
             android:layout_marginBottom="20dp"/>
 
+    <TextView
+        android:id="@+id/textSuccess"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/successTextColor"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:text="@string/data_update_success"/>
+
+    <TextView
+        android:id="@+id/textFail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/warnTextColor"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:text="@string/data_update_fail"/>
 
 </LinearLayout>
