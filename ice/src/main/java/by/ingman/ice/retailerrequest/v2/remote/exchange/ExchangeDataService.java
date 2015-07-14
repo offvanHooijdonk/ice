@@ -123,17 +123,8 @@ public class ExchangeDataService extends IntentService {
         util = new ExchangeUtil(that);
     }
 
-    /*public int onStartCommand(Intent intent, int flags, int startId) {
-        *//*FilesUpdateThread filesUpdateThread = new FilesUpdateThread();
-        executorService.execute(filesUpdateThread);*//*
-
-        doExchangeData();
-
-        //return super.onStartCommand(intent, flags, startId);
-        return START_STICKY;
-    }*/
-
     private void doExchangeData() {
+        boolean success = true;
         try {
             // updating public files from remote db
             updatePubFiles();
@@ -150,15 +141,21 @@ public class ExchangeDataService extends IntentService {
             }
         } catch (Exception e) {
             log.error("Error in file updating service", e);
-            if (receiver != null) {
+            success = false;
+            if (isResponseToSend()) {
                 receiver.send(Activity.RESULT_CANCELED, null);
             }
         } finally {
-            if (receiver != null) {
-                receiver.send(Activity.RESULT_OK, null);
-            }
             AlarmHelper.createExchangeAlarm(this);
         }
+
+        if (success && isResponseToSend()) {
+            receiver.send(Activity.RESULT_OK, null);
+        }
+    }
+
+    private boolean isResponseToSend() {
+        return receiver != null;
     }
 
     private Date getDateForFilename(String filename) {
@@ -232,7 +229,8 @@ public class ExchangeDataService extends IntentService {
                 }
             }
         } catch (Exception e) {
-            log.error("Error loading gdata files", e);
+            // TODO do not catch exceptions here
+            log.error("Error loading data files", e);
             notifUtil.showErrorNotification("Ошибка при загрузке данных", "Ошибка загрузки файла данных.");
 
             notifUtil.dismissFileProgressNotification(StaticFileNames.DEBTS_CSV_SD);
