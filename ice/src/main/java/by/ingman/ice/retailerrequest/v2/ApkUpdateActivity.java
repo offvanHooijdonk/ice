@@ -97,6 +97,10 @@ public class ApkUpdateActivity extends Activity {
 
         pubFilesUpdateButton = (Button) findViewById(R.id.pubFilesUpdateButton);
         pubFilesUpdateButton.setOnClickListener(new View.OnClickListener() {
+            /**
+             * Removes all curernt DB data and uploads it from scratch
+             * @param view
+             */
             @Override
             public void onClick(View view) {
                 try {
@@ -105,7 +109,7 @@ public class ApkUpdateActivity extends Activity {
 
                     displayProgressDialog();
 
-                    //stopService(new Intent(getApplicationContext(), ExchangeDataService.class));
+                    stopService(new Intent(getApplicationContext(), ExchangeDataService.class));
                     // cancel alarm for the next service call
                     AlarmHelper.cancelExchangeAlarm(ctx);
 
