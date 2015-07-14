@@ -58,4 +58,6 @@
     <string name="progress_dialog_message">Дождитесь обновления файлов</string>
     <string name="data_update_success">Обновлено успешно</string>
     <string name="data_update_fail">Не удалось загрузить данные</string>
+    <string name="update_data_files_dialog_disclaimer">Перед обновлением все справочные данные
+        будут сперва удалены. Продолжить?</string>
 </resources>

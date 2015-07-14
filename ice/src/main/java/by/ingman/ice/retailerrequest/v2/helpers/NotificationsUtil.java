@@ -42,6 +42,10 @@ public class NotificationsUtil {
         getNotificationManager().cancel(tag, NOTIF_FILE_UPLOAD_PROGRESS_ID);
     }
 
+    public void dismissAllFileProgressNotifications() {
+        getNotificationManager().cancel(NOTIF_FILE_UPLOAD_PROGRESS_ID);
+    }
+
     public void showFileCompletedNotification(String title, String message, String fileName) {
         String tag = fileName;
 

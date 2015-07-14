@@ -123,6 +123,13 @@ public class ExchangeDataService extends IntentService {
         util = new ExchangeUtil(that);
     }
 
+    @Override
+    public void onDestroy() {
+        notifUtil.dismissAllFileProgressNotifications();
+
+        super.onDestroy();
+    }
+
     private void doExchangeData() {
         boolean success = true;
         try {
@@ -231,10 +238,7 @@ public class ExchangeDataService extends IntentService {
         } catch (Exception e) {
             log.error("Error loading data files", e);
             notifUtil.showErrorNotification("Ошибка при загрузке данных", "Ошибка загрузки файла данных.");
-
-            notifUtil.dismissFileProgressNotification(StaticFileNames.DEBTS_CSV_SD);
-            notifUtil.dismissFileProgressNotification(StaticFileNames.RESTS_CSV_SD);
-            notifUtil.dismissFileProgressNotification(StaticFileNames.CLIENTS_CSV_SD);
+            notifUtil.dismissAllFileProgressNotifications();
 
             throw new Exception(e);
         }

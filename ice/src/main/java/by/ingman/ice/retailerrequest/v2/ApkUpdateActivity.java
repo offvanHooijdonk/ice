@@ -1,8 +1,10 @@
 package by.ingman.ice.retailerrequest.v2;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
@@ -99,52 +101,66 @@ public class ApkUpdateActivity extends Activity {
                 } catch (Exception e) {
                     Toast.makeText(getApplicationContext(), "Невозможно загрузить обновление, " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
-           }
+            }
         });
 
         pubFilesUpdateButton = (Button) findViewById(R.id.pubFilesUpdateButton);
         pubFilesUpdateButton.setOnClickListener(new View.OnClickListener() {
-            /**
-             * Removes all curernt DB data and uploads it from scratch
-             * @param view
-             */
             @Override
             public void onClick(View view) {
-                try {
-                    checkNetworkConnected();
+                AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
 
-                    displayFailureMessage(false);
-                    displaySuccessMessage(false);
-                    displayProgressDialog(true);
-
-                    stopService(new Intent(getApplicationContext(), ExchangeDataService.class));
-                    // cancel alarm for the next service call
-                    AlarmHelper.cancelExchangeAlarm(ctx);
-
-                    // TODO move all prepare/run logic to separate class
-                    for (String filename : StaticFileNames.getFilenamesArray()) {
-                        if (Arrays.asList(fileList()).contains(filename)) {
-                            getFileStreamPath(filename).delete();
-                        }
-                    }
-
-                    Toast.makeText(getApplicationContext(), "Подготовка прошла успешно, файлы будут обновлены в течении нескольких минут", Toast.LENGTH_SHORT).show();
-
-                    Intent intent = new Intent(getApplicationContext(), ExchangeDataService.class);
-                    ServiceResultReceiver receiver = new ServiceResultReceiver();
-                    intent.putExtra(ExchangeDataService.EXTRA_RECEIVER, receiver);
-                    startService(intent);
-                } catch (NotActiveException e) {
-                    Toast.makeText(getApplicationContext(), "Нет связи с интернетом", Toast.LENGTH_SHORT).show();
-                    displayFailureMessage(true);
-                    displayProgressDialog(false);
-                } catch (Exception e) {
-                    Toast.makeText(getApplicationContext(), "Невозможно обновить", Toast.LENGTH_SHORT).show();
-                    displayFailureMessage(true);
-                    displayProgressDialog(false);
-                }
+                builder.setMessage(getString(R.string.update_data_files_dialog_disclaimer))
+                        .setPositiveButton(AlertDialog.BUTTON_POSITIVE, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+                                startForceUpdate();
+                            }
+                        })
+                        .setNegativeButton(AlertDialog.BUTTON_NEGATIVE, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        }).show();
             }
         });
+    }
+
+    private void startForceUpdate() {
+        try {
+            checkNetworkConnected();
+
+            displayFailureMessage(false);
+            displaySuccessMessage(false);
+            displayProgressDialog(true);
+
+            stopService(new Intent(getApplicationContext(), ExchangeDataService.class));
+            // cancel alarm for the next service call
+            AlarmHelper.cancelExchangeAlarm(ctx);
+
+            // TODO move all prepare/run logic to separate class
+            for (String filename : StaticFileNames.getFilenamesArray()) {
+                if (Arrays.asList(fileList()).contains(filename)) {
+                    getFileStreamPath(filename).delete();
+                }
+            }
+
+            Toast.makeText(getApplicationContext(), "Подготовка прошла успешно, файлы будут обновлены в течении нескольких минут", Toast.LENGTH_SHORT).show();
+
+            Intent intent = new Intent(getApplicationContext(), ExchangeDataService.class);
+            ServiceResultReceiver receiver = new ServiceResultReceiver();
+            intent.putExtra(ExchangeDataService.EXTRA_RECEIVER, receiver);
+            startService(intent);
+        } catch (NotActiveException e) {
+            Toast.makeText(getApplicationContext(), "Нет связи с интернетом", Toast.LENGTH_SHORT).show();
+            displayFailureMessage(true);
+            displayProgressDialog(false);
+        } catch (Exception e) {
+            Toast.makeText(getApplicationContext(), "Невозможно обновить", Toast.LENGTH_SHORT).show();
+            displayFailureMessage(true);
+            displayProgressDialog(false);
+        }
     }
 
     private void displayProgressDialog(boolean display) {
