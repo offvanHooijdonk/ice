@@ -25,7 +25,7 @@ public class RequestDao {
     }
 
     public boolean batchAddRequests(List<Request> requests) {
-        boolean success = true;
+        boolean success = false;
         Connection conn = getConnection();
 
         if (conn != null) {
@@ -96,7 +96,7 @@ public class RequestDao {
         Connection conn = null;
         try {
             conn = c.getConnection();
-        } catch (SQLException e) {
+        } catch (Exception e) {
             log.error("Error getting connection to remote DB with url " + c.getConnectionURL(), e);
         }
 
