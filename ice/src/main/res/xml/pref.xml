@@ -56,14 +56,9 @@
             android:title="@string/pref_cat_DP_options_title">
 
             <EditTextPreference
-                android:defaultValue="80.249.84.247"
+                android:defaultValue="80.249.87.247"
                 android:key="host"
                 android:title="@string/pref_db_host_title"/>
-
-            <EditTextPreference
-                android:defaultValue="MSSQL2005"
-                android:key="instanceName"
-                android:title="@string/pref_db_istance_name_title"/>
 
             <EditTextPreference
                 android:defaultValue="41433"
