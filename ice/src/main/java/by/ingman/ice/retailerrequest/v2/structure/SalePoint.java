@@ -7,9 +7,13 @@ package by.ingman.ice.retailerrequest.v2.structure;
  * Time: 19:28
  * To change this template use File | Settings | File Templates.
  */
+//clients
 public class SalePoint {
+    // code_k
     private String contrAgentCode;
+    // code_r
     private String code;
+    // name_r
     private String name;
 
     public SalePoint(String contrAgentCode, String code, String name) {

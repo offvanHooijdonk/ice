@@ -8,8 +8,11 @@ package by.ingman.ice.retailerrequest.v2.structure;
  * To change this template use File | Settings | File Templates.
  */
 public class ContrAgent {
+    // code_k
     private String code;
+    // name_k
     private String name;
+    // code_r
     private String salePoints;
 
     public ContrAgent(String code, String name) {

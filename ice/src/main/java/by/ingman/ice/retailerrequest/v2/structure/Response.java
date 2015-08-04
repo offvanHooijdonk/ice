@@ -7,9 +7,13 @@ package by.ingman.ice.retailerrequest.v2.structure;
  * Time: 0:50
  * To change this template use File | Settings | File Templates.
  */
+// results
 public class Response {
+    // order_id
     private String id;
+    // !!
     private String resCode;
+    // description
     private String desc;
 
     public String getId() {

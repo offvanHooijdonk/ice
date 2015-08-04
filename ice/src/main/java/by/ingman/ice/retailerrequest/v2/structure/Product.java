@@ -1,15 +1,24 @@
 package by.ingman.ice.retailerrequest.v2.structure;
 
+// rests
 public class Product {
+    // code_s
     private String storehouseCode;
+    // code_p
     private String code;
+    // name_p
     private String name;
     private Double packs;
     private Integer rest;
+    // price
     private Integer price;
+    // amt_in_pack
     private int countInPack;
+    // packs
     private String storehousePacks;
+    // amount
     private String storehouseRest;
+    // gross_weight
     private double weight;
 
 
