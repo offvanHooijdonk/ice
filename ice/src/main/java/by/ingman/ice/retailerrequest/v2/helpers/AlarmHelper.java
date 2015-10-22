@@ -28,7 +28,6 @@ public class AlarmHelper {
 
     public static void createAlarm(Context ctx, Date date, PendingIntent pendingIntent) {
         getAlarmManager(ctx).set(AlarmManager.RTC_WAKEUP, date.getTime(), pendingIntent);
-        // TODO handle reboot
     }
 
     public static void cancelExchangeAlarm(Context ctx) {
