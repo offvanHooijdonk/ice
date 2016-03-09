@@ -8,13 +8,20 @@ package by.ingman.ice.retailerrequest.v2.structure;
  * To change this template use File | Settings | File Templates.
  */
 // results
-public class Response {
+public class Answer {
+    public static final String TABLE = "results";
+    public static final String ORDER_ID = "order_ids";
+    public static final String DESCRIPTION = "description";
+    public static final String UNLOAD_TIME = "datetime_unload";
+
     // order_id
     private String id;
     // !!
     private String resCode;
     // description
     private String desc;
+    // datetime_unload
+    private String unloadTime;
 
     public String getId() {
         return id;
@@ -42,5 +49,13 @@ public class Response {
 
     public String toStringForViewing() {
         return resCode + " " + desc;
+    }
+
+    public String getUnloadTime() {
+        return unloadTime;
+    }
+
+    public void setUnloadTime(String unloadTime) {
+        this.unloadTime = unloadTime;
     }
 }

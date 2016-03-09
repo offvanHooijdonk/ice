@@ -24,8 +24,8 @@ import java.util.Map;
 
 import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.GsonHelper;
-import by.ingman.ice.retailerrequest.v2.structure.Request;
-import by.ingman.ice.retailerrequest.v2.structure.Response;
+import by.ingman.ice.retailerrequest.v2.structure.Order;
+import by.ingman.ice.retailerrequest.v2.structure.Answer;
 
 /**
  * Created with IntelliJ IDEA.
@@ -42,7 +42,7 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
     SQLiteDatabase db;
     DBHelper dbHelper;
     int k = 25;
-    Map<String, List<Request>> requests = new HashMap<>();
+    Map<String, List<Order>> requests = new HashMap<>();
     private TextView textDate;
     private Calendar reportDate;
     private Gson gson;
@@ -62,7 +62,7 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
 
         textDate = (TextView) findViewById(R.id.textDate);
         reportDate = Calendar.getInstance();
-        textDate.setText(Request.getDateFormat().format(reportDate.getTime()));
+        textDate.setText(Order.getDateFormat().format(reportDate.getTime()));
         textDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -87,20 +87,20 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
         reqLayout.removeAllViews();
         if (requests.size() == 0) {
             TextView textView = new TextView(this);
-            textView.setText("Нет заявок на " + Request.getDateFormat().format(date));
+            textView.setText("Нет заявок на " + Order.getDateFormat().format(date));
             reqLayout.addView(textView);
         } else {
             for (final String reqId : requests.keySet()) {
                 String s = "";
                 TextView textView = new TextView(RequestReportActivity.this);
 
-                s = s.concat(Request.toReportString(requests.get(reqId).get(0)));
+                s = s.concat(Order.toReportString(requests.get(reqId).get(0)));
 
-                Response response = readResponseByReqId(reqId);
-                if (response == null) {
+                Answer answer = readResponseByReqId(reqId);
+                if (answer == null) {
                     s = s.concat("<br><br><b>ОТВЕТА НЕТ</b>");
                 } else {
-                    s = s.concat("<br><br><b>ОТВЕТ: </b>").concat(response.toStringForViewing());
+                    s = s.concat("<br><br><b>ОТВЕТ: </b>").concat(answer.toStringForViewing());
                 }
                 s = s.concat("<br><br><br>");
                 textView.setText(Html.fromHtml(s));
@@ -114,7 +114,7 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
                                 // continue with delete
                             }
                         });
-                        adb.setMessage(Request.toReportVerboseString(requests.get(reqId)));
+                        adb.setMessage(Order.toReportVerboseString(requests.get(reqId)));
                         adb.show();
                     }
                 });
@@ -123,35 +123,35 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
         }
     }
 
-    private Response readResponseByReqId(String reqId) {
-        Response response = null;
+    private Answer readResponseByReqId(String reqId) {
+        Answer answer = null;
 
         String answersSelection = "req_id=\"" + reqId + "\" and is_req=0";
         Cursor answersCursor = db.query(DBHelper.TABLE_REQUESTS_NAME, new String[]{"req_id", "req"}, answersSelection, null, null, null, null);
         if (answersCursor != null) {
             if (answersCursor.moveToFirst()) {
-                response = new Response();
+                answer = new Answer();
                 for (String columnName : answersCursor.getColumnNames()) {
                     if ("req".equals(columnName)) {
                         String req = answersCursor.getString(answersCursor.getColumnIndex(columnName));
                         String[] array = req.split(";");
-                        response.setId(reqId);
-                        response.setResCode(array[1]);
-                        response.setDesc(array[2]);
+                        answer.setId(reqId);
+                        answer.setResCode(array[1]);
+                        answer.setDesc(array[2]);
                     }
                 }
             }
             answersCursor.close();
         }
-        return response;
+        return answer;
     }
 
-    private Map<String, List<Request>> readRequestsForDate(Date date) {
-        String selection = "is_req>0 and date=\"" + Request.getDateFormat().format(date) + "\"";
+    private Map<String, List<Order>> readRequestsForDate(Date date) {
+        String selection = "is_req>0 and date=\"" + Order.getDateFormat().format(date) + "\"";
         Cursor c = db.query(DBHelper.TABLE_REQUESTS_NAME, null, selection, null, null, null, null);
         String reqId = "";
         String req = "";
-        Map<String, List<Request>> requests = new HashMap<>();
+        Map<String, List<Order>> requests = new HashMap<>();
 
         if (c != null) {
             if (c.moveToFirst()) {
@@ -164,11 +164,11 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
                             reqId = c.getString(c.getColumnIndex(columnName));
                         }
                     }
-                    Request request = gson.fromJson(req, Request.class);
+                    Order order = gson.fromJson(req, Order.class);
                     if (!requests.containsKey(reqId)) {
-                        requests.put(reqId, new ArrayList<Request>());
+                        requests.put(reqId, new ArrayList<Order>());
                     }
-                    requests.get(reqId).add(request);
+                    requests.get(reqId).add(order);
                 } while (c.moveToNext());
             }
             c.close();
@@ -185,7 +185,7 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
         reportDate.set(Calendar.YEAR, year);
         reportDate.set(Calendar.MONTH, monthOfYear);
         reportDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-        textDate.setText(Request.getDateFormat().format(reportDate.getTime()));
+        textDate.setText(Order.getDateFormat().format(reportDate.getTime()));
 
         requests = readRequestsForDate(reportDate.getTime());
         showRequestsForDate(reportDate.getTime());

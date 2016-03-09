@@ -17,7 +17,7 @@ import java.util.UUID;
  * Time: 16:09
  * To change this template use File | Settings | File Templates.
  */
-public class Request {
+public class Order {
 
     private static final String NEWLINE_HTML = "<br>";
     private static final String NEWLINE = "\n";
@@ -48,8 +48,8 @@ public class Request {
         return SimpleDateFormat.getDateInstance(DateFormat.SHORT, new Locale("ru", "RU"));
     }
 
-    public Request(String id, String manager, boolean isCommercial, ContrAgent contrAgent, SalePoint salePoint,
-                   Storehouse storehouse, Product product, Date date, String comment)
+    public Order(String id, String manager, boolean isCommercial, ContrAgent contrAgent, SalePoint salePoint,
+                 Storehouse storehouse, Product product, Date date, String comment)
     {
         this.id = id;
         this.manager = manager;
@@ -71,7 +71,7 @@ public class Request {
         this.comment = comment;
     }
 
-    public Request(String request) throws ParseException {
+    public Order(String request) throws ParseException {
         String[] array = request.split(";");
         id = array[0];
         manager = array[1];
@@ -104,26 +104,26 @@ public class Request {
         }
     }
 
-    public static String toReportString(Request request) {
+    public static String toReportString(Order order) {
         StringBuilder sb = new StringBuilder();
         sb.append("<b>ЗАЯВКА</b><br>")
-                .append("<b>Клиент: </b>").append(request.getContrAgentCode()).append(" ").append(request.getContrAgentName()).append(NEWLINE_HTML)
-                .append("<b>Разгрузка: </b>").append(request.getSalePointCode()).append(" ").append(request.getSalePointName()).append(NEWLINE_HTML);
+                .append("<b>Клиент: </b>").append(order.getContrAgentCode()).append(" ").append(order.getContrAgentName()).append(NEWLINE_HTML)
+                .append("<b>Разгрузка: </b>").append(order.getSalePointCode()).append(" ").append(order.getSalePointName()).append(NEWLINE_HTML);
         return sb.toString();
     }
 
-    public static String toReportVerboseString(List<Request> requests) {
-        Request request = requests.get(0);
+    public static String toReportVerboseString(List<Order> orders) {
+        Order order = orders.get(0);
         StringBuilder sb = new StringBuilder();
         sb.append("ЗАЯВКА\n")
-                .append("ID: ").append(request.getId()).append(NEWLINE)
-                .append("Менеджер: ").append(request.getManager()).append(NEWLINE)
-                .append("Дата: ").append(Request.getDateFormat().format(request.getDate())).append(NEWLINE)
-                .append("Реклама: ").append(request.getIsCommercial()).append(NEWLINE)
-                .append("Клиент: ").append(request.getContrAgentCode()).append(" ").append(request.getContrAgentName()).append(NEWLINE)
-                .append("Разгрузка: ").append(request.getSalePointCode()).append(" ").append(request.getSalePointName()).append(NEWLINE)
-                .append("Склад: ").append(request.getStorehouseCode()).append(" ").append(request.getStorehouseName()).append(NEWLINE);
-        for (Request r : requests) {
+                .append("ID: ").append(order.getId()).append(NEWLINE)
+                .append("Менеджер: ").append(order.getManager()).append(NEWLINE)
+                .append("Дата: ").append(Order.getDateFormat().format(order.getDate())).append(NEWLINE)
+                .append("Реклама: ").append(order.getIsCommercial()).append(NEWLINE)
+                .append("Клиент: ").append(order.getContrAgentCode()).append(" ").append(order.getContrAgentName()).append(NEWLINE)
+                .append("Разгрузка: ").append(order.getSalePointCode()).append(" ").append(order.getSalePointName()).append(NEWLINE)
+                .append("Склад: ").append(order.getStorehouseCode()).append(" ").append(order.getStorehouseName()).append(NEWLINE);
+        for (Order r : orders) {
             StringBuilder sbProd = new StringBuilder();
             sbProd.append("Товар: ")
                     .append(r.getProductCode())
@@ -135,7 +135,7 @@ public class Request {
                     .append(r.getProductCount()).append(NEWLINE);
             sb.append(sbProd.toString());
         }
-        sb.append("Комментарий: ").append(request.getComment());
+        sb.append("Комментарий: ").append(order.getComment());
         return sb.toString();
     }
 

@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import by.ingman.ice.retailerrequest.v2.structure.Request;
+import by.ingman.ice.retailerrequest.v2.structure.Order;
 
 /**
  * Created with IntelliJ IDEA.
@@ -57,26 +57,26 @@ public class DBHelper extends SQLiteOpenHelper {
                 + "req text not null" + ");");
     }
 
-    public Request getSingleRequestByRequestId(String requestId) {
-        Request request = null;
+    public Order getSingleRequestByRequestId(String requestId) {
+        Order order = null;
         ContentValues cv = new ContentValues();
         cv.put("req_id", requestId);
         Cursor cursor = getReadableDatabase().query(TABLE_REQUESTS_NAME, new String[]{"req"}, "req_id", new String[]{requestId}, null, null, null);
         if (cursor.moveToFirst()) {
             String requestString = cursor.getString(0);
-            request = GsonHelper.createGson().fromJson(requestString, Request.class);
+            order = GsonHelper.createGson().fromJson(requestString, Order.class);
         }
         cursor.close();
 
-        return request;
+        return order;
     }
 
-    public Map<String, List<Request>> readUnsentRequests() {
+    public Map<String, List<Order>> readUnsentRequests() {
         String selection = "sent=0 and is_req>0";
         Cursor c = getReadableDatabase().query(DBHelper.TABLE_REQUESTS_NAME, null, selection, null, null, null, null);
         String reqId = "";
         String req = "";
-        Map<String, List<Request>> requests = new HashMap<String, List<Request>>();
+        Map<String, List<Order>> requests = new HashMap<String, List<Order>>();
 
         if (c != null) {
             if (c.moveToFirst()) {
@@ -89,12 +89,12 @@ public class DBHelper extends SQLiteOpenHelper {
                             reqId = c.getString(c.getColumnIndex(columnName));
                         }
                     }
-                    Request request = GsonHelper.createGson().fromJson(req, Request.class);
+                    Order order = GsonHelper.createGson().fromJson(req, Order.class);
                     if (requests.containsKey(reqId)) {
-                        requests.get(reqId).add(request);
+                        requests.get(reqId).add(order);
                     } else {
-                        List<Request> reqList = new ArrayList<>();
-                        reqList.add(request);
+                        List<Order> reqList = new ArrayList<>();
+                        reqList.add(order);
                         requests.put(reqId, reqList);
                     }
                 } while (c.moveToNext());

@@ -6,7 +6,7 @@ import android.content.Context;
 import android.graphics.BitmapFactory;
 
 import by.ingman.ice.retailerrequest.v2.R;
-import by.ingman.ice.retailerrequest.v2.structure.Request;
+import by.ingman.ice.retailerrequest.v2.structure.Order;
 
 /**
  * Created by Yahor_Fralou on 7/6/2015.
@@ -62,10 +62,10 @@ public class NotificationsUtil {
         getNotificationManager().notify(NOTIF_ERROR_TAG, NOTIF_FILE_UPLOAD_ERROR_ID, builder.build());
     }
 
-    public void showRequestSentNotification(Request request) {
-        String tag = request.getId();
+    public void showRequestSentNotification(Order order) {
+        String tag = order.getId();
         String title = ctx.getResources().getString(R.string.notif_request_success_title);
-        String message = ctx.getResources().getString(R.string.notif_request_success_message, request.getContrAgentName());
+        String message = ctx.getResources().getString(R.string.notif_request_success_message, order.getContrAgentName());
 
         Notification.BigTextStyle bigTextStyle = new Notification.BigTextStyle().setBigContentTitle(title).bigText(message);
 
@@ -75,10 +75,10 @@ public class NotificationsUtil {
         getNotificationManager().notify(tag, NOTIF_REQUEST_SENT_ID, builder.build());
     }
 
-    public void showResponseNotification(Request request) {
-        String tag = request.getId();
+    public void showResponseNotification(Order order) {
+        String tag = order.getId();
         String title = ctx.getResources().getString(R.string.notif_response_title);
-        String message = ctx.getResources().getString(R.string.notif_response_text, request.getContrAgentName());
+        String message = ctx.getResources().getString(R.string.notif_response_text, order.getContrAgentName());
 
         Notification.BigTextStyle bigTextStyle = new Notification.BigTextStyle().setBigContentTitle(title).bigText(message);
 

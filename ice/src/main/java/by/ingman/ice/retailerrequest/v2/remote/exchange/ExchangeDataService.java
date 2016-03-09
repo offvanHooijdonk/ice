@@ -25,15 +25,15 @@ import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import by.ingman.ice.retailerrequest.v2.ApkUpdateActivity;
 import by.ingman.ice.retailerrequest.v2.helpers.AlarmHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.ConfigureLog4J;
 import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.GsonHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.NotificationsUtil;
 import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
-import by.ingman.ice.retailerrequest.v2.remote.dao.RequestDao;
-import by.ingman.ice.retailerrequest.v2.structure.Request;
+import by.ingman.ice.retailerrequest.v2.remote.dao.OrderDao;
+import by.ingman.ice.retailerrequest.v2.structure.Answer;
+import by.ingman.ice.retailerrequest.v2.structure.Order;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
 
@@ -66,7 +66,7 @@ public class ExchangeDataService extends IntentService {
     DBHelper dbHelper;
     SQLiteDatabase db;
     private NotificationsUtil notifUtil;
-    private RequestDao requestDao;
+    private OrderDao orderDao;
 
     Date debtDate = null, restsDate = null, clientsDate = null;
 
@@ -114,7 +114,7 @@ public class ExchangeDataService extends IntentService {
 
         gson = GsonHelper.createGson();
         notifUtil = new NotificationsUtil(that);
-        requestDao = new RequestDao(that);
+        orderDao = new OrderDao(that);
         executorService = Executors.newFixedThreadPool(1);
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         dbHelper = new DBHelper(that);
@@ -139,7 +139,7 @@ public class ExchangeDataService extends IntentService {
             // send unsent requests
             util.sendRequests();
 
-            // вычитать отправленные заявки на сегодня без ответа
+            // read from localDB today unanswered requests
             ArrayList<String> sentRequestIds = readSentRequestIdsWithoutAnswer();
 
             // check for an answer in remote DB and show notification for those having an answer
@@ -296,35 +296,28 @@ public class ExchangeDataService extends IntentService {
         db.update(DBHelper.TABLE_REQUESTS_NAME, cv, "req_id = ?", new String[]{reqId});
     }
 
-    private void readRemoteAnswer(String requestId) {
-        String filename = requestId;
+    /**
+     * Read orders for which we got answer (approved/not approved)
+     * @param orderId
+     */
+    private void readRemoteAnswer(String orderId) {
         try {
-            String url = sharedPreferences.getString("androidExchangeOutDirPref", "");
-            if (url.charAt(url.length() - 1) != '/') {
-                url = url.concat("/");
-            }
-            SmbFile smbFile = new SmbFile("smb://" + url + filename + ".csv");
-            if (!smbFile.exists()) {
+            Answer answer = orderDao.findAnswer(orderId);
+            if (answer == null) {
                 return;
             }
-            SmbFileInputStream is = new SmbFileInputStream(smbFile);
-            StringBuffer fileContent = new StringBuffer("");
-            byte[] buffer = new byte[8192];
-            while (is.read(buffer) > 0)
-                fileContent.append(new String(buffer, "windows-1251"));
-            is.close();
 
-            Request requestSingle = dbHelper.getSingleRequestByRequestId(requestId);
+            Order orderSingle = dbHelper.getSingleRequestByRequestId(orderId);
 
             ContentValues cv = new ContentValues();
             cv.put("is_req", 0);
-            cv.put("req_id", filename);
-            cv.put("date", Request.getDateFormat().format(new Date(smbFile.lastModified())));
-            cv.put("req", fileContent.toString());
+            cv.put("req_id", orderId);
+            cv.put("date", answer.getUnloadTime());
+            cv.put("req", answer.getDesc());
             cv.put("sent", 0);
             db.insert(DBHelper.TABLE_REQUESTS_NAME, null, cv);
 
-            notifUtil.showResponseNotification(requestSingle);
+            notifUtil.showResponseNotification(orderSingle);
         } catch (Exception e) {
             log.error("Error reading remote answer.", e);
         }
@@ -341,18 +334,18 @@ public class ExchangeDataService extends IntentService {
                 try {
                     //updating public files from remote db
                     updatePubFiles();
-                    Map<String, List<Request>> requests = readUnsentRequests();
+                    Map<String, List<Order>> requests = readUnsentRequests();
 
                     //sending unsent requests and marking as sent
                     for (String reqId : requests.keySet()) {
-                        List<Request> list = requests.get(reqId);
+                        List<Order> list = requests.get(reqId);
                         //createRemoteRequest(reqId, requests.get(reqId));
-                        boolean success = requestDao.batchAddRequests(list);
+                        boolean success = orderDao.batchInsertRequests(list);
                         if (success) {
                             markRequestSent(reqId);
 
                             if (list.size() > 0) { // just make sure, though else case should not be possible
-                                Request reqInfo = list.get(0);
+                                Order reqInfo = list.get(0);
                                 notifUtil.showRequestSentNotification(reqInfo);
                             }
                         }

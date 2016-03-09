@@ -7,24 +7,26 @@ import org.apache.log4j.Logger;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import by.ingman.ice.retailerrequest.v2.structure.Request;
+import by.ingman.ice.retailerrequest.v2.structure.Order;
+import by.ingman.ice.retailerrequest.v2.structure.Answer;
 
 /**
  * Created by off on 07.07.2015.
  */
-public class RequestDao {
-    private final Logger log = Logger.getLogger(RequestDao.class);
+public class OrderDao {
+    private final Logger log = Logger.getLogger(OrderDao.class);
 
     private Context ctx;
 
-    public RequestDao(Context context) {
+    public OrderDao(Context context) {
         this.ctx = context;
     }
 
-    public boolean batchAddRequests(List<Request> requests) {
+    public boolean batchInsertRequests(List<Order> orders) {
         boolean success = false;
         Connection conn = getConnection();
 
@@ -35,7 +37,7 @@ public class RequestDao {
                         "PRODUCT_PACKS_NUM, PRODUCT_NUM, COMMENT) " +
                         "VALUES(?,?,?,?,?,?,?,?,?,?,?)");
 
-                for (Request r : requests) {
+                for (Order r : orders) {
                     addRequestToBatch(r, stat);
                 }
 
@@ -74,21 +76,49 @@ public class RequestDao {
         return success;
     }
 
-    private void addRequestToBatch(Request request, PreparedStatement stat) throws Exception {
-        stat.setString(1, request.getId());
-        stat.setString(2, request.getManager());
-        stat.setDate(3, new Date(request.getDate().getTime()));
-        stat.setBoolean(4, Boolean.valueOf(request.getIsCommercial()));
-        stat.setString(5, request.getContrAgentCode());
-        stat.setString(6, request.getSalePointCode());
-        stat.setString(7, request.getStorehouseCode());
-        stat.setString(8, request.getProductCode());
-        stat.setDouble(9, request.getProductPacksCount());
-        stat.setInt(10, request.getProductCount());
-        stat.setString(11, request.getComment());
+    private void addRequestToBatch(Order order, PreparedStatement stat) throws Exception {
+        stat.setString(1, order.getId());
+        stat.setString(2, order.getManager());
+        stat.setDate(3, new Date(order.getDate().getTime()));
+        stat.setBoolean(4, Boolean.valueOf(order.getIsCommercial()));
+        stat.setString(5, order.getContrAgentCode());
+        stat.setString(6, order.getSalePointCode());
+        stat.setString(7, order.getStorehouseCode());
+        stat.setString(8, order.getProductCode());
+        stat.setDouble(9, order.getProductPacksCount());
+        stat.setInt(10, order.getProductCount());
+        stat.setString(11, order.getComment());
 
         stat.addBatch();
 
+    }
+
+    public Answer findAnswer(String orderId) {
+        Connection conn = getConnection();
+        Answer answer = null;
+
+        try {
+            PreparedStatement stat = conn.prepareStatement("SELECT * FROM " + Answer.TABLE + " WHERE " + Answer.ORDER_ID + " = ? ");
+            stat.setString(0, orderId);
+            ResultSet rs = stat.executeQuery();
+
+            if (rs.next()) {
+                answer = new Answer();
+                answer.setId(rs.getString(Answer.ORDER_ID));
+                answer.setDesc(rs.getString(Answer.DESCRIPTION));
+                answer.setUnloadTime(rs.getString(Answer.UNLOAD_TIME));
+            }
+        } catch (SQLException e) {
+            log.error(e);
+        } finally {
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                log.error(e);
+            }
+        }
+
+        return answer;
     }
 
     private Connection getConnection() {
@@ -102,4 +132,5 @@ public class RequestDao {
 
         return conn;
     }
+
 }

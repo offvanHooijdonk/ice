@@ -59,8 +59,8 @@ import by.ingman.ice.retailerrequest.v2.remote.exchange.ExchangeDataService;
 import by.ingman.ice.retailerrequest.v2.structure.ContrAgent;
 import by.ingman.ice.retailerrequest.v2.structure.ContrAgentList;
 import by.ingman.ice.retailerrequest.v2.structure.Debt;
+import by.ingman.ice.retailerrequest.v2.structure.Order;
 import by.ingman.ice.retailerrequest.v2.structure.Product;
-import by.ingman.ice.retailerrequest.v2.structure.Request;
 import by.ingman.ice.retailerrequest.v2.structure.SalePoint;
 import by.ingman.ice.retailerrequest.v2.structure.Storehouse;
 
@@ -161,7 +161,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             // request date init
             requestDate = Calendar.getInstance();
             textDate = (TextView) findViewById(R.id.textDate);
-            textDate.setText(Request.getDateFormat().format(requestDate.getTime()));
+            textDate.setText(Order.getDateFormat().format(requestDate.getTime()));
 
             textDate.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -301,7 +301,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, day);
         Date date = calendar.getTime();
-        sb.append("Дата: ").append(Request.getDateFormat().format(date)).append("\n\r\n\r");
+        sb.append("Дата: ").append(Order.getDateFormat().format(date)).append("\n\r\n\r");
         textViewFinal.setText(sb.toString());
 
 
@@ -425,7 +425,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         requestDate.set(Calendar.YEAR, year);
         requestDate.set(Calendar.MONTH, monthOfYear);
         requestDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-        textDate.setText(Request.getDateFormat().format(requestDate.getTime()));
+        textDate.setText(Order.getDateFormat().format(requestDate.getTime()));
 
         refreshFinalView();
     }
@@ -473,9 +473,9 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
             String comment = commentEditText.getText().toString();
 
-            String id = Request.generateNewId();
+            String id = Order.generateNewId();
             for (Product product : selectedProducts.values()) {
-                Request request = new Request(
+                Order order = new Order(
                         id,
                         username,
                         checkBoxCommercial.isChecked(),
@@ -486,9 +486,9 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                         date,
                         comment);
                 cv.put("is_req", 1);
-                cv.put("req_id", request.getId());
-                cv.put("date", Request.getDateFormat().format(request.getDate()));
-                cv.put("req", gson.toJson(request));
+                cv.put("req_id", order.getId());
+                cv.put("date", Order.getDateFormat().format(order.getDate()));
+                cv.put("req", gson.toJson(order));
                 cv.put("sent", 0);
                 db.insert(DBHelper.TABLE_REQUESTS_NAME, null, cv);
 
