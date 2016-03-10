@@ -53,7 +53,7 @@
         <PreferenceCategory
             android:key="catDB"
             android:summary="@string/pref_cat_DB_options_summ"
-            android:title="@string/pref_cat_DP_options_title">
+            android:title="@string/pref_cat_DB_options_title">
 
             <EditTextPreference
                 android:defaultValue="80.249.87.247"

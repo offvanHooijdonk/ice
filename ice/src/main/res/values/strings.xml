@@ -43,7 +43,7 @@
     <string name="pref_apk_update_folder_summ">Адрес папки обновлений приложения</string>
     <string name="pref_apk_update_folder">Адрес папки</string>
     <string name="pref_cat_DB_options_summ">Настройки подключения к удалённой базе заявок</string>
-    <string name="pref_cat_DP_options_title">База данных заявок</string>
+    <string name="pref_cat_DB_options_title">База данных заявок</string>
     <string name="pref_screen_sys_options_title">Системные настройки</string>
     <string name="pref_screen_sys_options_summ">Меняются только при изменении на сервере</string>
     <string name="pref_db_host_title">Хост (IP или имя)</string>

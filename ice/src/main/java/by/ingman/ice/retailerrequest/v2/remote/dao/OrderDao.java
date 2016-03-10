@@ -28,7 +28,7 @@ public class OrderDao {
 
     public boolean batchInsertRequests(List<Order> orders) {
         boolean success = false;
-        Connection conn = getConnection();
+        Connection conn = new ConnectionFactory(ctx).getConnection();
 
         if (conn != null) {
             try {
@@ -94,7 +94,7 @@ public class OrderDao {
     }
 
     public Answer findAnswer(String orderId) {
-        Connection conn = getConnection();
+        Connection conn = new ConnectionFactory(ctx).getConnection();
         Answer answer = null;
 
         try {
@@ -119,18 +119,6 @@ public class OrderDao {
         }
 
         return answer;
-    }
-
-    private Connection getConnection() {
-        Connector c = new Connector(ctx);
-        Connection conn = null;
-        try {
-            conn = c.getConnection();
-        } catch (Exception e) {
-            log.error("Error getting connection to remote DB with url " + c.getConnectionURL(), e);
-        }
-
-        return conn;
     }
 
 }

@@ -166,16 +166,21 @@ public class ExchangeDataService extends IntentService {
     }
 
     private Date getDateForFilename(String filename) {
-        if (filename.equals(StaticFileNames.RESTS_CSV_SD)) {
-            return restsDate;
-        } else if (filename.equals(StaticFileNames.CLIENTS_CSV_SD)) {
-            return clientsDate;
-        } else if (filename.equals(StaticFileNames.DEBTS_CSV_SD)) {
-            return debtDate;
+        switch (filename) {
+            case StaticFileNames.RESTS_CSV_SD:
+                return restsDate;
+            case StaticFileNames.CLIENTS_CSV_SD:
+                return clientsDate;
+            case StaticFileNames.DEBTS_CSV_SD:
+                return debtDate;
         }
         return null;
     }
 
+    /**
+     * update lists of clients, rests, debts
+     * @throws Exception
+     */
     public void updatePubFiles() throws Exception {
         try {
             notifUtil.dismissFileErrorNotifications();

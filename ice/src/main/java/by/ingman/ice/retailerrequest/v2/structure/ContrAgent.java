@@ -1,5 +1,8 @@
 package by.ingman.ice.retailerrequest.v2.structure;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created with IntelliJ IDEA.
  * User: Администратор
@@ -13,7 +16,10 @@ public class ContrAgent {
     // name_k
     private String name;
     // code_r
-    private String salePoints;
+    private List<SalePoint> salePoints = new ArrayList<>();
+
+    public ContrAgent() {
+    }
 
     public ContrAgent(String code, String name) {
         this.code = code;
@@ -28,21 +34,23 @@ public class ContrAgent {
         return name;
     }
 
-    /*public LinkedList<SalePoint> getSalePoints() {
-        String[] array = salePoints.split(";");
-
-    }*/
-
-    public String[] getSalePoints() {
-        String[] array = salePoints.split(";");
-        String[] result = new String[array.length / 2];
-        for (int i = 0; i < array.length; i++) {
-            result[i] = array[i * 2] + array[i * 2 + 1];
-        }
-        return result;
+    public void setCode(String code) {
+        this.code = code;
     }
 
-    public void addSalePoint(String code, String name) {
-        salePoints += code + ";" + "" + name;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<SalePoint> getSalePoints() {
+        return salePoints;
+    }
+
+    public void setSalePoints(List<SalePoint> salePoints) {
+        this.salePoints = salePoints;
+    }
+
+    public void addSalePoint(SalePoint salePoint) {
+        salePoints.add(salePoint);
     }
 }
