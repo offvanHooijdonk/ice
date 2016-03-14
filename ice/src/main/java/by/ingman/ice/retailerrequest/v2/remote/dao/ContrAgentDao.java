@@ -52,14 +52,6 @@ public class ContrAgentDao {
 
             } catch (Exception e) {
                 log.error("Error getting contrAgents from remote DB.", e);
-                try {
-                    if (conn.isClosed()) {
-                        conn.rollback();
-                        conn.close();
-                    }
-                } catch (SQLException e1) {
-                    log.error("Error closing connection to remote DB after insert failure.", e1);
-                }
             } finally {
                 try {
                     if (!conn.isClosed()) {

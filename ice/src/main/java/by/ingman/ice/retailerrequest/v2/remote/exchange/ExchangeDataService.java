@@ -178,7 +178,7 @@ public class ExchangeDataService extends IntentService {
     }
 
     /**
-     * update lists of clients, rests, debts
+     * update lists of clients+, rests+, debts
      * @throws Exception
      */
     public void updatePubFiles() throws Exception {
