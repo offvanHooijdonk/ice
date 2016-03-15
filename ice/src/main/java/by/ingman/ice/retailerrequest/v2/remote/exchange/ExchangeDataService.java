@@ -27,7 +27,7 @@ import java.util.concurrent.Executors;
 
 import by.ingman.ice.retailerrequest.v2.helpers.AlarmHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.ConfigureLog4J;
-import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
+import by.ingman.ice.retailerrequest.v2.local.dao.DBHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.GsonHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.NotificationsUtil;
 import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
@@ -178,7 +178,7 @@ public class ExchangeDataService extends IntentService {
     }
 
     /**
-     * update lists of clients+, rests+, debts
+     * update lists of clients+, rests+, debts+
      * @throws Exception
      */
     public void updatePubFiles() throws Exception {

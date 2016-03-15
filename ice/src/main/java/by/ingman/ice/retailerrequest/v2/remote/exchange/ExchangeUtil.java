@@ -5,7 +5,7 @@ import android.content.Context;
 import java.util.List;
 import java.util.Map;
 
-import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
+import by.ingman.ice.retailerrequest.v2.local.dao.DBHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.NotificationsUtil;
 import by.ingman.ice.retailerrequest.v2.remote.dao.OrderDao;
 import by.ingman.ice.retailerrequest.v2.structure.Order;

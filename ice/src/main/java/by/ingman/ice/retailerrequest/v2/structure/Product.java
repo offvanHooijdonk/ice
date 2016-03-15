@@ -11,7 +11,7 @@ public class Product {
     private Double packs;
     private Integer rest;
     // price
-    private Integer price;
+    private Double price;
     // amt_in_pack
     private int countInPack;
     // packs
@@ -21,10 +21,8 @@ public class Product {
     // gross_weight
     private double weight;
 
-
-
     public Product(String storehouseCode, String code, String name, String storehousePacks, String storehouseRest,
-                   Integer price, int countInPack, double weight) {
+                   Double price, int countInPack, double weight) {
         this.storehouseCode = storehouseCode;
         this.code = code;
         this.name = name;
@@ -78,7 +76,7 @@ public class Product {
         return rest;
     }
 
-    public Integer getPrice() {
+    public Double getPrice() {
         return price;
     }
 

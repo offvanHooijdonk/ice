@@ -1,4 +1,4 @@
-package by.ingman.ice.retailerrequest.v2.helpers;
+package by.ingman.ice.retailerrequest.v2.local.dao;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import by.ingman.ice.retailerrequest.v2.helpers.GsonHelper;
 import by.ingman.ice.retailerrequest.v2.structure.Order;
 
 /**
@@ -43,18 +44,22 @@ public class DBHelper extends SQLiteOpenHelper {
                 + "req_id text not null,"
                 + "date text not null,"
                 + "req text not null" + ");");
+        db.execSQL("create table " + ProductLocalDao.TABLE + " ("
+                + "_id integer primary key autoincrement,"
+                + "code text not null,"
+                + "name text not null,"
+                + "store_code text not null,"
+                + "store_packs text not null,"
+                + "store_rest text not null,"
+                + "price real not null,"
+                + "num_in_pack integer not null,"
+                + "weight real not null" + ");");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_REQUESTS_NAME);
-        db.execSQL("create table " +  TABLE_REQUESTS_NAME +  " ("
-                + "_id integer primary key autoincrement,"
-                + "is_req integer not null,"
-                + "sent integer not null,"
-                + "req_id text not null,"
-                + "date text not null,"
-                + "req text not null" + ");");
+        onCreate(db);
     }
 
     public Order getSingleRequestByRequestId(String requestId) {

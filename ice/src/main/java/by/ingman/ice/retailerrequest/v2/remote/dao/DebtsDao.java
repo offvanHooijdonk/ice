@@ -35,7 +35,12 @@ public class DebtsDao {
                 ResultSet rs = stat.executeQuery();
 
                 while (rs.next()) {
-                    Debt d = new Debt();
+                    Debt d = new Debt(
+                            rs.getString("code_k"),
+                            rs.getString("code_mk"),
+                            rs.getString("debt"),
+                            rs.getString("overdue")
+                    );
 
                     debts.add(d);
                 }

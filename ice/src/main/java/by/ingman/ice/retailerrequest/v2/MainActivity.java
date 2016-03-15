@@ -52,7 +52,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import by.ingman.ice.retailerrequest.v2.helpers.ConfigureLog4J;
-import by.ingman.ice.retailerrequest.v2.helpers.DBHelper;
+import by.ingman.ice.retailerrequest.v2.local.dao.DBHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.GsonHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
 import by.ingman.ice.retailerrequest.v2.remote.exchange.ExchangeDataService;
