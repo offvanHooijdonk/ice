@@ -43,7 +43,7 @@ public class ProductDao {
                             rs.getString("name_p"),
                             rs.getString("packs"),
                             rs.getString("amount"),
-                            rs.getInt("price"),
+                            rs.getDouble("price"),
                             rs.getInt("amt_in_pack"),
                             rs.getDouble("gross_weight")
                     );

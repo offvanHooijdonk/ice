@@ -12,11 +12,11 @@ import by.ingman.ice.retailerrequest.v2.structure.Order;
  * Created by Yahor_Fralou on 7/6/2015.
  */
 public class NotificationsUtil {
-    private static final int NOTIF_FILE_UPLOAD_PROGRESS_ID = 0;
-    private static final int NOTIF_FILE_UPLOAD_COMPLETED_ID = 1;
-    private static final int NOTIF_FILE_UPLOAD_ERROR_ID = 2;
-    private static final int NOTIF_REQUEST_SENT_ID = 3;
-    private static final int NOTIF_RESPONSE_ACCEPT_ID = 4;
+    private static final int NOTIF_DATA_UPDATE_PROGRESS_ID = 0;
+    private static final int NOTIF_DATA_UPDATE_COMPLETED_ID = 1;
+    private static final int NOTIF_DATA_UPDATE_ERROR_ID = 2;
+    private static final int NOTIF_ORDER_SENT_ID = 3;
+    private static final int NOTIF_ORDER_ACCEPT_ID = 4;
 
     private static final String NOTIF_ERROR_TAG = "error_notification";
 
@@ -27,23 +27,26 @@ public class NotificationsUtil {
         this.ctx = context;
     }
 
-    public void showFileProgressNotification(String title, String message, String fileName) {
-        String tag = fileName;
+    public void showUpdateProgressNotification(String dataName) {
+        String tag = dataName;
+
+        String title = ctx.getResources().getString(R.string.notif_update_data_title);
+        String message = ctx.getResources().getString(R.string.notif_update_data_message, dataName);
 
         Notification.Builder builder = setupCommonNotification(title, message, false)
                 .setSmallIcon(android.R.drawable.stat_sys_download).setOngoing(true)
                 .setProgress(0, 0, true).setUsesChronometer(true);
 
-        getNotificationManager().notify(tag, NOTIF_FILE_UPLOAD_PROGRESS_ID, builder.build());
+        getNotificationManager().notify(tag, NOTIF_DATA_UPDATE_PROGRESS_ID, builder.build());
     }
 
-    public void dismissFileProgressNotification(String fileName) {
-        String tag = fileName;
-        getNotificationManager().cancel(tag, NOTIF_FILE_UPLOAD_PROGRESS_ID);
+    public void dismissUpdateProgressNotification(String dataName) {
+        String tag = dataName;
+        getNotificationManager().cancel(tag, NOTIF_DATA_UPDATE_PROGRESS_ID);
     }
 
-    public void dismissAllFileProgressNotifications() {
-        getNotificationManager().cancel(NOTIF_FILE_UPLOAD_PROGRESS_ID);
+    public void dismissAllUpdateProgressNotifications() {
+        getNotificationManager().cancel(NOTIF_DATA_UPDATE_PROGRESS_ID);
     }
 
     public void showFileCompletedNotification(String title, String message, String fileName) {
@@ -52,14 +55,14 @@ public class NotificationsUtil {
         Notification.Builder builder = setupCommonNotification(title, message, true)
                 .setSmallIcon(android.R.drawable.stat_sys_download_done);
 
-        getNotificationManager().notify(tag, NOTIF_FILE_UPLOAD_COMPLETED_ID, builder.build());
+        getNotificationManager().notify(tag, NOTIF_DATA_UPDATE_COMPLETED_ID, builder.build());
     }
 
     public void showErrorNotification(String title, String message) {
         Notification.Builder builder = setupCommonNotification(title, message, true)
                 .setSmallIcon(android.R.drawable.stat_notify_error);
 
-        getNotificationManager().notify(NOTIF_ERROR_TAG, NOTIF_FILE_UPLOAD_ERROR_ID, builder.build());
+        getNotificationManager().notify(NOTIF_ERROR_TAG, NOTIF_DATA_UPDATE_ERROR_ID, builder.build());
     }
 
     public void showRequestSentNotification(Order order) {
@@ -72,7 +75,7 @@ public class NotificationsUtil {
         Notification.Builder builder = setupCommonNotification(title, message, true).setStyle(bigTextStyle)
                 .setSmallIcon(android.R.drawable.stat_sys_upload_done);
 
-        getNotificationManager().notify(tag, NOTIF_REQUEST_SENT_ID, builder.build());
+        getNotificationManager().notify(tag, NOTIF_ORDER_SENT_ID, builder.build());
     }
 
     public void showResponseNotification(Order order) {
@@ -85,7 +88,7 @@ public class NotificationsUtil {
         Notification.Builder builder = setupCommonNotification(title, message, true).setStyle(bigTextStyle)
                 .setSmallIcon(R.drawable.ic_action_accept);
 
-        getNotificationManager().notify(tag, NOTIF_RESPONSE_ACCEPT_ID, builder.build());
+        getNotificationManager().notify(tag, NOTIF_ORDER_ACCEPT_ID, builder.build());
     }
 
     private Notification.Builder setupCommonNotification(String title, String message, boolean autoCancel) {
@@ -94,7 +97,7 @@ public class NotificationsUtil {
     }
 
     public void dismissFileErrorNotifications() {
-        getNotificationManager().cancel(NOTIF_FILE_UPLOAD_PROGRESS_ID);
+        getNotificationManager().cancel(NOTIF_DATA_UPDATE_PROGRESS_ID);
     }
 
     private NotificationManager getNotificationManager() {

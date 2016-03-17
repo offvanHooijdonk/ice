@@ -18,24 +18,25 @@ import com.google.gson.Gson;
 
 import org.apache.log4j.Logger;
 
-import java.io.FileOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import by.ingman.ice.retailerrequest.v2.R;
 import by.ingman.ice.retailerrequest.v2.helpers.AlarmHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.ConfigureLog4J;
-import by.ingman.ice.retailerrequest.v2.local.dao.DBHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.GsonHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.NotificationsUtil;
 import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
+import by.ingman.ice.retailerrequest.v2.local.dao.DBHelper;
+import by.ingman.ice.retailerrequest.v2.local.dao.ProductLocalDao;
 import by.ingman.ice.retailerrequest.v2.remote.dao.OrderDao;
+import by.ingman.ice.retailerrequest.v2.remote.dao.ProductDao;
 import by.ingman.ice.retailerrequest.v2.structure.Answer;
 import by.ingman.ice.retailerrequest.v2.structure.Order;
-import jcifs.smb.SmbFile;
-import jcifs.smb.SmbFileInputStream;
+import by.ingman.ice.retailerrequest.v2.structure.Product;
 
 /**
  * Created with IntelliJ IDEA.
@@ -125,7 +126,7 @@ public class ExchangeDataService extends IntentService {
 
     @Override
     public void onDestroy() {
-        notifUtil.dismissAllFileProgressNotifications();
+        notifUtil.dismissAllUpdateProgressNotifications();
 
         super.onDestroy();
     }
@@ -134,7 +135,7 @@ public class ExchangeDataService extends IntentService {
         boolean success = true;
         try {
             // updating public files from remote db
-            updatePubFiles();
+            updateAllData();
 
             // send unsent requests
             util.sendRequests();
@@ -181,9 +182,35 @@ public class ExchangeDataService extends IntentService {
      * update lists of clients+, rests+, debts+
      * @throws Exception
      */
-    public void updatePubFiles() throws Exception {
+    public void updateAllData() throws Exception {
+        notifUtil.dismissFileErrorNotifications();
+
+        long timeUpdateStart = new Date().getTime();
+        long timeLastUpdate = sharedPreferences.getLong("lastUpdatedDate", 0);
+
         try {
-            notifUtil.dismissFileErrorNotifications();
+            if (enabledNotifications()) {
+                notifUtil.showUpdateProgressNotification(that.getString(R.string.notif_data_products));// TODO
+            }
+            ProductDao productDao = new ProductDao(that);
+            List<Product> products = productDao.getUpdates(new Date(timeLastUpdate));
+            ProductLocalDao productLocalDao = new ProductLocalDao(that);
+            productLocalDao.updateProducts(products);
+            notifUtil.dismissUpdateProgressNotification(that.getString(R.string.notif_data_products));
+
+            sharedPreferences.edit().putLong("lastUpdateDate", timeUpdateStart).apply();
+        } catch (Exception e) {
+            sharedPreferences.edit().putLong("lastUpdateDate", timeLastUpdate).apply();
+
+            log.error("Error loading data from remote", e);
+            notifUtil.showErrorNotification("Ошибка загрузке данных", "Ошибка загрузки данных.");
+            notifUtil.dismissAllUpdateProgressNotifications();
+
+            throw new Exception(e);
+        }
+
+        // to remove
+        /*try {
             for (String filename : StaticFileNames.getFilenamesArray()) {
                 boolean doUpdate = false;
                 String url = sharedPreferences.getString("androidExchangePubDirPref", "");
@@ -208,7 +235,7 @@ public class ExchangeDataService extends IntentService {
                 }
                 if (doUpdate) {
                     if (enabledNotifications()) {
-                        notifUtil.showFileProgressNotification("Обновление данных", getFileDescr(filename) + " обновляется", filename);
+                        //notifUtil.showUpdateProgressNotification("Обновление данных", getFileDescr(filename) + " обновляется", filename);
                     }
                     //updating file
                     SmbFileInputStream is = new SmbFileInputStream(smbFile);
@@ -221,7 +248,7 @@ public class ExchangeDataService extends IntentService {
                     fos.close();
 
                     if (enabledNotifications()) {
-                        notifUtil.dismissFileProgressNotification(filename);
+                        notifUtil.dismissUpdateProgressNotification(filename);
                     }
                     getFileStreamPath(filename + "_temp").renameTo(getFileStreamPath(filename));
                     deleteFile(filename + "_temp");
@@ -243,10 +270,10 @@ public class ExchangeDataService extends IntentService {
         } catch (Exception e) {
             log.error("Error loading data files", e);
             notifUtil.showErrorNotification("Ошибка при загрузке данных", "Ошибка загрузки файла данных.");
-            notifUtil.dismissAllFileProgressNotifications();
+            notifUtil.dismissAllUpdateProgressNotifications();
 
             throw new Exception(e);
-        }
+        }*/
     }
 
     private boolean enabledNotifications() {
@@ -338,7 +365,7 @@ public class ExchangeDataService extends IntentService {
             while (true) {
                 try {
                     //updating public files from remote db
-                    updatePubFiles();
+                    updateAllData();
                     Map<String, List<Order>> requests = readUnsentRequests();
 
                     //sending unsent requests and marking as sent

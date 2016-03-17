@@ -22,6 +22,13 @@
     <string name="menu_report">Отчёт по заявкам</string>
     <string name="menu_refresh">Обновление</string>
 
+    <string name="notif_update_data_title">Обновление данных</string>
+    <string name="notif_update_data_message">Обновляются %s</string>
+    <string name="notif_data_products">остатки</string>
+    <string name="notif_data_contragents">котнрагенты</string>
+    <string name="notif_data_debts">задолженности</string>
+
+
     <string name="notif_request_success_title">Заявка отправлена</string>
     <string name="notif_request_success_message">Заявка для %s отправлена</string>
 

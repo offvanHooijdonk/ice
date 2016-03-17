@@ -340,7 +340,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         double totalWeight = 0;
 
         //товары
-        Long totalSumm = 0l;
+        Double totalSumm = 0.0;
         DecimalFormat dfSumm = new DecimalFormat("#,###");
         if (selectedProducts.size() == 0) {
             sb.append("Товар не выбран\n\r\n\r");
@@ -354,7 +354,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                 sb.append("\tПо цене ").append(p.getPrice()).append("\n\r");
                 sb.append("\tУпаковок: ").append(p.getPacks()).append("\n\r");
                 sb.append("\tШтук: ").append(p.getRest()).append("\n\r");
-                long prodSumm = p.getRest() * p.getPrice();
+                double prodSumm = p.getRest() * p.getPrice();
                 sb.append("\tСумма: ").append(dfSumm.format(prodSumm)).append("\n\r");
                 totalSumm += prodSumm;
 
@@ -529,7 +529,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                     for (Product p : selectedProducts.values()) {
                         if (p.getCode().equals(productCode)) {
                             Product product = new Product(stringArray[0], stringArray[2], stringArray[3],
-                                    stringArray[4], stringArray[5], Integer.valueOf(stringArray[6]), Integer.valueOf
+                                    stringArray[4], stringArray[5], Double.valueOf(stringArray[6]), Integer.valueOf
                                     (stringArray[7]), Double.parseDouble(stringArray[8]));
                             double packs;
                             int count;
@@ -1136,10 +1136,10 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             if (!selectedProducts.isEmpty()) {
                 return;
             }
-            if (!checkProductsFileExists()) {
+            /*if (!checkProductsFileExists()) {
                 Toast.makeText(getApplicationContext(), "Дождитесь синхронизации с базой данных", Toast.LENGTH_SHORT).show();
                 return;
-            }
+            }*/
             Date localRestsDate;
             try {
                 localRestsDate = new Date(getFileStreamPath(StaticFileNames.RESTS_CSV_SD).lastModified());
@@ -1152,10 +1152,10 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                 BufferedReader br = new BufferedReader(isr);
                 String string;
                 String stringArray[];
-                LinkedHashSet<String> existingCodes = new LinkedHashSet<String>();
+                LinkedHashSet<String> existingCodes = new LinkedHashSet<>();
                 // читаем содержимое
-                storehouses = new ArrayList<Storehouse>();
-                products = new ArrayList<Product>();
+                storehouses = new ArrayList<>();
+                products = new ArrayList<>();
                 while ((string = br.readLine()) != null) {
                     stringArray = string.split(";");
                     //склад
@@ -1172,7 +1172,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                             stringArray[3],
                             stringArray[4],
                             stringArray[5],
-                            Integer.valueOf(stringArray[6]),
+                            Double.valueOf(stringArray[6]),
                             Integer.valueOf(stringArray[7]),
                             Double.parseDouble(stringArray[8]));
                     products.add(product);
