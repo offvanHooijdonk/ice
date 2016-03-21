@@ -25,6 +25,36 @@ public class DebtsDao {
         this.ctx = context;
     }
 
+    public Long getUnloadDate() {
+        Long date = null;
+        Connection conn = new ConnectionFactory(ctx).getConnection();
+
+        if (conn != null) {
+            try {
+                PreparedStatement stat = conn.prepareStatement("SELECT datetime_unload FROM debts TOP 1");
+                ResultSet rs = stat.executeQuery();
+
+                if (rs.next()) {
+                    date = rs.getDate("datetime_unload").getTime();
+                }
+            } catch (Exception e) {
+                log.error("Error getting Debts unload date from remote DB.", e);
+            } finally {
+                try {
+                    if (!conn.isClosed()) {
+                        conn.close();
+                    }
+                } catch (SQLException e) {
+                    log.error("Error closing connection to remote DB.", e);
+                }
+            }
+        } else {
+            log.error("Connection to remote DB is null.");
+        }
+
+        return date;
+    }
+
     public List<Debt> getDebts() {
         List<Debt> debts = new ArrayList<>();
         Connection conn = new ConnectionFactory(ctx).getConnection();

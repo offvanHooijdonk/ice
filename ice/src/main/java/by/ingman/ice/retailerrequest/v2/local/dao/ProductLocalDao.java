@@ -5,6 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import org.apache.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,9 +18,9 @@ import by.ingman.ice.retailerrequest.v2.structure.Storehouse;
  */
 public class ProductLocalDao {
     public static final String TABLE = "rests";
+    private final Logger log = Logger.getLogger(ProductLocalDao.class);
 
-    private static final String UNIQUE_CONDITION = "code =? AND store_code = ?";
-
+    /*private static final String UNIQUE_CONDITION = "code =? AND store_code = ?";*/
     private DBHelper dbHelper;
 
     public ProductLocalDao(Context context) {
@@ -69,16 +71,21 @@ public class ProductLocalDao {
     }
 
     public void updateProducts(List<Product> products) {
-        for (Product p : products) {
-            if (existsProductAtStore(p)) {
-                update(p);
-            } else {
-                insert(p);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        try {
+            db.beginTransaction();
+            for (Product p : products) {
+                insert(db, p);
             }
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            log.error("Error updating rests in local DB.", e);
+        } finally {
+            db.endTransaction();
         }
     }
 
-    public boolean existsProductAtStore(Product p) {
+    /*public boolean existsProductAtStore(Product p) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         boolean exists;
 
@@ -89,23 +96,23 @@ public class ProductLocalDao {
         c.close();
 
         return exists;
-    }
+    }*/
 
-    public void insert(Product p) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
+    public void insert(SQLiteDatabase db, Product p) {
+        db = dbHelper.getWritableDatabase();
 
         ContentValues cv = makeContentValues(p);
 
         db.insert(TABLE, null, cv);
     }
 
-    public void update(Product p) {
+    /*public void update(Product p) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         ContentValues cv = makeContentValues(p);
 
         db.update(TABLE, cv, UNIQUE_CONDITION, new String[]{p.getCode(), p.getStorehouse().getCode()});
-    }
+    }*/
 
     private ContentValues makeContentValues(Product p) {
         ContentValues cv = new ContentValues();

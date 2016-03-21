@@ -1,6 +1,7 @@
 package by.ingman.ice.retailerrequest.v2.remote.dao;
 
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 
 import org.apache.log4j.Logger;
 
@@ -26,14 +27,43 @@ public class ContrAgentDao {
         this.ctx = context;
     }
 
-    public List<ContrAgent> getContrAgentList(Date date) {
+    public Long getUnloadDate() {
+        Long date = null;
+        Connection conn = new ConnectionFactory(ctx).getConnection();
+
+        if (conn != null) {
+            try {
+                PreparedStatement stat = conn.prepareStatement("SELECT datetime_unload FROM clients TOP 1");
+                ResultSet rs = stat.executeQuery();
+
+                if (rs.next()) {
+                    date = rs.getDate("datetime_unload").getTime();
+                }
+            } catch (Exception e) {
+                log.error("Error getting contrAgents unload date from remote DB.", e);
+            } finally {
+                try {
+                    if (!conn.isClosed()) {
+                        conn.close();
+                    }
+                } catch (SQLException e) {
+                    log.error("Error closing connection to remote DB.", e);
+                }
+            }
+        } else {
+            log.error("Connection to remote DB is null.");
+        }
+
+        return date;
+    }
+
+    public List<ContrAgent> getAll() {
         List<ContrAgent> contrAgents = new ArrayList<>();
         Connection conn = new ConnectionFactory(ctx).getConnection();
 
         if (conn != null) {
             try {
-                PreparedStatement stat = conn.prepareStatement("SELECT * FROM clients WHERE datetime_unload >= ? ORDER BY name_k");
-                stat.setDate(1, new java.sql.Date(date.getTime()));
+                PreparedStatement stat = conn.prepareStatement("SELECT * FROM clients WHERE ORDER BY name_k");
                 ResultSet rs = stat.executeQuery();
                 ContrAgent ca = null;
                 while (rs != null && rs.next()) {

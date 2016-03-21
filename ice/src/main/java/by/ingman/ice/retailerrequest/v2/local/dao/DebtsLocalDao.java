@@ -39,7 +39,7 @@ public class DebtsLocalDao {
             }
             db.setTransactionSuccessful();
         } catch (Exception e) {
-            log.error("Error saving Debts to local DB", e);
+            log.error("Error saving Debts to local DB.", e);
         } finally {
             db.endTransaction();
         }

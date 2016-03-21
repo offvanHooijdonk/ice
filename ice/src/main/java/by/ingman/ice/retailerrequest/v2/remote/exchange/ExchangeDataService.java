@@ -202,7 +202,7 @@ public class ExchangeDataService extends IntentService {
 
             updateContrAgents(dateLastUpdate);
 
-            updateDebts();
+            updateDebts(dateLastUpdate);
 
             sharedPreferences.edit().putLong("lastUpdateDate", timeUpdateStart).apply();
         } catch (Exception e) {
@@ -283,36 +283,50 @@ public class ExchangeDataService extends IntentService {
     }
 
     private void updateProducts(Date dateLastUpdate) {
-        if (enabledNotifications()) {
-            notifUtil.showUpdateProgressNotification(that.getString(R.string.notif_data_products));
-        }
         ProductDao productDao = new ProductDao(that);
-        List<Product> products = productDao.getUpdates(dateLastUpdate);
-        ProductLocalDao productLocalDao = new ProductLocalDao(that);
-        productLocalDao.updateProducts(products);
-        notifUtil.dismissUpdateProgressNotification(that.getString(R.string.notif_data_products));
+        Long lastUnloadDate = productDao.getUnloadDate();
+
+        if (lastUnloadDate != null && lastUnloadDate > dateLastUpdate.getTime()) {
+            if (enabledNotifications()) {
+                notifUtil.showUpdateProgressNotification(that.getString(R.string.notif_data_products));
+            }
+
+            List<Product> products = productDao.getAll();
+            ProductLocalDao productLocalDao = new ProductLocalDao(that);
+            productLocalDao.updateProducts(products);
+            notifUtil.dismissUpdateProgressNotification(that.getString(R.string.notif_data_products));
+        }// otherwise data might be in unload process or nothing new
     }
 
     private void updateContrAgents(Date dateLastUpdate) {
-        if (enabledNotifications()) {
-            notifUtil.showUpdateProgressNotification(that.getString(R.string.notif_data_contragents));
-        }
         ContrAgentDao contrAgentDao = new ContrAgentDao(that);
-        List<ContrAgent> caList = contrAgentDao.getContrAgentList(dateLastUpdate);
-        ContrAgentLocalDao contrAgentLocalDao = new ContrAgentLocalDao(that);
-        contrAgentLocalDao.updateContrAgents(caList);
-        notifUtil.dismissUpdateProgressNotification(that.getString(R.string.notif_data_contragents));
+
+        Long lastUnloadDate = contrAgentDao.getUnloadDate();
+        if (lastUnloadDate != null && lastUnloadDate > dateLastUpdate.getTime()) {
+            if (enabledNotifications()) {
+                notifUtil.showUpdateProgressNotification(that.getString(R.string.notif_data_contragents));
+            }
+            List<ContrAgent> caList = contrAgentDao.getAll();
+            ContrAgentLocalDao contrAgentLocalDao = new ContrAgentLocalDao(that);
+            contrAgentLocalDao.updateContrAgents(caList);
+            notifUtil.dismissUpdateProgressNotification(that.getString(R.string.notif_data_contragents));
+        }// otherwise data might be in unload process or nothing new
     }
 
-    private void updateDebts() {
-        if (enabledNotifications()) {
-            notifUtil.showUpdateProgressNotification(that.getString(R.string.notif_data_debts));
-        }
+    private void updateDebts(Date dateLastUpdate) {
         DebtsDao debtsDao = new DebtsDao(that);
-        List<Debt> debts = debtsDao.getDebts();
-        DebtsLocalDao debtsLocalDao = new DebtsLocalDao(that);
-        debtsLocalDao.updateAll(debts);
-        notifUtil.dismissUpdateProgressNotification(that.getString(R.string.notif_data_debts));
+        Long lastUnloadDate = debtsDao.getUnloadDate();
+
+        if (lastUnloadDate != null && lastUnloadDate > dateLastUpdate.getTime()) {
+            if (enabledNotifications()) {
+                notifUtil.showUpdateProgressNotification(that.getString(R.string.notif_data_debts));
+            }
+
+            List<Debt> debts = debtsDao.getDebts();
+            DebtsLocalDao debtsLocalDao = new DebtsLocalDao(that);
+            debtsLocalDao.updateAll(debts);
+            notifUtil.dismissUpdateProgressNotification(that.getString(R.string.notif_data_debts));
+        }// otherwise data might be in unload process or nothing new
     }
 
 

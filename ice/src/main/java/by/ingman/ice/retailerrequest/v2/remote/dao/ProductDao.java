@@ -27,14 +27,43 @@ public class ProductDao {
         this.ctx = context;
     }
 
-    public List<Product> getUpdates(Date date) {
+    public Long getUnloadDate() {
+        Long date = null;
+        Connection conn = new ConnectionFactory(ctx).getConnection();
+
+        if (conn != null) {
+            try {
+                PreparedStatement stat = conn.prepareStatement("SELECT datetime_unload FROM rests TOP 1");
+                ResultSet rs = stat.executeQuery();
+
+                if (rs.next()) {
+                    date = rs.getDate("datetime_unload").getTime();
+                }
+            } catch (Exception e) {
+                log.error("Error getting Products unload date from remote DB.", e);
+            } finally {
+                try {
+                    if (!conn.isClosed()) {
+                        conn.close();
+                    }
+                } catch (SQLException e) {
+                    log.error("Error closing connection to remote DB.", e);
+                }
+            }
+        } else {
+            log.error("Connection to remote DB is null.");
+        }
+
+        return date;
+    }
+
+    public List<Product> getAll() {
         List<Product> products = new ArrayList<>();
         Connection conn = new ConnectionFactory(ctx).getConnection();
 
         if (conn != null) {
             try {
-                PreparedStatement stat = conn.prepareStatement("SELECT * FROM rests WHERE datetime_unload >= ?");
-                stat.setDate(1, new java.sql.Date(date.getTime()));
+                PreparedStatement stat = conn.prepareStatement("SELECT * FROM rests");
                 ResultSet rs = stat.executeQuery();
 
                 while (rs.next()) {
