@@ -49,7 +49,7 @@ CREATE TABLE [dbo].[debts](
 	[overdue] [numeric](18, 0) NULL,
 	[datetime_unload] [datetime] NULL
 )
-code_k	name_k							code_mk									debt	overdue	datetime_unload
+code_k	name_k						code_mk	rating								debt	overdue	datetime_unload
 1390	ĞÅÑÒÎĞÀÍ ÁÅËÀß ĞÓÑÜ"  ×ÒÏÓÏ	37	Ïğåòåíçèÿ ÇÀÏĞÅÒ ÎÒÃĞÓÇÊÈ (24.06.15)	1808352	1808352	2015-07-27 06:02:35.390
 90701	ÀÂÒÎÌÈĞ  ÎÎÎ	37	Íîğìà	2207868	0	2015-07-27 06:02:35.390
 3200000014	ÀÑÂ - 88"  ÎÄÎ	9515	Èíêàññî (áàíê) ÇÀÏĞÅÒ ÎÒÃĞÓÇÊÈ (24.07.15)	2890908	2890908	2015-07-27 06:02:35.390

@@ -1,6 +1,10 @@
 package by.ingman.ice.retailerrequest.v2.structure;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -13,6 +17,11 @@ public class ContrAgentList {
 
     HashMap<String, ContrAgent> contrAgentHashMap = new HashMap<String, ContrAgent>();
 
+    public void addAllContrAgents(List<ContrAgent> caList) {
+        for (ContrAgent ca : caList) {
+            addContrAgent(ca);
+        }
+    }
 
     public void addContrAgent(ContrAgent contrAgent) {
         if (!contrAgentHashMap.containsKey(contrAgent.getCode())) {
@@ -30,7 +39,6 @@ public class ContrAgentList {
     }
 
 
-
     public String[] getContrAgentsSortedNamesArray(String namePart) {
         if (null == namePart || namePart.equals("")) {
             return getContrAgentsNamesArray();
@@ -44,7 +52,6 @@ public class ContrAgentList {
         }
         return list.toArray(new String[list.size()]);
     }
-
 
 
     public ContrAgent getCurrentContrAgent(String namePart, int checkedItemPosition) {
@@ -61,34 +68,27 @@ public class ContrAgentList {
     }
 
 
-
-    public String[] getSalePointsNamesArray(ContrAgent contrAgent, LinkedList<SalePoint> salePoints, String filter) {
-        ArrayList<String> result = new ArrayList<String>();
+    public String[] getSalePointsNamesArray(List<SalePoint> salePoints, String filter) {
+        List<String> result = new ArrayList<>();
         for (SalePoint sp : salePoints) {
-            if (sp.getContrAgentCode().equals(contrAgent.getCode())) {
-                String val = sp.getCode() + " " + sp.getName();
-                if (val.toLowerCase().contains(filter.toLowerCase())) {
-                    result.add(val);
-                }
+            String val = sp.getCode() + " " + sp.getName();
+            if (val.toLowerCase().contains(filter.toLowerCase())) {
+                result.add(val);
             }
         }
         return result.toArray(new String[result.size()]);
     }
 
 
-
-    public ArrayList<SalePoint> getSalePoints(ContrAgent contrAgent, LinkedList<SalePoint> salePoints, String filter) {
+    public ArrayList<SalePoint> getSalePoints(List<SalePoint> salePoints, String filter) {
         ArrayList<SalePoint> result = new ArrayList<SalePoint>();
         for (SalePoint sp : salePoints) {
-            if (sp.getContrAgentCode().equals(contrAgent.getCode())) {
-                if (sp.getName().toLowerCase().contains(filter.toLowerCase()) || sp.getCode().contains(filter.toLowerCase())) {
-                    result.add(sp);
-                }
+            if (sp.getName().toLowerCase().contains(filter.toLowerCase()) || sp.getCode().contains(filter.toLowerCase())) {
+                result.add(sp);
             }
         }
         return result;
     }
-
 
 
     public Collection<ContrAgent> getContrAgentsCollection(String filter) {

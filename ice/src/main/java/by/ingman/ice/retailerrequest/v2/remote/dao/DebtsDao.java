@@ -37,7 +37,7 @@ public class DebtsDao {
                 while (rs.next()) {
                     Debt d = new Debt(
                             rs.getString("code_k"),
-                            rs.getString("code_mk"),
+                            rs.getString("rating"),
                             rs.getString("debt"),
                             rs.getString("overdue")
                     );

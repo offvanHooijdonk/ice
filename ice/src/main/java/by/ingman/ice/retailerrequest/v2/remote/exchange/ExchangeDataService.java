@@ -30,11 +30,18 @@ import by.ingman.ice.retailerrequest.v2.helpers.ConfigureLog4J;
 import by.ingman.ice.retailerrequest.v2.helpers.GsonHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.NotificationsUtil;
 import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
+import by.ingman.ice.retailerrequest.v2.local.dao.ContrAgentLocalDao;
 import by.ingman.ice.retailerrequest.v2.local.dao.DBHelper;
+import by.ingman.ice.retailerrequest.v2.local.dao.DebtsLocalDao;
+import by.ingman.ice.retailerrequest.v2.local.dao.OrderLocalDao;
 import by.ingman.ice.retailerrequest.v2.local.dao.ProductLocalDao;
+import by.ingman.ice.retailerrequest.v2.remote.dao.ContrAgentDao;
+import by.ingman.ice.retailerrequest.v2.remote.dao.DebtsDao;
 import by.ingman.ice.retailerrequest.v2.remote.dao.OrderDao;
 import by.ingman.ice.retailerrequest.v2.remote.dao.ProductDao;
 import by.ingman.ice.retailerrequest.v2.structure.Answer;
+import by.ingman.ice.retailerrequest.v2.structure.ContrAgent;
+import by.ingman.ice.retailerrequest.v2.structure.Debt;
 import by.ingman.ice.retailerrequest.v2.structure.Order;
 import by.ingman.ice.retailerrequest.v2.structure.Product;
 
@@ -65,6 +72,7 @@ public class ExchangeDataService extends IntentService {
     private Context that;
 
     DBHelper dbHelper;
+    OrderLocalDao orderLocalDao;
     SQLiteDatabase db;
     private NotificationsUtil notifUtil;
     private OrderDao orderDao;
@@ -119,6 +127,7 @@ public class ExchangeDataService extends IntentService {
         executorService = Executors.newFixedThreadPool(1);
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         dbHelper = new DBHelper(that);
+        orderLocalDao = new OrderLocalDao(that);
         db = dbHelper.getWritableDatabase();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(that);
         util = new ExchangeUtil(that);
@@ -187,16 +196,13 @@ public class ExchangeDataService extends IntentService {
 
         long timeUpdateStart = new Date().getTime();
         long timeLastUpdate = sharedPreferences.getLong("lastUpdatedDate", 0);
-
+        Date dateLastUpdate = new Date(timeLastUpdate);
         try {
-            if (enabledNotifications()) {
-                notifUtil.showUpdateProgressNotification(that.getString(R.string.notif_data_products));// TODO
-            }
-            ProductDao productDao = new ProductDao(that);
-            List<Product> products = productDao.getUpdates(new Date(timeLastUpdate));
-            ProductLocalDao productLocalDao = new ProductLocalDao(that);
-            productLocalDao.updateProducts(products);
-            notifUtil.dismissUpdateProgressNotification(that.getString(R.string.notif_data_products));
+            updateProducts(dateLastUpdate);
+
+            updateContrAgents(dateLastUpdate);
+
+            updateDebts();
 
             sharedPreferences.edit().putLong("lastUpdateDate", timeUpdateStart).apply();
         } catch (Exception e) {
@@ -276,6 +282,40 @@ public class ExchangeDataService extends IntentService {
         }*/
     }
 
+    private void updateProducts(Date dateLastUpdate) {
+        if (enabledNotifications()) {
+            notifUtil.showUpdateProgressNotification(that.getString(R.string.notif_data_products));
+        }
+        ProductDao productDao = new ProductDao(that);
+        List<Product> products = productDao.getUpdates(dateLastUpdate);
+        ProductLocalDao productLocalDao = new ProductLocalDao(that);
+        productLocalDao.updateProducts(products);
+        notifUtil.dismissUpdateProgressNotification(that.getString(R.string.notif_data_products));
+    }
+
+    private void updateContrAgents(Date dateLastUpdate) {
+        if (enabledNotifications()) {
+            notifUtil.showUpdateProgressNotification(that.getString(R.string.notif_data_contragents));
+        }
+        ContrAgentDao contrAgentDao = new ContrAgentDao(that);
+        List<ContrAgent> caList = contrAgentDao.getContrAgentList(dateLastUpdate);
+        ContrAgentLocalDao contrAgentLocalDao = new ContrAgentLocalDao(that);
+        contrAgentLocalDao.updateContrAgents(caList);
+        notifUtil.dismissUpdateProgressNotification(that.getString(R.string.notif_data_contragents));
+    }
+
+    private void updateDebts() {
+        if (enabledNotifications()) {
+            notifUtil.showUpdateProgressNotification(that.getString(R.string.notif_data_debts));
+        }
+        DebtsDao debtsDao = new DebtsDao(that);
+        List<Debt> debts = debtsDao.getDebts();
+        DebtsLocalDao debtsLocalDao = new DebtsLocalDao(that);
+        debtsLocalDao.updateAll(debts);
+        notifUtil.dismissUpdateProgressNotification(that.getString(R.string.notif_data_debts));
+    }
+
+
     private boolean enabledNotifications() {
         return sharedPreferences.getBoolean("updateNotificationsEnabled", true);
     }
@@ -295,7 +335,7 @@ public class ExchangeDataService extends IntentService {
 
     private ArrayList<String> readSentRequestIdsWithoutAnswer() {
         String selection = "sent>0 and is_req>0";
-        Cursor c = db.query(DBHelper.TABLE_REQUESTS_NAME, null, selection, null, null, null, null);
+        Cursor c = db.query(OrderLocalDao.TABLE, null, selection, null, null, null, null);
         ArrayList<String> requestIds = new ArrayList<String>();
 
         if (c != null) {
@@ -306,7 +346,7 @@ public class ExchangeDataService extends IntentService {
                             String reqId = c.getString(c.getColumnIndex(columnName));
                             //проверить, есть ли уже ответы в базе
                             String answersSelection = "req_id=\"" + reqId + "\" and is_req=0";
-                            Cursor answersCursor = db.query(DBHelper.TABLE_REQUESTS_NAME, new String[]{"req_id"}, answersSelection, null, null, null, null);
+                            Cursor answersCursor = db.query(OrderLocalDao.TABLE, new String[]{"req_id"}, answersSelection, null, null, null, null);
                             if (answersCursor != null && answersCursor.getCount() == 0) {
                                 if (!requestIds.contains(reqId)) {
                                     requestIds.add(reqId);
@@ -325,7 +365,7 @@ public class ExchangeDataService extends IntentService {
     private void markRequestSent(String reqId) {
         ContentValues cv = new ContentValues();
         cv.put("sent", 1);
-        db.update(DBHelper.TABLE_REQUESTS_NAME, cv, "req_id = ?", new String[]{reqId});
+        db.update(OrderLocalDao.TABLE, cv, "req_id = ?", new String[]{reqId});
     }
 
     /**
@@ -339,7 +379,7 @@ public class ExchangeDataService extends IntentService {
                 return;
             }
 
-            Order orderSingle = dbHelper.getSingleRequestByRequestId(orderId);
+            Order orderSingle = orderLocalDao.getSingleRequestByRequestId(orderId);
 
             ContentValues cv = new ContentValues();
             cv.put("is_req", 0);
@@ -347,7 +387,7 @@ public class ExchangeDataService extends IntentService {
             cv.put("date", answer.getUnloadTime());
             cv.put("req", answer.getDesc());
             cv.put("sent", 0);
-            db.insert(DBHelper.TABLE_REQUESTS_NAME, null, cv);
+            db.insert(OrderLocalDao.TABLE, null, cv);
 
             notifUtil.showResponseNotification(orderSingle);
         } catch (Exception e) {

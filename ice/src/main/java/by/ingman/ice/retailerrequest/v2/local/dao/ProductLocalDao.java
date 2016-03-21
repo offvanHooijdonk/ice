@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import by.ingman.ice.retailerrequest.v2.structure.Product;
+import by.ingman.ice.retailerrequest.v2.structure.Storehouse;
 
 /**
  * Created by Yahor_Fralou on 3/15/2016.
@@ -28,24 +29,43 @@ public class ProductLocalDao {
         List<Product> products = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-        Cursor c = db.query(TABLE, null, null, null, null, null, "code");
+        Cursor c = db.query(TABLE, null, null, null, null, null, "name, code");
 
         while (c.moveToNext()) {
             products.add(new Product(
-                    c.getString("code_s"),
-                    c.getString("code_p"),
-                    c.getString("name_p"),
-                    c.getString("packs"),
-                    c.getString("amount"),
-                    c.getDouble("price"),
-                    c.getInt("amt_in_pack"),
-                    c.getDouble("gross_weight")
+                    c.getString(c.getColumnIndex("code")),
+                    c.getString(c.getColumnIndex("name")),
+                    c.getString(c.getColumnIndex("store_packs")),
+                    c.getString(c.getColumnIndex("store_rest")),
+                    c.getDouble(c.getColumnIndex("price")),
+                    c.getInt(c.getColumnIndex("num_in_pack")),
+                    c.getDouble(c.getColumnIndex("weight")),
+                    new Storehouse(
+                            c.getString(c.getColumnIndex("store_code")),
+                            c.getString(c.getColumnIndex("store_name"))
+                    )
             ));
         }
 
         c.close();
 
         return products;
+    }
+
+    public List<Storehouse> getStorehouses() {
+        List<Storehouse> storehouses = new ArrayList<>();
+
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        Cursor c = db.query(true, TABLE, new String[]{"store_code", "store_name"}, null, null, null, null, "store_name, store_code", null);
+        while (c.moveToNext()) {
+            storehouses.add(new Storehouse(
+                    c.getString(c.getColumnIndex("store_code")),
+                    c.getString(c.getColumnIndex("store_name"))));
+        }
+        c.close();
+
+        return storehouses;
     }
 
     public void updateProducts(List<Product> products) {
@@ -62,7 +82,7 @@ public class ProductLocalDao {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         boolean exists;
 
-        Cursor c = db.query(TABLE, null, UNIQUE_CONDITION, new String[] {p.getCode(), p.getStorehouseCode()}, null, null, null);
+        Cursor c = db.query(TABLE, null, UNIQUE_CONDITION, new String[]{p.getCode(), p.getStorehouse().getCode()}, null, null, null);
 
         exists = c.getCount() > 0;
 
@@ -79,12 +99,12 @@ public class ProductLocalDao {
         db.insert(TABLE, null, cv);
     }
 
-    public void update (Product p) {
+    public void update(Product p) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         ContentValues cv = makeContentValues(p);
 
-        db.update(TABLE, cv, UNIQUE_CONDITION, new String[]{p.getCode(), p.getStorehouseCode()});
+        db.update(TABLE, cv, UNIQUE_CONDITION, new String[]{p.getCode(), p.getStorehouse().getCode()});
     }
 
     private ContentValues makeContentValues(Product p) {
@@ -92,7 +112,8 @@ public class ProductLocalDao {
 
         cv.put("code", p.getCode());
         cv.put("name", p.getName());
-        cv.put("store_code", p.getStorehouseCode());
+        cv.put("store_code", p.getStorehouse().getCode());
+        cv.put("store_name", p.getStorehouse().getName());
         cv.put("store_packs", p.getStorehousePacks());
         cv.put("store_rest", p.getStorehouseRest());
         cv.put("price", p.getPrice());

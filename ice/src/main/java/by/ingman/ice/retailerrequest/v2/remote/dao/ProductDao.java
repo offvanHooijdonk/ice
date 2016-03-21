@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.List;
 
 import by.ingman.ice.retailerrequest.v2.structure.Product;
+import by.ingman.ice.retailerrequest.v2.structure.Storehouse;
 
 /**
  * Created by Yahor_Fralou on 10/28/2015.
@@ -38,14 +39,17 @@ public class ProductDao {
 
                 while (rs.next()) {
                     Product pr = new Product(
-                            rs.getString("code_s"),
                             rs.getString("code_p"),
                             rs.getString("name_p"),
                             rs.getString("packs"),
                             rs.getString("amount"),
                             rs.getDouble("price"),
                             rs.getInt("amt_in_pack"),
-                            rs.getDouble("gross_weight")
+                            rs.getDouble("gross_weight"),
+                            new Storehouse(
+                                    rs.getString("code_s"),
+                                    rs.getString("name_s")
+                            )
                     );
 
                     products.add(pr);

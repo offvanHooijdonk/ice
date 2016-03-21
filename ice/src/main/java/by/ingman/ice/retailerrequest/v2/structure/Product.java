@@ -3,7 +3,8 @@ package by.ingman.ice.retailerrequest.v2.structure;
 // rests
 public class Product {
     // code_s
-    private String storehouseCode;
+    // name_s
+    private Storehouse storehouse;
     // code_p
     private String code;
     // name_p
@@ -21,9 +22,9 @@ public class Product {
     // gross_weight
     private double weight;
 
-    public Product(String storehouseCode, String code, String name, String storehousePacks, String storehouseRest,
-                   Double price, int countInPack, double weight) {
-        this.storehouseCode = storehouseCode;
+    public Product(String code, String name, String storehousePacks, String storehouseRest,
+                   Double price, int countInPack, double weight, Storehouse storehouse) {
+        this.storehouse = storehouse;
         this.code = code;
         this.name = name;
         this.packs = 0.0;
@@ -36,7 +37,7 @@ public class Product {
     }
 
     public Product(Product p) {
-        this.storehouseCode = p.getStorehouseCode();
+        this.storehouse = new Storehouse(p.getStorehouse());
         this.code = p.getCode();
         this.name = p.getName();
         this.packs = 0.0;
@@ -56,9 +57,7 @@ public class Product {
         return countInPack;
     }
 
-    public String getStorehouseCode() {
-        return storehouseCode;
-    }
+
 
     public String getCode() {
         return code;
@@ -94,6 +93,14 @@ public class Product {
 
     public String getStorehouseRest() {
         return storehouseRest;
+    }
+
+    public Storehouse getStorehouse() {
+        return storehouse;
+    }
+
+    public void setStorehouse(Storehouse storehouse) {
+        this.storehouse = storehouse;
     }
 
     public String getTextViewText() {

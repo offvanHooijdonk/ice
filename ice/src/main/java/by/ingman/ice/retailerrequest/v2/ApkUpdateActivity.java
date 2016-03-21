@@ -129,7 +129,7 @@ public class ApkUpdateActivity extends Activity {
 
     private void startForceUpdate() {
         try {
-            checkNetworkConnected();
+            sharedPreferences.edit().putLong("lastUpdateDate", 0).apply();
 
             displayFailureMessage(false);
             displaySuccessMessage(false);
@@ -139,24 +139,12 @@ public class ApkUpdateActivity extends Activity {
             // cancel alarm for the next service call
             AlarmHelper.cancelExchangeAlarm(ctx);
 
-            // TODO move all prepare/run logic to separate class
-            for (String filename : StaticFileNames.getFilenamesArray()) {
-                if (Arrays.asList(fileList()).contains(filename)) {
-                    getFileStreamPath(filename).delete();
-                }
-            }
-
-            Toast.makeText(getApplicationContext(), "Подготовка прошла успешно, файлы будут обновлены в течении нескольких минут", Toast.LENGTH_SHORT).show();
-
             Intent intent = new Intent(getApplicationContext(), ExchangeDataService.class);
             ServiceResultReceiver receiver = new ServiceResultReceiver();
             intent.putExtra(ExchangeDataService.EXTRA_RECEIVER, receiver);
             startService(intent);
-        } catch (NotActiveException e) {
-            Toast.makeText(getApplicationContext(), "Нет связи с интернетом", Toast.LENGTH_SHORT).show();
-            displayFailureMessage(true);
-            displayProgressDialog(false);
         } catch (Exception e) {
+            // TODO handle this
             Toast.makeText(getApplicationContext(), "Невозможно обновить", Toast.LENGTH_SHORT).show();
             displayFailureMessage(true);
             displayProgressDialog(false);

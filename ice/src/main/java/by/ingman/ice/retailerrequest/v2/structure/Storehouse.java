@@ -14,6 +14,11 @@ public class Storehouse {
     //name_s
     private String name;
 
+    public Storehouse(Storehouse storehouse) {
+        this.code = storehouse.getCode();
+        this.name = storehouse.getName();
+    }
+
     public Storehouse(String code, String name) {
         this.code = code;
         this.name = name;

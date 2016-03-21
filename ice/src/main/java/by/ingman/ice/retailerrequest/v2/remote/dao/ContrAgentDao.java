@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import by.ingman.ice.retailerrequest.v2.structure.ContrAgent;
@@ -25,13 +26,14 @@ public class ContrAgentDao {
         this.ctx = context;
     }
 
-    public List<ContrAgent> getContrAgentList() {
+    public List<ContrAgent> getContrAgentList(Date date) {
         List<ContrAgent> contrAgents = new ArrayList<>();
         Connection conn = new ConnectionFactory(ctx).getConnection();
 
         if (conn != null) {
             try {
-                PreparedStatement stat = conn.prepareStatement("SELECT * FROM clients ORDER BY name_k");
+                PreparedStatement stat = conn.prepareStatement("SELECT * FROM clients WHERE datetime_unload >= ? ORDER BY name_k");
+                stat.setDate(1, new java.sql.Date(date.getTime()));
                 ResultSet rs = stat.executeQuery();
                 ContrAgent ca = null;
                 while (rs != null && rs.next()) {
