@@ -13,7 +13,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/update_app"
-            android:orderId="@+orderId/apkUpdateButton"
+            android:id="@+id/apkUpdateButton"
             android:layout_gravity="start|center_vertical"
             />
 
@@ -21,14 +21,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/update_app_comment"
-            android:orderId="@+orderId/textView1"
+            android:id="@+id/textView1"
             android:layout_gravity="start|center_vertical"
             android:layout_marginBottom="20dp"/>-->
 
     <ProgressBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orderId="@+orderId/progressBar"
+            android:id="@+id/progressBar"
             android:layout_gravity="start|center_vertical"
             android:visibility="gone"/>
 
@@ -36,7 +36,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/update_data_files_button"
-            android:orderId="@+orderId/pubFilesUpdateButton"
+            android:id="@+id/pubFilesUpdateButton"
             android:layout_gravity="start|center_vertical"
             />
 
@@ -44,12 +44,12 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="@string/update_data_files_disclaimer"
-            android:orderId="@+orderId/textView"
+            android:id="@+id/textView"
             android:textColor="@color/warnTextColor"
             android:layout_marginBottom="20dp"/>
 
     <TextView
-        android:orderId="@+orderId/textSuccess"
+        android:id="@+id/textSuccess"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/successTextColor"
@@ -58,7 +58,7 @@
         android:text="@string/data_update_success"/>
 
     <TextView
-        android:orderId="@+orderId/textFail"
+        android:id="@+id/textFail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/warnTextColor"
