@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import by.ingman.ice.retailerrequest.v2.structure.ContrAgent;
@@ -45,22 +46,24 @@ public class DebtsLocalDao {
         }
     }
 
-    public Debt getDebtForContrAgent(ContrAgent ca) {
+    public List<Debt> getDebtsForContrAgent(ContrAgent ca) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Debt debt = null;
+        List<Debt> debts = new ArrayList<>();
 
         Cursor c = db.query(TABLE, null, "code_k = ?", new String[]{ca.getCode()}, null, null, null);
 
-        if (c.getCount() > 0) {
-            debt = new Debt(
+        while (c.moveToNext()) {
+            debts.add(new Debt(
                     c.getString(c.getColumnIndex("code_k")),
                     c.getString(c.getColumnIndex("rating")),
                     c.getString(c.getColumnIndex("debt")),
                     c.getString(c.getColumnIndex("overdue"))
-            );
+            ));
         }
 
-        return debt;
+        c.close();
+
+        return debts;
     }
 
     private ContentValues toContentValues(Debt d) {

@@ -47,6 +47,7 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
     private Calendar reportDate;
     private Gson gson;
 
+    // TODO fix report!
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.requestreport);
@@ -135,9 +136,9 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
                     if ("req".equals(columnName)) {
                         String req = answersCursor.getString(answersCursor.getColumnIndex(columnName));
                         String[] array = req.split(";");
-                        answer.setId(reqId);
+                        answer.setOrderId(reqId);
                         answer.setResCode(array[1]);
-                        answer.setDesc(array[2]);
+                        answer.setDescription(array[2]);
                     }
                 }
             }

@@ -26,7 +26,7 @@ public class OrderDao {
         this.ctx = context;
     }
 
-    public boolean batchInsertRequests(List<Order> orders) {
+    public boolean batchInsertOrders(List<Order> orders) {
         boolean success = false;
         Connection conn = new ConnectionFactory(ctx).getConnection();
 
@@ -77,9 +77,9 @@ public class OrderDao {
     }
 
     private void addRequestToBatch(Order order, PreparedStatement stat) throws Exception {
-        stat.setString(1, order.getId());
+        stat.setString(1, order.getOrderId());
         stat.setString(2, order.getManager());
-        stat.setDate(3, new Date(order.getDate().getTime()));
+        stat.setDate(3, new Date(order.getOrderDate().getTime()));
         stat.setBoolean(4, Boolean.valueOf(order.getIsCommercial()));
         stat.setString(5, order.getContrAgentCode());
         stat.setString(6, order.getSalePointCode());
@@ -104,8 +104,8 @@ public class OrderDao {
 
             if (rs.next()) {
                 answer = new Answer();
-                answer.setId(rs.getString(Answer.ORDER_ID));
-                answer.setDesc(rs.getString(Answer.DESCRIPTION));
+                answer.setOrderId(rs.getString(Answer.ORDER_ID));
+                answer.setDescription(rs.getString(Answer.DESCRIPTION));
                 answer.setUnloadTime(rs.getString(Answer.UNLOAD_TIME));
             }
         } catch (SQLException e) {

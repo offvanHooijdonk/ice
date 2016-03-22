@@ -1,7 +1,6 @@
 package by.ingman.ice.retailerrequest.v2.structure;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -80,8 +79,8 @@ public class ContrAgentList {
     }
 
 
-    public ArrayList<SalePoint> getSalePoints(List<SalePoint> salePoints, String filter) {
-        ArrayList<SalePoint> result = new ArrayList<SalePoint>();
+    public List<SalePoint> getSalePoints(List<SalePoint> salePoints, String filter) {
+        List<SalePoint> result = new ArrayList<SalePoint>();
         for (SalePoint sp : salePoints) {
             if (sp.getName().toLowerCase().contains(filter.toLowerCase()) || sp.getCode().contains(filter.toLowerCase())) {
                 result.add(sp);
@@ -91,7 +90,7 @@ public class ContrAgentList {
     }
 
 
-    public Collection<ContrAgent> getContrAgentsCollection(String filter) {
+    /*public Collection<ContrAgent> getContrAgentsCollection(String filter) {
         if (filter == null || filter.equals("")) {
             return contrAgentHashMap.values();
         } else {
@@ -103,8 +102,7 @@ public class ContrAgentList {
             }
             return result;
         }
-    }
-
+    }*/
 
     public void clear() {
         contrAgentHashMap = new HashMap<String, ContrAgent>();

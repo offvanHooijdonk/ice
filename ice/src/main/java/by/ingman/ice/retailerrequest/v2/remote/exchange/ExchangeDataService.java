@@ -3,22 +3,16 @@ package by.ingman.ice.retailerrequest.v2.remote.exchange;
 import android.app.Activity;
 import android.app.IntentService;
 import android.app.NotificationManager;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.os.ResultReceiver;
 import android.preference.PreferenceManager;
 
-import com.google.gson.Gson;
-
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -27,11 +21,9 @@ import java.util.concurrent.Executors;
 import by.ingman.ice.retailerrequest.v2.R;
 import by.ingman.ice.retailerrequest.v2.helpers.AlarmHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.ConfigureLog4J;
-import by.ingman.ice.retailerrequest.v2.helpers.GsonHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.NotificationsUtil;
 import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
 import by.ingman.ice.retailerrequest.v2.local.dao.ContrAgentLocalDao;
-import by.ingman.ice.retailerrequest.v2.local.dao.DBHelper;
 import by.ingman.ice.retailerrequest.v2.local.dao.DebtsLocalDao;
 import by.ingman.ice.retailerrequest.v2.local.dao.OrderLocalDao;
 import by.ingman.ice.retailerrequest.v2.local.dao.ProductLocalDao;
@@ -53,6 +45,7 @@ import by.ingman.ice.retailerrequest.v2.structure.Product;
  * To change this template use File | Settings | File Templates.
  */
 public class ExchangeDataService extends IntentService {
+    public static final String FLAG_UPDATE_IN_PROGRESS = "FLAG_UPDATE_IN_PROGRESS";
 
     static {
         ConfigureLog4J.configure();
@@ -71,18 +64,14 @@ public class ExchangeDataService extends IntentService {
     SharedPreferences sharedPreferences;
     private Context that;
 
-    DBHelper dbHelper;
     OrderLocalDao orderLocalDao;
-    SQLiteDatabase db;
     private NotificationsUtil notifUtil;
     private OrderDao orderDao;
 
     Date debtDate = null, restsDate = null, clientsDate = null;
 
-    private Gson gson;
     private ExchangeUtil util;
     private ResultReceiver receiver = null;
-    private boolean forcedUpdate = false;
 
     /**
      * Creates an IntentService. Invoked by your subclass's constructor.
@@ -102,33 +91,31 @@ public class ExchangeDataService extends IntentService {
         // FIXME this log is for test
         log.info("Test: service launched");
 
+        setProgressFlag(true);
+
         Parcelable p = intent.getParcelableExtra(EXTRA_RECEIVER);/*Extras().containsKey(EXTRA_RECEIVER) ? intent
                 .getExtras()
                 .getParcelable(EXTRA_RECEIVER) : null;*/
 
         if (p == null) {
             receiver = null;
-            forcedUpdate = false;
         } else {
             receiver = (ResultReceiver) p;
-            forcedUpdate = true;
         }
 
         doExchangeData();
     }
 
+    @Override
     public void onCreate() {
         super.onCreate();
         this.that = this;
 
-        gson = GsonHelper.createGson();
         notifUtil = new NotificationsUtil(that);
         orderDao = new OrderDao(that);
         executorService = Executors.newFixedThreadPool(1);
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        dbHelper = new DBHelper(that);
         orderLocalDao = new OrderLocalDao(that);
-        db = dbHelper.getWritableDatabase();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(that);
         util = new ExchangeUtil(that);
     }
@@ -150,11 +137,11 @@ public class ExchangeDataService extends IntentService {
             util.sendRequests();
 
             // read from localDB today unanswered requests
-            ArrayList<String> sentRequestIds = readSentRequestIdsWithoutAnswer();
+            List<String> sentOrderIds = orderLocalDao.getSentOrdersIdsWithoutAnswer();
 
             // check for an answer in remote DB and show notification for those having an answer
-            for (String reqId : sentRequestIds) {
-                readRemoteAnswer(reqId);
+            for (String orderId : sentOrderIds) {
+                readRemoteAnswer(orderId);
             }
         } catch (Exception e) {
             log.error("Error in file updating service", e);
@@ -163,6 +150,7 @@ public class ExchangeDataService extends IntentService {
                 receiver.send(Activity.RESULT_CANCELED, null);
             }
         } finally {
+            setProgressFlag(false);
             AlarmHelper.createExchangeAlarm(this);
         }
 
@@ -191,7 +179,7 @@ public class ExchangeDataService extends IntentService {
      * update lists of clients+, rests+, debts+
      * @throws Exception
      */
-    public void updateAllData() throws Exception {
+    private void updateAllData() throws Exception {
         notifUtil.dismissFileErrorNotifications();
 
         long timeUpdateStart = new Date().getTime();
@@ -214,72 +202,6 @@ public class ExchangeDataService extends IntentService {
 
             throw new Exception(e);
         }
-
-        // to remove
-        /*try {
-            for (String filename : StaticFileNames.getFilenamesArray()) {
-                boolean doUpdate = false;
-                String url = sharedPreferences.getString("androidExchangePubDirPref", "");
-                if (url.charAt(url.length() - 1) != '/') {
-                    url = url.concat("/");
-                }
-                Date remoteDate = null;
-                SmbFile smbFile = new SmbFile("smb://" + url + filename);
-                if (Arrays.asList(fileList()).contains(filename)) {
-                    Date localDate = new Date(getFileStreamPath(filename).lastModified());
-                    Date prevRemoteDate = getDateForFilename(filename);
-                    remoteDate = new Date(smbFile.getDate());
-                    if (prevRemoteDate != null && remoteDate.after(prevRemoteDate)) {
-                        doUpdate = true;
-                    }
-                    if (prevRemoteDate == null && remoteDate.after(localDate)) {
-                        doUpdate = true;
-                    }
-                }
-                if (!Arrays.asList(fileList()).contains(filename)) {
-                    doUpdate = true;
-                }
-                if (doUpdate) {
-                    if (enabledNotifications()) {
-                        //notifUtil.showUpdateProgressNotification("Обновление данных", getFileDescr(filename) + " обновляется", filename);
-                    }
-                    //updating file
-                    SmbFileInputStream is = new SmbFileInputStream(smbFile);
-                    FileOutputStream fos = openFileOutput(filename + "_temp", Context.MODE_PRIVATE);
-                    byte[] buffer = new byte[8192];
-                    int read;
-                    while ((read = is.read(buffer)) > 0)
-                        fos.write(buffer, 0, read);
-                    is.close();
-                    fos.close();
-
-                    if (enabledNotifications()) {
-                        notifUtil.dismissUpdateProgressNotification(filename);
-                    }
-                    getFileStreamPath(filename + "_temp").renameTo(getFileStreamPath(filename));
-                    deleteFile(filename + "_temp");
-
-                    String notif = null;
-                    if (filename.equals(StaticFileNames.DEBTS_CSV_SD)) {
-                        debtDate = remoteDate;
-                    } else if (filename.equals(StaticFileNames.RESTS_CSV_SD)) {
-                        restsDate = remoteDate;
-                    } else if (filename.equals(StaticFileNames.CLIENTS_CSV_SD)) {
-                        clientsDate = remoteDate;
-                    }
-                    notif = getFileDescr(filename) + " обновлён";
-                    if (enabledNotifications()) {
-                        notifUtil.showFileCompletedNotification("Файл обновлён", notif, filename);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            log.error("Error loading data files", e);
-            notifUtil.showErrorNotification("Ошибка при загрузке данных", "Ошибка загрузки файла данных.");
-            notifUtil.dismissAllUpdateProgressNotifications();
-
-            throw new Exception(e);
-        }*/
     }
 
     private void updateProducts(Date dateLastUpdate) {
@@ -329,57 +251,22 @@ public class ExchangeDataService extends IntentService {
         }// otherwise data might be in unload process or nothing new
     }
 
+    public static boolean isUpdateInProgress(Context ctx) {
+        return PreferenceManager.getDefaultSharedPreferences(ctx).getBoolean(FLAG_UPDATE_IN_PROGRESS, false);
+    }
+
+    public static void checkUpdateInProgress(Context ctx) throws UpdateInProgressException {
+        if (isUpdateInProgress(ctx)) {
+            throw new UpdateInProgressException(ctx);
+        }
+    }
+
+    private void setProgressFlag(boolean inProgress) {
+        sharedPreferences.edit().putBoolean(FLAG_UPDATE_IN_PROGRESS, inProgress);
+    }
 
     private boolean enabledNotifications() {
         return sharedPreferences.getBoolean("updateNotificationsEnabled", true);
-    }
-
-    private String getFileDescr(String filename) {
-        String descr = "Файл";
-        if (filename.equals(StaticFileNames.DEBTS_CSV_SD)) {
-            descr = "Файл задолженностей";
-        } else if (filename.equals(StaticFileNames.RESTS_CSV_SD)) {
-            descr = "Файл остатков";
-        } else if (filename.equals(StaticFileNames.CLIENTS_CSV_SD)) {
-            descr = "Файл клиентов";
-        }
-
-        return descr;
-    }
-
-    private ArrayList<String> readSentRequestIdsWithoutAnswer() {
-        String selection = "sent>0 and is_req>0";
-        Cursor c = db.query(OrderLocalDao.TABLE, null, selection, null, null, null, null);
-        ArrayList<String> requestIds = new ArrayList<String>();
-
-        if (c != null) {
-            if (c.moveToFirst()) {
-                do {
-                    for (String columnName : c.getColumnNames()) {
-                        if (columnName.equals("req_id")) {
-                            String reqId = c.getString(c.getColumnIndex(columnName));
-                            //проверить, есть ли уже ответы в базе
-                            String answersSelection = "req_id=\"" + reqId + "\" and is_req=0";
-                            Cursor answersCursor = db.query(OrderLocalDao.TABLE, new String[]{"req_id"}, answersSelection, null, null, null, null);
-                            if (answersCursor != null && answersCursor.getCount() == 0) {
-                                if (!requestIds.contains(reqId)) {
-                                    requestIds.add(reqId);
-                                }
-                            }
-                            answersCursor.close();
-                        }
-                    }
-                } while (c.moveToNext());
-            }
-            c.close();
-        }
-        return requestIds;
-    }
-
-    private void markRequestSent(String reqId) {
-        ContentValues cv = new ContentValues();
-        cv.put("sent", 1);
-        db.update(OrderLocalDao.TABLE, cv, "req_id = ?", new String[]{reqId});
     }
 
     /**
@@ -393,75 +280,14 @@ public class ExchangeDataService extends IntentService {
                 return;
             }
 
-            Order orderSingle = orderLocalDao.getSingleRequestByRequestId(orderId);
+            orderLocalDao.saveRemoteAnswer(answer);
+            Order singleOrder = orderLocalDao.getOrderById(answer.getOrderId());
 
-            ContentValues cv = new ContentValues();
-            cv.put("is_req", 0);
-            cv.put("req_id", orderId);
-            cv.put("date", answer.getUnloadTime());
-            cv.put("req", answer.getDesc());
-            cv.put("sent", 0);
-            db.insert(OrderLocalDao.TABLE, null, cv);
-
-            notifUtil.showResponseNotification(orderSingle);
+            notifUtil.showOrderNotification(singleOrder, answer);
         } catch (Exception e) {
             log.error("Error reading remote answer.", e);
         }
 
     }
-
-    /*class FilesUpdateThread implements Runnable {
-
-        public FilesUpdateThread() {
-        }
-
-        public void run() {
-            while (true) {
-                try {
-                    //updating public files from remote db
-                    updateAllData();
-                    Map<String, List<Order>> requests = readUnsentRequests();
-
-                    //sending unsent requests and marking as sent
-                    for (String reqId : requests.keySet()) {
-                        List<Order> list = requests.get(reqId);
-                        //createRemoteRequest(reqId, requests.get(reqId));
-                        boolean success = orderDao.batchInsertRequests(list);
-                        if (success) {
-                            markRequestSent(reqId);
-
-                            if (list.size() > 0) { // just make sure, though else case should not be possible
-                                Order reqInfo = list.get(0);
-                                notifUtil.showRequestSentNotification(reqInfo);
-                            }
-                        }
-                    }
-
-                    // send unsent requests
-                    util.sendRequests();
-
-                    // вычитать отправленные заявки на сегодня без ответа
-                    ArrayList<String> sentRequestIds = readSentRequestIdsWithoutAnswer();
-                    // для каждой поискать ответ в удалённой бд
-                    // и если есть, записать его в базу и вывести оповещение
-                    for (String reqId : sentRequestIds) {
-                        readRemoteAnswer(reqId);
-                    }
-
-                    TimeUnit.SECONDS.sleep(30);
-
-
-                } catch (Exception e) {
-                    log.error("Error in file updating thread", e);
-                    try {
-                        TimeUnit.SECONDS.sleep(30);
-                    } catch (InterruptedException e1) {
-                        log.error("Error while putting service thread to sleep", e1);
-                    }
-                }
-            }
-        }
-
-    }*/
 
 }

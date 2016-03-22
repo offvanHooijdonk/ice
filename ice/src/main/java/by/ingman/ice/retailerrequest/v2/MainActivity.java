@@ -4,15 +4,13 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
-import android.app.ProgressDialog;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.InputType;
@@ -33,31 +31,24 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-
 import org.apache.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 
 import by.ingman.ice.retailerrequest.v2.helpers.ConfigureLog4J;
-import by.ingman.ice.retailerrequest.v2.helpers.GsonHelper;
-import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
+import by.ingman.ice.retailerrequest.v2.helpers.UpdateInProgressExceptionHandler;
 import by.ingman.ice.retailerrequest.v2.local.dao.ContrAgentLocalDao;
-import by.ingman.ice.retailerrequest.v2.local.dao.DBHelper;
+import by.ingman.ice.retailerrequest.v2.local.dao.DebtsLocalDao;
 import by.ingman.ice.retailerrequest.v2.local.dao.OrderLocalDao;
 import by.ingman.ice.retailerrequest.v2.local.dao.ProductLocalDao;
 import by.ingman.ice.retailerrequest.v2.remote.exchange.ExchangeDataService;
+import by.ingman.ice.retailerrequest.v2.remote.exchange.UpdateInProgressException;
 import by.ingman.ice.retailerrequest.v2.structure.ContrAgent;
 import by.ingman.ice.retailerrequest.v2.structure.ContrAgentList;
 import by.ingman.ice.retailerrequest.v2.structure.Debt;
@@ -86,7 +77,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
     EditText sortProductEditText;
     CheckBox checkBoxProductFilterType;
     EditText commentEditText;
-    private Calendar requestDate = null;
+    private Calendar orderDate = null;
 
 
     final int DIALOG_CONTRAGENTS = 1;
@@ -98,22 +89,17 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
     String username;
     ContrAgentList contrAgentList = new ContrAgentList();
     ContrAgent contrAgent = null;
-    LinkedList<SalePoint> salePoints = new LinkedList<SalePoint>();
     SalePoint salePoint = null;
     List<Storehouse> storehouses;
     Storehouse storehouse = null;
-    ArrayList<Debt> debts = new ArrayList<Debt>();
-    Debt debt = null;
+    List<Debt> debts = new ArrayList<>();
     List<Product> products;
-    HashMap<Integer, Product> selectedProducts = new HashMap<Integer, Product>();
+    HashMap<Integer, Product> selectedProducts = new HashMap<>();
 
-    Date contragentsDate = null;
-    Date restsDate = null;
-    Date debtsDate = null;
-
-    DBHelper dbHelper;
     private ProductLocalDao productLocalDao;
     private ContrAgentLocalDao contrAgentLocalDao;
+    private DebtsLocalDao debtsLocalDao;
+    private OrderLocalDao orderLocalDao;
 
     int productCountIds = 0;
 
@@ -122,9 +108,6 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
     InputMethodManager imm;
 
     private String lastValueProductFilter;
-    private Gson gson;
-
-    ProgressDialog mProgressDialog;
 
     static {
         ConfigureLog4J.configure();
@@ -143,11 +126,12 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
         PreferenceManager.setDefaultValues(that, R.xml.pref, false);
 
-        dbHelper = new DBHelper(this);
-        productLocalDao = new ProductLocalDao(this);
-        contrAgentLocalDao = new ContrAgentLocalDao(this);
+        new UpdateInProgressExceptionHandler(that);
 
-        gson = GsonHelper.createGson();
+        productLocalDao = new ProductLocalDao(that);
+        contrAgentLocalDao = new ContrAgentLocalDao(that);
+        debtsLocalDao = new DebtsLocalDao(that);
+        orderLocalDao = new OrderLocalDao(that);
 
         imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
@@ -156,8 +140,8 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
         //вычитываем при старте
         readContrAgents();
-        readDebtsFromSD();
-        getStorehousesAndProducts();
+        readDebtsFrom();
+        readStorehousesAndProducts();
 
         //инициализация настроек
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -165,17 +149,17 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         //Секция инициализации вьюх
         {
             // request date init
-            requestDate = Calendar.getInstance();
+            orderDate = Calendar.getInstance();
             textDate = (TextView) findViewById(R.id.textDate);
-            textDate.setText(Order.getDateFormat().format(requestDate.getTime()));
+            textDate.setText(Order.getDateFormat().format(orderDate.getTime()));
 
             textDate.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     DatePickerDialog dateDialog = new DatePickerDialog(that, that,
-                            requestDate.get(Calendar.YEAR),
-                            requestDate.get(Calendar.MONTH),
-                            requestDate.get(Calendar.DAY_OF_MONTH));
+                            orderDate.get(Calendar.YEAR),
+                            orderDate.get(Calendar.MONTH),
+                            orderDate.get(Calendar.DAY_OF_MONTH));
                     dateDialog.show();
                 }
             });
@@ -273,14 +257,14 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
     private void setDefaultStorehouse() {
         String storehouseDefaultCode = sharedPreferences.getString("storehouseDefaultCode", "");
-        if (storehouseDefaultCode != null && !storehouseDefaultCode.equals("")) {
+        if (!storehouseDefaultCode.equals("")) {
             for (Storehouse s : storehouses) {
                 if (s.getCode().equals(storehouseDefaultCode)) {
                     storehouse = s;
                 }
             }
             if (storehouse != null) {
-                storehouseTextView.setText(storehouse.getCode() + " " + storehouse.getName());
+                storehouseTextView.setText(String.format("%s %s", storehouse.getCode(), storehouse.getName()));
             }
 
             if (storehouse == null) {
@@ -301,9 +285,9 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             sb.append(" Менеджер: ").append(username).append("\n\r\n\r");
         }
 
-        int day = requestDate.get(Calendar.DAY_OF_MONTH);
-        int month = requestDate.get(Calendar.MONTH); // month starts with 0 in Calendar
-        int year = requestDate.get(Calendar.YEAR);
+        int day = orderDate.get(Calendar.DAY_OF_MONTH);
+        int month = orderDate.get(Calendar.MONTH); // month starts with 0 in Calendar
+        int year = orderDate.get(Calendar.YEAR);
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, day);
         Date date = calendar.getTime();
@@ -352,7 +336,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             sb.append("Товар не выбран\n\r\n\r");
             requestIsReady = false;
         } else {
-            List<Integer> keys = new ArrayList<Integer>(selectedProducts.keySet());
+            List<Integer> keys = new ArrayList<>(selectedProducts.keySet());
             Collections.sort(keys);
             for (Integer k : keys) {
                 Product p = selectedProducts.get(k);
@@ -376,8 +360,8 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         }
 
         DecimalFormat df = new DecimalFormat("0.00");
-        sb.append("\n\n\tВСЕГО: " + df.format(totalPacks) + " уп., " + totalCount + " шт., " + df.format(totalWeight) + " кг");
-        sb.append("\n\tСУММА: " + dfSumm.format(totalSumm));
+        sb.append("\n\n\tВСЕГО: ").append(df.format(totalPacks)).append(" уп., ").append(totalCount).append(" шт., ").append(df.format(totalWeight)).append(" кг")
+                .append("\n\tСУММА: ").append(dfSumm.format(totalSumm));
 
         //финальное отображение
         textViewFinal.setText(sb.toString());
@@ -425,13 +409,13 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
     @Override
     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-        if (requestDate == null) {
-            requestDate = Calendar.getInstance();
+        if (orderDate == null) {
+            orderDate = Calendar.getInstance();
         }
-        requestDate.set(Calendar.YEAR, year);
-        requestDate.set(Calendar.MONTH, monthOfYear);
-        requestDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-        textDate.setText(Order.getDateFormat().format(requestDate.getTime()));
+        orderDate.set(Calendar.YEAR, year);
+        orderDate.set(Calendar.MONTH, monthOfYear);
+        orderDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+        textDate.setText(Order.getDateFormat().format(orderDate.getTime()));
 
         refreshFinalView();
     }
@@ -445,133 +429,89 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         switch (v.getId()) {
             case R.id.buttonContrAgentsDialog:
                 readContrAgents();
-                readDebtsFromSD();
+                readDebtsFrom();
                 showDialog(DIALOG_CONTRAGENTS);
                 break;
             case R.id.buttonSalespoints:
                 showDialog(DIALOG_SALESPOINTS);
                 break;
             case R.id.buttonStorehouses:
-                getStorehousesAndProducts();
+                readStorehousesAndProducts();
                 showDialog(DIALOG_STOREHOUSES);
                 break;
             case R.id.buttonAddProduct:
                 addProduct();
                 break;
             case R.id.buttonSendRequest:
-                sendRequest();
+                storeOrder();
             default:
                 break;
         }
     }
 
-    private void sendRequest() {
-        try {
-            SQLiteDatabase db = dbHelper.getWritableDatabase();
-            ContentValues cv = new ContentValues();
+    private void storeOrder() {
+        int day = orderDate.get(Calendar.DAY_OF_MONTH);
+        int month = orderDate.get(Calendar.MONTH); // month starts with 0 in Calendar
+        int year = orderDate.get(Calendar.YEAR);
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month, day);
+        Date date = calendar.getTime();
 
-            int day = requestDate.get(Calendar.DAY_OF_MONTH);
-            int month = requestDate.get(Calendar.MONTH); // month starts with 0 in Calendar
-            int year = requestDate.get(Calendar.YEAR);
-            Calendar calendar = Calendar.getInstance();
-            calendar.set(year, month, day);
-            Date date = calendar.getTime();
+        String comment = commentEditText.getText().toString();
 
-            String comment = commentEditText.getText().toString();
+        String orderId = Order.generateNewId();
+        for (Product product : selectedProducts.values()) {
+            Order order = new Order(
+                    orderId,
+                    username,
+                    checkBoxCommercial.isChecked(),
+                    contrAgent.getCode(),
+                    contrAgent.getName(),
+                    salePoint.getCode(),
+                    salePoint.getName(),
+                    storehouse.getCode(),
+                    storehouse.getName(),
+                    product.getCode(),
+                    product.getName(),
+                    product.getPacks(),
+                    product.getRest(),
+                    date,
+                    comment,
+                    false,
+                    false);
+            orderLocalDao.save(order);
 
-            String id = Order.generateNewId();
-            for (Product product : selectedProducts.values()) {
-                Order order = new Order(
-                        id,
-                        username,
-                        checkBoxCommercial.isChecked(),
-                        contrAgent,
-                        salePoint,
-                        storehouse,
-                        product,
-                        date,
-                        comment);
-                cv.put("is_req", 1);
-                cv.put("req_id", order.getId());
-                cv.put("date", Order.getDateFormat().format(order.getDate()));
-                cv.put("req", gson.toJson(order));
-                cv.put("sent", 0);
-                db.insert(OrderLocalDao.TABLE, null, cv);
+            updateRestsLocal();
 
-                updateRestsLocal();
-
-                clearForm();
-            }
-        } catch (Exception e) {
-            log.error("Error saving request to local DB.", e);
+            clearForm();
         }
-
     }
 
     private void updateRestsLocal() {
         try {
-            // открываем поток для чтения
-            InputStreamReader isr = new InputStreamReader(openFileInput(StaticFileNames.RESTS_CSV_SD), "CP-1251");
-            BufferedReader br = new BufferedReader(isr);
-            BufferedWriter bw = new BufferedWriter(
-                    new OutputStreamWriter(
-                            openFileOutput(StaticFileNames.RESTS_CSV_SD + "temp", Context.MODE_PRIVATE), "CP-1251"));
-
-            String string;
-            String newString;
-            String stringArray[];
-            // читаем содержимое
-            storehouses = new ArrayList<Storehouse>();
-            products = new ArrayList<Product>();
-            DecimalFormat df = new DecimalFormat("0.00");
-
-            while ((string = br.readLine()) != null) {
-                newString = string;
-
-                stringArray = string.split(";");
-                String storehouseCode = stringArray[0];
-                String productCode = stringArray[2];
-                if (storehouse.getCode().equals(storehouseCode)) {
-                    for (Product p : selectedProducts.values()) {
-                        if (p.getCode().equals(productCode)) {
-                            Product product = new Product(/*stringArray[0],*/ stringArray[2], stringArray[3],
-                                    stringArray[4], stringArray[5], Double.valueOf(stringArray[6]), Integer.valueOf
-                                    (stringArray[7]), Double.parseDouble(stringArray[8]), new Storehouse("",""));
-                            double packs;
-                            int count;
-                            StringBuilder newLine = new StringBuilder();
-                            if ((packs = df.parse(product.getStorehousePacks()).doubleValue() - Double.valueOf(p.getPacks()
-                            )) < 0) {
-                                packs = 0;
-                            }
-                            if ((count = Integer.parseInt(product.getStorehouseRest()) - p.getRest()) <
-                                    0) {
-                                count = 0;
-                            }
-                            newLine.append(stringArray[0]).append(";")
-                                    .append(stringArray[1]).append(";")
-                                    .append(stringArray[2]).append(";")
-                                    .append(stringArray[3]).append(";")
-                                    .append(packs).append(";")
-                                    .append(count).append(";")
-                                    .append(stringArray[6]).append(";")
-                                    .append(stringArray[7]).append(";")
-                                    .append(stringArray[8]);
-
-                            newString = newLine.toString();
-                        }
-                    }
+            for (Product p : selectedProducts.values()) {
+                Product productStored = productLocalDao.findProductInStorehouse(p.getCode(), storehouse.getCode());
+                if (productStored == null) {
+                    throw new UpdateInProgressException(that);
                 }
-                bw.write(newString);
-                bw.newLine();
+
+                double packsNew = productStored.getPacks() - p.getPacks();
+                int restNew = productStored.getRest() - p.getRest();
+                productStored.setPacks(packsNew >= 0.0 ? packsNew : 0.0);
+                productStored.setRest(restNew >= 0 ? restNew : 0);
+
+                productLocalDao.update(productStored);
             }
-            br.close();
-            bw.close();
-
-            getFileStreamPath(StaticFileNames.RESTS_CSV_SD + "temp").renameTo(getFileStreamPath(StaticFileNames.RESTS_CSV_SD));
-
-        } catch (Exception e) {
-            log.error("Error updating local rests", e);
+        } catch (UpdateInProgressException e) {
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                   if (that != null){
+                       that.updateRestsLocal();
+                   }
+                }
+            }, 1000);
         }
     }
 
@@ -582,7 +522,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
     }
 
     private void addProduct() {
-        int width = (findViewById(R.id.buttonStorehouses)).getWidth();
+        //int width = (findViewById(R.id.buttonStorehouses)).getWidth();
 
         //полный лайоут товара (для его удаления, если что)
         LinearLayout layout = (LinearLayout) findViewById(R.id.layoutProducts);
@@ -654,7 +594,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                         (keyCode == KeyEvent.KEYCODE_ENTER)) {
                     // Perform action on key press
                     Editable editable = ((EditText) view).getText();
-                    if (editable == null || editable.toString() == null || editable.toString().equals("")) {
+                    if (editable == null || editable.toString().equals("")) {
                         return false;
                     }
                     double packs;
@@ -711,7 +651,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                         (keyCode == KeyEvent.KEYCODE_ENTER)) {
                     // Perform action on key press
                     Editable editable = ((EditText) view).getText();
-                    if (editable == null || editable.toString() == null || editable.toString().equals("")) {
+                    if (editable == null || editable.toString().equals("")) {
                         return false;
                     }
                     int count = Integer.parseInt(editable.toString());
@@ -817,16 +757,14 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
     protected void onPrepareDialog(int id, Dialog dialog) {
         super.onPrepareDialog(id, dialog);
         if (id == DIALOG_CONTRAGENTS) {
-            /*if (!checkClientsFileExists()) {
-                return;
-            }*/
+            ExchangeDataService.checkUpdateInProgress(that);
             String[] contrAgentsSortedNamesArray = contrAgentList.getContrAgentsSortedNamesArray(
                     sortClientEditText.getText().toString());
             if (contrAgentsSortedNamesArray.length == 1) {
                 ((AlertDialog) dialog).getListView().setItemChecked(0, true);
                 ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE).performClick();
             } else {
-                ListAdapter mergeAdapter = new ArrayAdapter<String>(
+                ListAdapter mergeAdapter = new ArrayAdapter<>(
                         this,
                         android.R.layout.select_dialog_singlechoice,
                         contrAgentList.getContrAgentsSortedNamesArray(sortClientEditText.getText().toString()));
@@ -834,9 +772,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             }
         }
         if (id == DIALOG_SALESPOINTS) {
-            /*if (!checkClientsFileExists()) {
-                return;
-            }*/
+            ExchangeDataService.checkUpdateInProgress(that);
             if (null != contrAgent) {
                 String[] salePointsNamesArray = contrAgentList.getSalePointsNamesArray(contrAgentLocalDao.getSalePointsByContrAgent(contrAgent),
                         sortSalespointEditText.getText().toString());
@@ -844,7 +780,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                     ((AlertDialog) dialog).getListView().setItemChecked(0, true);
                     ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE).performClick();
                 } else {
-                    ListAdapter mergeAdapter = new ArrayAdapter<String>(
+                    ListAdapter mergeAdapter = new ArrayAdapter<>(
                             this,
                             android.R.layout.select_dialog_singlechoice,
                             salePointsNamesArray
@@ -854,10 +790,8 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             }
         }
         if (id == DIALOG_STOREHOUSES) {
-            /*if (!checkClientsFileExists()) {
-                return;
-            }*/
-            ListAdapter mergeAdapter = new ArrayAdapter<String>(
+            ExchangeDataService.checkUpdateInProgress(that);
+            ListAdapter mergeAdapter = new ArrayAdapter<>(
                     this,
                     android.R.layout.select_dialog_singlechoice,
                     getStorehousesNamesArray()
@@ -865,9 +799,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             ((AlertDialog) dialog).getListView().setAdapter(mergeAdapter);
         }
         if (id == DIALOG_PRODUCTS) {
-            /*if (!checkProductsFileExists()) {
-                return;
-            }*/
+            ExchangeDataService.checkUpdateInProgress(that);
             String[] productsNamesArray = getProductsNamesArray();
             if (productsNamesArray.length == 0) {
                 return;
@@ -876,7 +808,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                 ((AlertDialog) dialog).getListView().setItemChecked(0, true);
                 ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE).performClick();
             } else {
-                ListAdapter mergeAdapter = new ArrayAdapter<String>(
+                ListAdapter mergeAdapter = new ArrayAdapter<>(
                         this,
                         android.R.layout.select_dialog_singlechoice,
                         productsNamesArray
@@ -889,7 +821,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
     private String[] getProductsNamesArray() {
         String productFilter = lastValueProductFilter;
-        ArrayList<String> result = new ArrayList<String>();
+        ArrayList<String> result = new ArrayList<>();
         if (productFilter == null) {
             productFilter = "";
         }
@@ -905,7 +837,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
 
     private String[] getStorehousesNamesArray() {
-        ArrayList<String> result = new ArrayList<String>();
+        ArrayList<String> result = new ArrayList<>();
         for (Storehouse s : storehouses) {
             result.add(s.getCode() + " " + s.getName());
         }
@@ -921,7 +853,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
     View.OnClickListener getOnClickShowProductsDialog(final Button button) {
         return new View.OnClickListener() {
             public void onClick(View v) {
-                getStorehousesAndProducts();
+                readStorehousesAndProducts();
                 showDialog(DIALOG_PRODUCTS);
                 currentProductId = button.getId() - 1;
             }
@@ -967,25 +899,22 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             }
             //показываем задолженность
             if (contrAgent != null) {
-                boolean hasDebt = false;
-                for (Debt d : debts) {
-                    if (d.getContrAgentCode().equals(contrAgent.getCode())) {
-                        debt = d;
-                        hasDebt = true;
-                    }
-
-                    if (!hasDebt) {
-                        debt = null;
-                        textViewContrAgentRelationship.setText("");
-                    } else {
-                        textViewContrAgentRelationship.setText(debt.getText() + ": " + String.format("%,d", Long.valueOf(debt.getDebt())) + " / " + String.format("%,d", Long.valueOf(debt.getOverdueDebt())));
-                        if (!debt.getOverdueDebt().equals("0")) {
-                            textViewContrAgentRelationship.setTextColor(that.getResources().getColor(R.color.warnTextColor));
-                        } else {
-                            textViewContrAgentRelationship.setTextColor(that.getResources().getColor(R.color.infoTextColor));
+                if (debts.isEmpty()) {
+                    textViewContrAgentRelationship.setText("");
+                } else {
+                    boolean hasOverdue = false;
+                    for (Debt d : debts) {
+                        textViewContrAgentRelationship.getEditableText().append(String.format("%s: %,00f / %,00f \n", d.getText(), Double.valueOf(d.getDebt()),
+                                Double.valueOf(d.getOverdueDebt())));
+                        if (Double.valueOf(d.getOverdueDebt()) > 0.0) {
+                            hasOverdue = true;
                         }
                     }
-
+                    if (hasOverdue) {
+                        textViewContrAgentRelationship.setTextColor(that.getResources().getColor(R.color.warnTextColor));
+                    } else {
+                        textViewContrAgentRelationship.setTextColor(that.getResources().getColor(R.color.infoTextColor));
+                    }
                 }
             } else {
                 textViewContrAgentRelationship.setText("");
@@ -1021,7 +950,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                 }
             }
             if (storehouse != null) {
-                storehouseTextView.setText(storehouse.getCode() + " " + storehouse.getName());
+                storehouseTextView.setText(String.format("%s %s", storehouse.getCode(), storehouse.getName()));
                 buttonAddProduct.setEnabled(true);
             }
             refreshFinalView();
@@ -1037,7 +966,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                     Product product;
                     //находим строку-фильтр продуктов
                     //отбираем продукты только текущего склада
-                    ArrayList<Product> storehouseProducts = new ArrayList<Product>();
+                    ArrayList<Product> storehouseProducts = new ArrayList<>();
                     for (Product p : products) {
                         if (p.getStorehouse().getCode().equals(storehouse.getCode())) {
                             storehouseProducts.add(p);
@@ -1048,7 +977,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                         product = new Product(storehouseProducts.get(lv.getCheckedItemPosition()));
                         selectedProducts.put(currentProductId, product);
                     } else {
-                        ArrayList<Product> temp = new ArrayList<Product>();
+                        ArrayList<Product> temp = new ArrayList<>();
                         for (Product p : storehouseProducts) {
                             String s = p.getCode() + " " + p.getName();
                             if (s.toLowerCase().contains(lastValueProductFilter.toLowerCase())) {
@@ -1088,51 +1017,28 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         }
     };
 
-
-    //sect----------------------------------------------------------------------------------
-    //-------file operations------------------------------------------------------------
-    //----------------------------------------------------------------------------------
-
-    boolean checkClientsFileExists() {
-        return getFileStreamPath(StaticFileNames.CLIENTS_CSV_SD).exists();
-    }
-
     private void readContrAgents() {
-        try {
-            if (contrAgent != null) {
-                return;
-            }
-            /*if (!checkClientsFileExists()) {
-                Toast.makeText(getApplicationContext(), "Дождитесь синхронизации с базой данных", Toast.LENGTH_SHORT).show();
-                return;
-            }*/
-
-            contrAgentList.clear();
-            contrAgentList.addAllContrAgents(contrAgentLocalDao.getContrAgents());
-        } catch (Exception e) {
-            log.error("Error reading contragents from file", e);
+        if (contrAgent != null) {
+            return;
         }
+        ExchangeDataService.checkUpdateInProgress(that);
+
+        contrAgentList.clear();
+        contrAgentList.addAllContrAgents(contrAgentLocalDao.getContrAgents());
+
     }
 
-    boolean checkProductsFileExists() {
-        return getFileStreamPath(StaticFileNames.RESTS_CSV_SD).exists();
-    }
+    private void readStorehousesAndProducts() {
+        if (!selectedProducts.isEmpty()) {
+            return;
+        }
+        ExchangeDataService.checkUpdateInProgress(that);
 
-    private void getStorehousesAndProducts() {
-            if (!selectedProducts.isEmpty()) {
-                return;
-            }
-            /*if (!checkProductsFileExists()) {
-                Toast.makeText(getApplicationContext(), "Дождитесь синхронизации с базой данных", Toast.LENGTH_SHORT).show();
-                return;
-            }*/
-
-            storehouses = productLocalDao.getStorehouses();
-            products = productLocalDao.getAll();
+        storehouses = productLocalDao.getStorehouses();
+        products = productLocalDao.getAll();
 
 
-
-            //блок пересчёта выбранных товаров
+        //блок пересчёта выбранных товаров
             /*if (selectedProducts != null && selectedProducts.size() > 0) {
 
                 ArrayList<String> selectedProductsCodes = new ArrayList<String>();
@@ -1143,47 +1049,15 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             }*/
     }
 
-    boolean checkDebtsFileExists() {
-        return getFileStreamPath(StaticFileNames.DEBTS_CSV_SD).exists();
-    }
-
-    private void readDebtsFromSD() {
-        try {
-            if (contrAgent != null) {
-                return;
-            }
-            if (!checkDebtsFileExists()) {
-                Toast.makeText(getApplicationContext(), "Дождитесь синхронизации с базой данных", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            Date localDebtsDate;
-            try {
-                localDebtsDate = new Date(getFileStreamPath(StaticFileNames.DEBTS_CSV_SD).lastModified());
-            } catch (Exception e) {
-                localDebtsDate = null;
-            }
-            if (debtsDate == null || localDebtsDate == null || localDebtsDate.after(debtsDate)) {
-                // открываем поток для чтения
-                InputStreamReader isr = new InputStreamReader(openFileInput(StaticFileNames.DEBTS_CSV_SD), "CP-1251");
-                BufferedReader br = new BufferedReader(isr);
-                String string;
-                String stringArray[];
-                // читаем содержимое
-                debts = new ArrayList<Debt>();
-                while ((string = br.readLine()) != null) {
-                    stringArray = string.split(";");
-                    Debt debt = new Debt(stringArray[0], stringArray[3], stringArray[4], stringArray[5]);
-                    debts.add(debt);
-                }
-                isr.close();
-                br.close();
-
-                debtsDate = localDebtsDate;
-                br.close();
-            }
-        } catch (Exception e) {
-            log.error("Error reading debts from file", e);
+    private void readDebtsFrom() {
+        if (contrAgent != null) {
+            return;
         }
+
+        ExchangeDataService.checkUpdateInProgress(that);
+
+        debts.clear();
+        debts.addAll(debtsLocalDao.getDebtsForContrAgent(contrAgent));
     }
 
 }

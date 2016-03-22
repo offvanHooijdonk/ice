@@ -32,14 +32,14 @@
     <string name="notif_request_success_title">Заявка отправлена</string>
     <string name="notif_request_success_message">Заявка для %s отправлена</string>
 
-    <string name="notif_response_title">Заявка принята</string>
-    <string name="notif_response_text">Заявка для %s принята</string>
+    <string name="notif_response_title">Заявка %s обработана</string>
+    <string name="notif_response_text">Заявка для %s : %s</string>
 
     <string name="reportDate">Дата отчёта</string>
     <string name="update_app">Обновить программу</string>
     <string name="update_app_comment">Скачать и установить последнюю версию программы</string>
     <string name="update_data_files_button">Обновить данные по базе</string>
-    <string name="update_data_files_disclaimer">Данная функция должна использоваться только для исправления ошибок обновления данных. При наличии связи с Интернетом данные обновляются автоматически.</string>
+    <string name="update_data_files_disclaimer">Данная функция должна использоваться только для исправления ошибок обновления данных и обновления \"с нуля\". При наличии связи с Интернетом данные обновляются автоматически.</string>
     <string name="textHintContrAgentFilter">Фильтр контрагентов</string>
     <string name="pref_default_storehouse_summ">Код склада по умолчанию</string>
     <string name="pref_manager_db">Пользователь</string>
@@ -62,7 +62,8 @@
     <string name="pref_exchange_frequency_summ">Время в секундах</string>
     <string name="pref_exchange_frequency_title">Интервал обновления данных</string>
     <string name="progress_dialog_title">Данные обновляются</string>
-    <string name="progress_dialog_message">Дождитесь обновления файлов</string>
+    <string name="progress_dialog_message">Дождитесь обновления данных</string>
+    <string name="progress_exception_message">Идёт обновление данных. Пожалуйста, дождитесь его окончания.</string>
     <string name="data_update_success">Обновлено успешно</string>
     <string name="data_update_fail">Не удалось загрузить данные</string>
     <string name="update_data_files_dialog_disclaimer">Перед обновлением все справочные данные

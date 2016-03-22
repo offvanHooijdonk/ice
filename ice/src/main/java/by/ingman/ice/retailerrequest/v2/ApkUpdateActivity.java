@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
@@ -20,16 +19,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import org.apache.log4j.Logger;
+
 import java.io.NotActiveException;
-import java.util.Arrays;
 
 import by.ingman.ice.retailerrequest.v2.helpers.AlarmHelper;
-import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
+import by.ingman.ice.retailerrequest.v2.helpers.UpdateInProgressExceptionHandler;
 import by.ingman.ice.retailerrequest.v2.remote.exchange.ExchangeDataService;
-import jcifs.smb.SmbFile;
-import jcifs.smb.SmbFileInputStream;
 
 /**
  * Created with IntelliJ IDEA.
@@ -39,7 +35,8 @@ import jcifs.smb.SmbFileInputStream;
  * To change this template use File | Settings | File Templates.
  */
 public class ApkUpdateActivity extends Activity {
-    Button apkUpdateButton;
+    private final Logger log = Logger.getLogger(ApkUpdateActivity.class);
+
     Button pubFilesUpdateButton;
     ProgressBar progressBar;
     private TextView textSuccess;
@@ -54,7 +51,11 @@ public class ApkUpdateActivity extends Activity {
 
         this.ctx = this;
 
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        new UpdateInProgressExceptionHandler(ctx);
+
+        if (getActionBar() != null) {
+            getActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -64,45 +65,6 @@ public class ApkUpdateActivity extends Activity {
 
         textSuccess.setVisibility(View.GONE);
         textFail.setVisibility(View.GONE);
-
-        apkUpdateButton = (Button) findViewById(R.id.apkUpdateButton);
-        apkUpdateButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    checkNetworkConnected();
-
-                    String url = sharedPreferences.getString("androidExchangeApkDirPref", "");
-
-                    SmbFile smbFile = new SmbFile("smb://" + url + "ice.apk");
-
-                    SmbFileInputStream is = new SmbFileInputStream(smbFile);
-
-                    FileOutputStream fos = openFileOutput("ice.apk", Context.MODE_WORLD_READABLE);//new FileOutputStream(getApplicationContext().getFilesDir().getPath() + "/ice.apk");
-
-                    byte buffer[] = new byte[8192];
-                    int read;
-                    while ((read = is.read(buffer)) > 0)
-                        fos.write(buffer, 0, read);
-                    is.close();
-                    fos.flush();
-                    fos.close();
-
-                    File file = getFileStreamPath("ice.apk");
-
-                    Toast.makeText(getApplicationContext(), "Обновление загружено", Toast.LENGTH_SHORT).show();
-
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
-                    startActivity(intent);
-
-                } catch (NotActiveException e) {
-                    Toast.makeText(getApplicationContext(), "Нет связи с интернетом", Toast.LENGTH_SHORT).show();
-                } catch (Exception e) {
-                    Toast.makeText(getApplicationContext(), "Невозможно загрузить обновление, " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
 
         pubFilesUpdateButton = (Button) findViewById(R.id.pubFilesUpdateButton);
         pubFilesUpdateButton.setOnClickListener(new View.OnClickListener() {
@@ -144,7 +106,7 @@ public class ApkUpdateActivity extends Activity {
             intent.putExtra(ExchangeDataService.EXTRA_RECEIVER, receiver);
             startService(intent);
         } catch (Exception e) {
-            // TODO handle this
+            log.error("Error force updating DB", e);
             Toast.makeText(getApplicationContext(), "Невозможно обновить", Toast.LENGTH_SHORT).show();
             displayFailureMessage(true);
             displayProgressDialog(false);
@@ -171,15 +133,6 @@ public class ApkUpdateActivity extends Activity {
 
     private void displayFailureMessage(boolean display) {
         textFail.setVisibility(display ? View.VISIBLE : View.GONE);
-    }
-
-    private void checkNetworkConnected() throws NotActiveException {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo ni = cm.getActiveNetworkInfo();
-        if (ni == null) {
-            // There are no active networks.
-            throw new NotActiveException("No network");
-        }
     }
 
     public class ServiceResultReceiver extends ResultReceiver {

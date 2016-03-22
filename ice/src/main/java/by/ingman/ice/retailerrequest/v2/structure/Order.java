@@ -2,9 +2,7 @@ package by.ingman.ice.retailerrequest.v2.structure;
 
 import java.text.DateFormat;
 import java.text.DecimalFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -24,9 +22,9 @@ public class Order {
 
     private static DecimalFormat decimalFormat = new DecimalFormat("#.###");
 
-    private String id;
+    private String orderId;
     private String manager;
-    private Date date;
+    private Date orderDate;
     private String isCommercial;
     private String contrAgentCode;
     private String contrAgentName;
@@ -39,6 +37,8 @@ public class Order {
     private Double productPacksCount;
     private Integer productCount;
     private String comment;
+    private Boolean sent;
+    private Boolean processed;
 
     public static String generateNewId() {
         return UUID.randomUUID().toString();
@@ -48,34 +48,37 @@ public class Order {
         return SimpleDateFormat.getDateInstance(DateFormat.SHORT, new Locale("ru", "RU"));
     }
 
-    public Order(String id, String manager, boolean isCommercial, ContrAgent contrAgent, SalePoint salePoint,
-                 Storehouse storehouse, Product product, Date date, String comment)
+    public Order(String orderId, String manager, boolean isCommercial, String contrAgentCode, String contrAgentName, String salePointCode, String salePointName,
+                 String storehouseCode, String storehouseName, String productCode, String productName, Double packsNum, Integer productNum, Date orderDate,
+                 String comment, Boolean sent, Boolean processed)
     {
-        this.id = id;
+        this.orderId = orderId;
         this.manager = manager;
-        this.date = date;
+        this.orderDate = orderDate;
         this.isCommercial = isCommercial ? "1" : "0";
-        this.contrAgentCode = contrAgent.getCode();
-        this.contrAgentName = contrAgent.getName();
-        this.salePointCode = salePoint.getCode();
-        this.salePointName = salePoint.getName();
-        this.storehouseCode = storehouse.getCode();
-        this.storehouseName = storehouse.getName();
-        this.productCode = product.getCode();
-        this.productName = product.getName();
-        this.productPacksCount = product.getPacks();//.replaceAll(",", ".");
-        this.productCount = product.getRest();
+        this.contrAgentCode = contrAgentCode;
+        this.contrAgentName = contrAgentName;
+        this.salePointCode = salePointCode;
+        this.salePointName = salePointName;
+        this.storehouseCode = storehouseCode;
+        this.storehouseName = storehouseName;
+        this.productCode = productCode;
+        this.productName = productName;
+        this.productPacksCount = packsNum;//.replaceAll(",", ".");
+        this.productCount = productNum;
         if (comment.length() > 200) {
             comment = comment.substring(0, 200);
         }
         this.comment = comment;
+        this.sent = sent;
+        this.processed = processed;
     }
 
-    public Order(String request) throws ParseException {
+    /*public Order(String request) throws ParseException {
         String[] array = request.split(";");
-        id = array[0];
+        orderId = array[0];
         manager = array[1];
-        date = getDateFormat().parse(array[2]);
+        orderDate = getDateFormat().parse(array[2]);
         isCommercial = array[3];
         contrAgentCode = array[4];
         contrAgentName = array[5];
@@ -102,7 +105,7 @@ public class Order {
                     .append(array[i + 3]);
 
         }
-    }
+    }*/
 
     public static String toReportString(Order order) {
         StringBuilder sb = new StringBuilder();
@@ -116,9 +119,9 @@ public class Order {
         Order order = orders.get(0);
         StringBuilder sb = new StringBuilder();
         sb.append("ЗАЯВКА\n")
-                .append("ID: ").append(order.getId()).append(NEWLINE)
+                .append("ID: ").append(order.getOrderId()).append(NEWLINE)
                 .append("Менеджер: ").append(order.getManager()).append(NEWLINE)
-                .append("Дата: ").append(Order.getDateFormat().format(order.getDate())).append(NEWLINE)
+                .append("Дата: ").append(Order.getDateFormat().format(order.getOrderDate())).append(NEWLINE)
                 .append("Реклама: ").append(order.getIsCommercial()).append(NEWLINE)
                 .append("Клиент: ").append(order.getContrAgentCode()).append(" ").append(order.getContrAgentName()).append(NEWLINE)
                 .append("Разгрузка: ").append(order.getSalePointCode()).append(" ").append(order.getSalePointName()).append(NEWLINE)
@@ -139,12 +142,12 @@ public class Order {
         return sb.toString();
     }
 
-    public String getId() {
-        return id;
+    public String getOrderId() {
+        return orderId;
     }
 
-    public Date getDate() {
-        return date;
+    public Date getOrderDate() {
+        return orderDate;
     }
 
     public String getManager() {
@@ -199,4 +202,11 @@ public class Order {
         return comment;
     }
 
+    public Boolean getSent() {
+        return sent;
+    }
+
+    public Boolean getProcessed() {
+        return processed;
+    }
 }

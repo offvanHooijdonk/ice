@@ -1,5 +1,7 @@
 package by.ingman.ice.retailerrequest.v2.structure;
 
+import java.util.Date;
+
 /**
  * Created with IntelliJ IDEA.
  * User: Администратор
@@ -9,53 +11,38 @@ package by.ingman.ice.retailerrequest.v2.structure;
  */
 // results
 public class Answer {
-    public static final String TABLE = "results";
-    public static final String ORDER_ID = "order_ids";
-    public static final String DESCRIPTION = "description";
-    public static final String UNLOAD_TIME = "datetime_unload";
-
     // order_id
-    private String id;
-    // !!
-    private String resCode;
+    private String orderId;
     // description
-    private String desc;
+    private String description;
     // datetime_unload
-    private String unloadTime;
+    private Date unloadTime;
 
-    public String getId() {
-        return id;
+    public String getOrderId() {
+        return orderId;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
     }
 
-    public String getResCode() {
-        return resCode;
+    public String getDescription() {
+        return description;
     }
 
-    public void setResCode(String resCode) {
-        this.resCode = resCode;
-    }
-
-    public String getDesc() {
-        return desc;
-    }
-
-    public void setDesc(String desc) {
-        this.desc = desc;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String toStringForViewing() {
-        return resCode + " " + desc;
+        return description;
     }
 
-    public String getUnloadTime() {
+    public Date getUnloadTime() {
         return unloadTime;
     }
 
-    public void setUnloadTime(String unloadTime) {
+    public void setUnloadTime(Date unloadTime) {
         this.unloadTime = unloadTime;
     }
 }

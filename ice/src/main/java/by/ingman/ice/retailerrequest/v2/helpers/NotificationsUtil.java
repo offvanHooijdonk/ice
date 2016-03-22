@@ -6,6 +6,7 @@ import android.content.Context;
 import android.graphics.BitmapFactory;
 
 import by.ingman.ice.retailerrequest.v2.R;
+import by.ingman.ice.retailerrequest.v2.structure.Answer;
 import by.ingman.ice.retailerrequest.v2.structure.Order;
 
 /**
@@ -13,7 +14,6 @@ import by.ingman.ice.retailerrequest.v2.structure.Order;
  */
 public class NotificationsUtil {
     private static final int NOTIF_DATA_UPDATE_PROGRESS_ID = 0;
-    private static final int NOTIF_DATA_UPDATE_COMPLETED_ID = 1;
     private static final int NOTIF_DATA_UPDATE_ERROR_ID = 2;
     private static final int NOTIF_ORDER_SENT_ID = 3;
     private static final int NOTIF_ORDER_ACCEPT_ID = 4;
@@ -49,15 +49,6 @@ public class NotificationsUtil {
         getNotificationManager().cancel(NOTIF_DATA_UPDATE_PROGRESS_ID);
     }
 
-    public void showFileCompletedNotification(String title, String message, String fileName) {
-        String tag = fileName;
-
-        Notification.Builder builder = setupCommonNotification(title, message, true)
-                .setSmallIcon(android.R.drawable.stat_sys_download_done);
-
-        getNotificationManager().notify(tag, NOTIF_DATA_UPDATE_COMPLETED_ID, builder.build());
-    }
-
     public void showErrorNotification(String title, String message) {
         Notification.Builder builder = setupCommonNotification(title, message, true)
                 .setSmallIcon(android.R.drawable.stat_notify_error);
@@ -65,8 +56,8 @@ public class NotificationsUtil {
         getNotificationManager().notify(NOTIF_ERROR_TAG, NOTIF_DATA_UPDATE_ERROR_ID, builder.build());
     }
 
-    public void showRequestSentNotification(Order order) {
-        String tag = order.getId();
+    public void showOrderSentNotification(Order order) {
+        String tag = order.getOrderId();
         String title = ctx.getResources().getString(R.string.notif_request_success_title);
         String message = ctx.getResources().getString(R.string.notif_request_success_message, order.getContrAgentName());
 
@@ -78,10 +69,10 @@ public class NotificationsUtil {
         getNotificationManager().notify(tag, NOTIF_ORDER_SENT_ID, builder.build());
     }
 
-    public void showResponseNotification(Order order) {
-        String tag = order.getId();
-        String title = ctx.getResources().getString(R.string.notif_response_title);
-        String message = ctx.getResources().getString(R.string.notif_response_text, order.getContrAgentName());
+    public void showOrderNotification(Order order, Answer answer) {
+        String tag = order.getOrderId();
+        String title = ctx.getResources().getString(R.string.notif_response_title, order.getContrAgentName());
+        String message = ctx.getResources().getString(R.string.notif_response_text, order.getContrAgentName(), answer.getDescription());
 
         Notification.BigTextStyle bigTextStyle = new Notification.BigTextStyle().setBigContentTitle(title).bigText(message);
 

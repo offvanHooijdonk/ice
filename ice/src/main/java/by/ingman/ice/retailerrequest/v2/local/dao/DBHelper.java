@@ -14,7 +14,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DBHelper extends SQLiteOpenHelper {
     public static String DATABASE_NAME = "iceDB";
 
-    private static final int DATABASE_VERSION = 9;
+    private static final int DATABASE_VERSION = 10;
 
 
     public DBHelper(Context context) {
@@ -27,11 +27,30 @@ public class DBHelper extends SQLiteOpenHelper {
         // создаем таблицу с полями
         db.execSQL("create table " + OrderLocalDao.TABLE + " ("
                 + "_id integer primary key autoincrement,"
-                + "is_req integer not null,"
-                + "sent integer not null,"
-                + "req_id text not null,"
-                + "date text not null,"
-                + "req text not null" + ");");
+                + "order_id text not null,"
+                + "manager text not null,"
+                + "is_advertising integer not null,"
+                + "order_date integer not null,"
+                + "contragent_code text not null,"
+                + "contragent_name text not null,"
+                + "sale_point_code text not null,"
+                + "sale_point_name text not null,"
+                + "storehouse_code text not null,"
+                + "storehouse_name text not null,"
+                + "product_code text not null,"
+                + "product_name text not null,"
+                + "packs_num real not null,"
+                + "product_num integer not null,"
+                + "comment text,"
+                + "processed integer not null,"
+                + "sent integer not null);");
+
+        db.execSQL("create table " + OrderLocalDao.TABLE_ANSWER + " ("
+                + "_id integer primary key autoincrement,"
+                + "order_id text not null,"
+                + "description text not null,"
+                + "date_unload integer not null);");
+
         db.execSQL("create table " + ProductLocalDao.TABLE + " ("
                 + "_id integer primary key autoincrement,"
                 + "code text not null,"

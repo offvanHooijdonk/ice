@@ -10,7 +10,9 @@ public class PrefActivity extends PreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getActionBar() != null) {
+            getActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         getFragmentManager().beginTransaction()
                 .replace(android.R.id.content, new SettingsFragment())

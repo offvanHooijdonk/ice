@@ -20,7 +20,7 @@ public class ProductLocalDao {
     public static final String TABLE = "rests";
     private final Logger log = Logger.getLogger(ProductLocalDao.class);
 
-    /*private static final String UNIQUE_CONDITION = "code =? AND store_code = ?";*/
+    private static final String UNIQUE_CONDITION = "code =? AND store_code = ?";
     private DBHelper dbHelper;
 
     public ProductLocalDao(Context context) {
@@ -34,19 +34,7 @@ public class ProductLocalDao {
         Cursor c = db.query(TABLE, null, null, null, null, null, "name, code");
 
         while (c.moveToNext()) {
-            products.add(new Product(
-                    c.getString(c.getColumnIndex("code")),
-                    c.getString(c.getColumnIndex("name")),
-                    c.getString(c.getColumnIndex("store_packs")),
-                    c.getString(c.getColumnIndex("store_rest")),
-                    c.getDouble(c.getColumnIndex("price")),
-                    c.getInt(c.getColumnIndex("num_in_pack")),
-                    c.getDouble(c.getColumnIndex("weight")),
-                    new Storehouse(
-                            c.getString(c.getColumnIndex("store_code")),
-                            c.getString(c.getColumnIndex("store_name"))
-                    )
-            ));
+            products.add(fromCursor(c));
         }
 
         c.close();
@@ -70,6 +58,17 @@ public class ProductLocalDao {
         return storehouses;
     }
 
+    public Product findProductInStorehouse(String productCode, String storehouseCode) {
+        Product product = null;
+        Cursor c = dbHelper.getReadableDatabase().query(TABLE, null, UNIQUE_CONDITION, new String[]{productCode, storehouseCode}, null, null, null);
+        if (c.moveToFirst()) {
+            product = fromCursor(c);
+        }
+        c.close();
+
+        return product;
+    }
+
     public void updateProducts(List<Product> products) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         try {
@@ -85,18 +84,21 @@ public class ProductLocalDao {
         }
     }
 
-    /*public boolean existsProductAtStore(Product p) {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        boolean exists;
-
-        Cursor c = db.query(TABLE, null, UNIQUE_CONDITION, new String[]{p.getCode(), p.getStorehouse().getCode()}, null, null, null);
-
-        exists = c.getCount() > 0;
-
-        c.close();
-
-        return exists;
-    }*/
+    private Product fromCursor(Cursor c) {
+        return new Product(
+                c.getString(c.getColumnIndex("code")),
+                c.getString(c.getColumnIndex("name")),
+                c.getString(c.getColumnIndex("store_packs")),
+                c.getString(c.getColumnIndex("store_rest")),
+                c.getDouble(c.getColumnIndex("price")),
+                c.getInt(c.getColumnIndex("num_in_pack")),
+                c.getDouble(c.getColumnIndex("weight")),
+                new Storehouse(
+                        c.getString(c.getColumnIndex("store_code")),
+                        c.getString(c.getColumnIndex("store_name"))
+                )
+        );
+    }
 
     public void insert(SQLiteDatabase db, Product p) {
         db = dbHelper.getWritableDatabase();
@@ -106,13 +108,13 @@ public class ProductLocalDao {
         db.insert(TABLE, null, cv);
     }
 
-    /*public void update(Product p) {
+    public void update(Product p) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         ContentValues cv = makeContentValues(p);
 
         db.update(TABLE, cv, UNIQUE_CONDITION, new String[]{p.getCode(), p.getStorehouse().getCode()});
-    }*/
+    }
 
     private ContentValues makeContentValues(Product p) {
         ContentValues cv = new ContentValues();
