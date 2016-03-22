@@ -23,23 +23,23 @@
     <string name="menu_refresh">Обновление</string>
 
     <string name="notif_update_data_title">Обновление данных</string>
-    <string name="notif_update_data_message">Обновляются %s</string>
+    <string name="notif_update_data_message">Обновляются %1$s</string>
     <string name="notif_data_products">остатки</string>
     <string name="notif_data_contragents">котнрагенты</string>
     <string name="notif_data_debts">задолженности</string>
 
 
     <string name="notif_request_success_title">Заявка отправлена</string>
-    <string name="notif_request_success_message">Заявка для %s отправлена</string>
+    <string name="notif_request_success_message">Заявка для %1$s отправлена</string>
 
-    <string name="notif_response_title">Заявка %s обработана</string>
-    <string name="notif_response_text">Заявка для %s : %s</string>
+    <string name="notif_response_title">Заявка %1$s обработана</string>
+    <string name="notif_response_text">Заявка для %1$s : %2$s</string>
 
     <string name="reportDate">Дата отчёта</string>
     <string name="update_app">Обновить программу</string>
     <string name="update_app_comment">Скачать и установить последнюю версию программы</string>
     <string name="update_data_files_button">Обновить данные по базе</string>
-    <string name="update_data_files_disclaimer">Данная функция должна использоваться только для исправления ошибок обновления данных и обновления \"с нуля\". При наличии связи с Интернетом данные обновляются автоматически.</string>
+    <string name="update_data_files_disclaimer">Данная функция должна использоваться только для исправления ошибок обновления данных и обновления с нуля. При наличии связи с Интернетом данные обновляются автоматически.</string>
     <string name="textHintContrAgentFilter">Фильтр контрагентов</string>
     <string name="pref_default_storehouse_summ">Код склада по умолчанию</string>
     <string name="pref_manager_db">Пользователь</string>
