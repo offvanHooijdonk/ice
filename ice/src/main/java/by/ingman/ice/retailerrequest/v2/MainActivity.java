@@ -42,13 +42,11 @@ import java.util.HashMap;
 import java.util.List;
 
 import by.ingman.ice.retailerrequest.v2.helpers.ConfigureLog4J;
-import by.ingman.ice.retailerrequest.v2.helpers.UpdateInProgressExceptionHandler;
 import by.ingman.ice.retailerrequest.v2.local.dao.ContrAgentLocalDao;
 import by.ingman.ice.retailerrequest.v2.local.dao.DebtsLocalDao;
 import by.ingman.ice.retailerrequest.v2.local.dao.OrderLocalDao;
 import by.ingman.ice.retailerrequest.v2.local.dao.ProductLocalDao;
 import by.ingman.ice.retailerrequest.v2.remote.exchange.ExchangeDataService;
-import by.ingman.ice.retailerrequest.v2.remote.exchange.UpdateInProgressException;
 import by.ingman.ice.retailerrequest.v2.structure.ContrAgent;
 import by.ingman.ice.retailerrequest.v2.structure.ContrAgentList;
 import by.ingman.ice.retailerrequest.v2.structure.Debt;
@@ -92,7 +90,6 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
     SalePoint salePoint = null;
     List<Storehouse> storehouses;
     Storehouse storehouse = null;
-    List<Debt> debts = new ArrayList<>();
     List<Product> products;
     HashMap<Integer, Product> selectedProducts = new HashMap<>();
 
@@ -126,8 +123,6 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
         PreferenceManager.setDefaultValues(that, R.xml.pref, false);
 
-        new UpdateInProgressExceptionHandler(that);
-
         productLocalDao = new ProductLocalDao(that);
         contrAgentLocalDao = new ContrAgentLocalDao(that);
         debtsLocalDao = new DebtsLocalDao(that);
@@ -135,12 +130,11 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
         imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
-        //запускаем сервис обновления файлов
+        //запускаем сервис обновления
         startService(new Intent(this, ExchangeDataService.class));
 
         //вычитываем при старте
         readContrAgents();
-        readDebtsFrom();
         readStorehousesAndProducts();
 
         //инициализация настроек
@@ -429,7 +423,6 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         switch (v.getId()) {
             case R.id.buttonContrAgentsDialog:
                 readContrAgents();
-                readDebtsFrom();
                 showDialog(DIALOG_CONTRAGENTS);
                 break;
             case R.id.buttonSalespoints:
@@ -488,31 +481,31 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
     }
 
     private void updateRestsLocal() {
-        try {
-            for (Product p : selectedProducts.values()) {
-                Product productStored = productLocalDao.findProductInStorehouse(p.getCode(), storehouse.getCode());
-                if (productStored == null) {
-                    throw new UpdateInProgressException(that);
+
+        for (Product p : selectedProducts.values()) {
+            Product productStored = productLocalDao.findProductInStorehouse(p.getCode(), storehouse.getCode());
+            if (productStored == null) {
+                if (checkUpdateInProgress()) {
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (that != null) {
+                                that.updateRestsLocal();
+                            }
+                        }
+                    }, 1000);
+                    return;
                 }
-
-                double packsNew = productStored.getPacks() - p.getPacks();
-                int restNew = productStored.getRest() - p.getRest();
-                productStored.setPacks(packsNew >= 0.0 ? packsNew : 0.0);
-                productStored.setRest(restNew >= 0 ? restNew : 0);
-
-                productLocalDao.update(productStored);
             }
-        } catch (UpdateInProgressException e) {
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                   if (that != null){
-                       that.updateRestsLocal();
-                   }
-                }
-            }, 1000);
+
+            double packsNew = productStored.getPacks() - p.getPacks();
+            int restNew = productStored.getRest() - p.getRest();
+            productStored.setPacks(packsNew >= 0.0 ? packsNew : 0.0);
+            productStored.setRest(restNew >= 0 ? restNew : 0);
+
+            productLocalDao.update(productStored);
         }
+
     }
 
     private void clearForm() {
@@ -757,7 +750,9 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
     protected void onPrepareDialog(int id, Dialog dialog) {
         super.onPrepareDialog(id, dialog);
         if (id == DIALOG_CONTRAGENTS) {
-            ExchangeDataService.checkUpdateInProgress(that);
+            if (checkUpdateInProgress()) {
+                return;
+            }
             String[] contrAgentsSortedNamesArray = contrAgentList.getContrAgentsSortedNamesArray(
                     sortClientEditText.getText().toString());
             if (contrAgentsSortedNamesArray.length == 1) {
@@ -772,7 +767,9 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             }
         }
         if (id == DIALOG_SALESPOINTS) {
-            ExchangeDataService.checkUpdateInProgress(that);
+            if (checkUpdateInProgress()) {
+                return;
+            }
             if (null != contrAgent) {
                 String[] salePointsNamesArray = contrAgentList.getSalePointsNamesArray(contrAgentLocalDao.getSalePointsByContrAgent(contrAgent),
                         sortSalespointEditText.getText().toString());
@@ -790,7 +787,9 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             }
         }
         if (id == DIALOG_STOREHOUSES) {
-            ExchangeDataService.checkUpdateInProgress(that);
+            if (checkUpdateInProgress()) {
+                return;
+            }
             ListAdapter mergeAdapter = new ArrayAdapter<>(
                     this,
                     android.R.layout.select_dialog_singlechoice,
@@ -799,7 +798,9 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             ((AlertDialog) dialog).getListView().setAdapter(mergeAdapter);
         }
         if (id == DIALOG_PRODUCTS) {
-            ExchangeDataService.checkUpdateInProgress(that);
+            if (checkUpdateInProgress()) {
+                return;
+            }
             String[] productsNamesArray = getProductsNamesArray();
             if (productsNamesArray.length == 0) {
                 return;
@@ -899,6 +900,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             }
             //показываем задолженность
             if (contrAgent != null) {
+                List<Debt> debts = debtsLocalDao.getDebtsForContrAgent(contrAgent);
                 if (debts.isEmpty()) {
                     textViewContrAgentRelationship.setText("");
                 } else {
@@ -1021,7 +1023,9 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         if (contrAgent != null) {
             return;
         }
-        ExchangeDataService.checkUpdateInProgress(that);
+        if (checkUpdateInProgress()) {
+            return;
+        }
 
         contrAgentList.clear();
         contrAgentList.addAllContrAgents(contrAgentLocalDao.getContrAgents());
@@ -1032,7 +1036,9 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         if (!selectedProducts.isEmpty()) {
             return;
         }
-        ExchangeDataService.checkUpdateInProgress(that);
+        if (checkUpdateInProgress()) {
+            return;
+        }
 
         storehouses = productLocalDao.getStorehouses();
         products = productLocalDao.getAll();
@@ -1049,15 +1055,13 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             }*/
     }
 
-    private void readDebtsFrom() {
-        if (contrAgent != null) {
-            return;
+    private boolean checkUpdateInProgress() {
+        boolean inProgress = ExchangeDataService.isUpdateInProgress(that);
+        if (inProgress) {
+            Toast.makeText(that, R.string.update_in_progress, Toast.LENGTH_LONG).show();
         }
 
-        ExchangeDataService.checkUpdateInProgress(that);
-
-        debts.clear();
-        debts.addAll(debtsLocalDao.getDebtsForContrAgent(contrAgent));
+        return inProgress;
     }
 
 }

@@ -7,8 +7,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
@@ -21,10 +19,7 @@ import android.widget.Toast;
 
 import org.apache.log4j.Logger;
 
-import java.io.NotActiveException;
-
 import by.ingman.ice.retailerrequest.v2.helpers.AlarmHelper;
-import by.ingman.ice.retailerrequest.v2.helpers.UpdateInProgressExceptionHandler;
 import by.ingman.ice.retailerrequest.v2.remote.exchange.ExchangeDataService;
 
 /**
@@ -51,8 +46,6 @@ public class ApkUpdateActivity extends Activity {
 
         this.ctx = this;
 
-        new UpdateInProgressExceptionHandler(ctx);
-
         if (getActionBar() != null) {
             getActionBar().setDisplayHomeAsUpEnabled(true);
         }
@@ -73,13 +66,13 @@ public class ApkUpdateActivity extends Activity {
                 AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
 
                 builder.setMessage(getString(R.string.update_data_files_dialog_disclaimer))
-                        .setPositiveButton(AlertDialog.BUTTON_POSITIVE, new DialogInterface.OnClickListener() {
+                        .setPositiveButton(R.string.dialog_button_positive, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int id) {
                                 startForceUpdate();
                             }
                         })
-                        .setNegativeButton(AlertDialog.BUTTON_NEGATIVE, new DialogInterface.OnClickListener() {
+                        .setNegativeButton(R.string.dialog_button_negative, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int id) {
                                 dialog.cancel();

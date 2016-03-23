@@ -27,7 +27,7 @@ public class ExchangeUtil {
         notifUtil = new NotificationsUtil(ctx);
     }
 
-    public void sendRequests() {
+    public void sendRequests() throws Exception {
         Map<String, List<Order>> requests = orderLocalDao.getUnsentOrders();
 
         for (String reqId : requests.keySet()) {

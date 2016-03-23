@@ -2,7 +2,6 @@ package by.ingman.ice.retailerrequest.v2.remote.exchange;
 
 import android.app.Activity;
 import android.app.IntentService;
-import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -22,7 +21,6 @@ import by.ingman.ice.retailerrequest.v2.R;
 import by.ingman.ice.retailerrequest.v2.helpers.AlarmHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.ConfigureLog4J;
 import by.ingman.ice.retailerrequest.v2.helpers.NotificationsUtil;
-import by.ingman.ice.retailerrequest.v2.helpers.StaticFileNames;
 import by.ingman.ice.retailerrequest.v2.local.dao.ContrAgentLocalDao;
 import by.ingman.ice.retailerrequest.v2.local.dao.DebtsLocalDao;
 import by.ingman.ice.retailerrequest.v2.local.dao.OrderLocalDao;
@@ -47,6 +45,8 @@ import by.ingman.ice.retailerrequest.v2.structure.Product;
 public class ExchangeDataService extends IntentService {
     public static final String FLAG_UPDATE_IN_PROGRESS = "FLAG_UPDATE_IN_PROGRESS";
 
+    private static final String PREF_LAST_UPDATE_DATE = "PREF_LAST_UPDATE_DATE";
+
     static {
         ConfigureLog4J.configure();
     }
@@ -55,20 +55,13 @@ public class ExchangeDataService extends IntentService {
 
     public static final String EXTRA_RECEIVER = "extra_receiver";
 
-    // for test
-    private static int messIndex = 0;
-
     ExecutorService executorService;
-    NotificationManager notificationManager;
-    int k = 0;
     SharedPreferences sharedPreferences;
     private Context that;
 
     OrderLocalDao orderLocalDao;
     private NotificationsUtil notifUtil;
     private OrderDao orderDao;
-
-    Date debtDate = null, restsDate = null, clientsDate = null;
 
     private ExchangeUtil util;
     private ResultReceiver receiver = null;
@@ -88,11 +81,6 @@ public class ExchangeDataService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        // FIXME this log is for test
-        log.info("Test: service launched");
-
-        setProgressFlag(true);
-
         Parcelable p = intent.getParcelableExtra(EXTRA_RECEIVER);/*Extras().containsKey(EXTRA_RECEIVER) ? intent
                 .getExtras()
                 .getParcelable(EXTRA_RECEIVER) : null;*/
@@ -114,7 +102,6 @@ public class ExchangeDataService extends IntentService {
         notifUtil = new NotificationsUtil(that);
         orderDao = new OrderDao(that);
         executorService = Executors.newFixedThreadPool(1);
-        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         orderLocalDao = new OrderLocalDao(that);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(that);
         util = new ExchangeUtil(that);
@@ -128,7 +115,6 @@ public class ExchangeDataService extends IntentService {
     }
 
     private void doExchangeData() {
-        boolean success = true;
         try {
             // updating public files from remote db
             updateAllData();
@@ -145,16 +131,15 @@ public class ExchangeDataService extends IntentService {
             }
         } catch (Exception e) {
             log.error("Error in file updating service", e);
-            success = false;
+            notifUtil.showErrorNotification(that.getString(R.string.notif_error_orders_title), that.getString(R.string.notif_error_orders_updating), e);
             if (isResponseToSend()) {
                 receiver.send(Activity.RESULT_CANCELED, null);
             }
         } finally {
-            setProgressFlag(false);
             AlarmHelper.createExchangeAlarm(this);
         }
 
-        if (success && isResponseToSend()) {
+        if (isResponseToSend()) {
             receiver.send(Activity.RESULT_OK, null);
         }
     }
@@ -163,27 +148,17 @@ public class ExchangeDataService extends IntentService {
         return receiver != null;
     }
 
-    private Date getDateForFilename(String filename) {
-        switch (filename) {
-            case StaticFileNames.RESTS_CSV_SD:
-                return restsDate;
-            case StaticFileNames.CLIENTS_CSV_SD:
-                return clientsDate;
-            case StaticFileNames.DEBTS_CSV_SD:
-                return debtDate;
-        }
-        return null;
-    }
-
     /**
      * update lists of clients+, rests+, debts+
      * @throws Exception
      */
     private void updateAllData() throws Exception {
-        notifUtil.dismissFileErrorNotifications();
+        setProgressFlag(true);
+
+        notifUtil.dismissUpdateErrorNotifications();
 
         long timeUpdateStart = new Date().getTime();
-        long timeLastUpdate = sharedPreferences.getLong("lastUpdatedDate", 0);
+        long timeLastUpdate = sharedPreferences.getLong(PREF_LAST_UPDATE_DATE, 0);
         Date dateLastUpdate = new Date(timeLastUpdate);
         try {
             updateProducts(dateLastUpdate);
@@ -192,62 +167,62 @@ public class ExchangeDataService extends IntentService {
 
             updateDebts(dateLastUpdate);
 
-            sharedPreferences.edit().putLong("lastUpdateDate", timeUpdateStart).apply();
+            sharedPreferences.edit().putLong(PREF_LAST_UPDATE_DATE, timeUpdateStart).apply();
         } catch (Exception e) {
-            sharedPreferences.edit().putLong("lastUpdateDate", timeLastUpdate).apply();
+            sharedPreferences.edit().putLong(PREF_LAST_UPDATE_DATE, timeLastUpdate).apply();
 
             log.error("Error loading data from remote", e);
-            notifUtil.showErrorNotification("Ошибка загрузке данных", "Ошибка загрузки данных.");
             notifUtil.dismissAllUpdateProgressNotifications();
-
-            throw new Exception(e);
+            notifUtil.showErrorNotification(that.getString(R.string.notif_error_updating), that.getString(R.string.notif_error_updating), e);
+        } finally {
+            setProgressFlag(false);
         }
     }
 
-    private void updateProducts(Date dateLastUpdate) {
+    private void updateProducts(Date dateLastUpdate) throws Exception {
         ProductDao productDao = new ProductDao(that);
         Long lastUnloadDate = productDao.getUnloadDate();
 
         if (lastUnloadDate != null && lastUnloadDate > dateLastUpdate.getTime()) {
             if (enabledNotifications()) {
-                notifUtil.showUpdateProgressNotification(that.getString(R.string.notif_data_products));
+                notifUtil.showUpdateProgressNotification(NotificationsUtil.NOTIF_UPDATE_PROGRESS_PRODUCTS_ID);
             }
 
             List<Product> products = productDao.getAll();
             ProductLocalDao productLocalDao = new ProductLocalDao(that);
             productLocalDao.updateProducts(products);
-            notifUtil.dismissUpdateProgressNotification(that.getString(R.string.notif_data_products));
+            notifUtil.dismissUpdateProgressNotification(NotificationsUtil.NOTIF_UPDATE_PROGRESS_PRODUCTS_ID);
         }// otherwise data might be in unload process or nothing new
     }
 
-    private void updateContrAgents(Date dateLastUpdate) {
+    private void updateContrAgents(Date dateLastUpdate) throws Exception {
         ContrAgentDao contrAgentDao = new ContrAgentDao(that);
 
         Long lastUnloadDate = contrAgentDao.getUnloadDate();
         if (lastUnloadDate != null && lastUnloadDate > dateLastUpdate.getTime()) {
             if (enabledNotifications()) {
-                notifUtil.showUpdateProgressNotification(that.getString(R.string.notif_data_contragents));
+                notifUtil.showUpdateProgressNotification(NotificationsUtil.NOTIF_UPDATE_PROGRESS_CONTR_AGENTS_ID);
             }
             List<ContrAgent> caList = contrAgentDao.getAll();
             ContrAgentLocalDao contrAgentLocalDao = new ContrAgentLocalDao(that);
             contrAgentLocalDao.updateContrAgents(caList);
-            notifUtil.dismissUpdateProgressNotification(that.getString(R.string.notif_data_contragents));
+            notifUtil.dismissUpdateProgressNotification(NotificationsUtil.NOTIF_UPDATE_PROGRESS_CONTR_AGENTS_ID);
         }// otherwise data might be in unload process or nothing new
     }
 
-    private void updateDebts(Date dateLastUpdate) {
+    private void updateDebts(Date dateLastUpdate) throws Exception {
         DebtsDao debtsDao = new DebtsDao(that);
         Long lastUnloadDate = debtsDao.getUnloadDate();
 
         if (lastUnloadDate != null && lastUnloadDate > dateLastUpdate.getTime()) {
             if (enabledNotifications()) {
-                notifUtil.showUpdateProgressNotification(that.getString(R.string.notif_data_debts));
+                notifUtil.showUpdateProgressNotification(NotificationsUtil.NOTIF_UPDATE_PROGRESS_DEBTS_ID);
             }
 
             List<Debt> debts = debtsDao.getDebts();
             DebtsLocalDao debtsLocalDao = new DebtsLocalDao(that);
             debtsLocalDao.updateAll(debts);
-            notifUtil.dismissUpdateProgressNotification(that.getString(R.string.notif_data_debts));
+            notifUtil.dismissUpdateProgressNotification(NotificationsUtil.NOTIF_UPDATE_PROGRESS_DEBTS_ID);
         }// otherwise data might be in unload process or nothing new
     }
 
@@ -255,14 +230,8 @@ public class ExchangeDataService extends IntentService {
         return PreferenceManager.getDefaultSharedPreferences(ctx).getBoolean(FLAG_UPDATE_IN_PROGRESS, false);
     }
 
-    public static void checkUpdateInProgress(Context ctx) throws UpdateInProgressException {
-        if (isUpdateInProgress(ctx)) {
-            throw new UpdateInProgressException(ctx);
-        }
-    }
-
     private void setProgressFlag(boolean inProgress) {
-        sharedPreferences.edit().putBoolean(FLAG_UPDATE_IN_PROGRESS, inProgress);
+        sharedPreferences.edit().putBoolean(FLAG_UPDATE_IN_PROGRESS, inProgress).apply();
     }
 
     private boolean enabledNotifications() {
@@ -271,7 +240,7 @@ public class ExchangeDataService extends IntentService {
 
     /**
      * Read orders for which we got answer (approved/not approved)
-     * @param orderId
+     * @param orderId order id
      */
     private void readRemoteAnswer(String orderId) {
         try {

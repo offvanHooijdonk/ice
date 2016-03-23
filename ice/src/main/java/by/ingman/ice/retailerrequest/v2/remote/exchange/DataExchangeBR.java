@@ -5,7 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
+import by.ingman.ice.retailerrequest.v2.R;
 import by.ingman.ice.retailerrequest.v2.helpers.AlarmHelper;
+import by.ingman.ice.retailerrequest.v2.helpers.NotificationsUtil;
 
 /**
  * Created by Yahor_Fralou on 7/13/2015.
@@ -20,7 +22,12 @@ public class DataExchangeBR extends BroadcastReceiver {
             try {
                 ExchangeUtil util = new ExchangeUtil(ctx);
 
-                util.sendRequests();
+                try {
+                    util.sendRequests();
+                } catch (Exception e) {
+                    NotificationsUtil notificationsUtil = new NotificationsUtil(ctx);
+                    notificationsUtil.showErrorNotification(ctx.getString(R.string.notif_error_orders_title), ctx.getString(R.string.notif_error_orders_updating), e);
+                }
             } finally {
                 AlarmHelper.createExchangeAlarm(ctx);
             }

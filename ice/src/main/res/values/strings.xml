@@ -22,11 +22,15 @@
     <string name="menu_report">Отчёт по заявкам</string>
     <string name="menu_refresh">Обновление</string>
 
+    <string name="notif_error_updating">Ошибка обновления данных</string>
     <string name="notif_update_data_title">Обновление данных</string>
+    <string name="notif_error_orders_title">Обновление заявок</string>
+    <string name="notif_error_orders_updating">Ошибка отправки/проверки заявок</string>
     <string name="notif_update_data_message">Обновляются %1$s</string>
     <string name="notif_data_products">остатки</string>
     <string name="notif_data_contragents">котнрагенты</string>
     <string name="notif_data_debts">задолженности</string>
+    <string name="notif_data_orders">заявки</string>
 
 
     <string name="notif_request_success_title">Заявка отправлена</string>
@@ -36,8 +40,8 @@
     <string name="notif_response_text">Заявка для %1$s : %2$s</string>
 
     <string name="reportDate">Дата отчёта</string>
-    <string name="update_app">Обновить программу</string>
-    <string name="update_app_comment">Скачать и установить последнюю версию программы</string>
+    <string name="dialog_button_positive">Да</string>
+    <string name="dialog_button_negative">Нет</string>
     <string name="update_data_files_button">Обновить данные по базе</string>
     <string name="update_data_files_disclaimer">Данная функция должна использоваться только для исправления ошибок обновления данных и обновления с нуля. При наличии связи с Интернетом данные обновляются автоматически.</string>
     <string name="textHintContrAgentFilter">Фильтр контрагентов</string>
@@ -63,9 +67,12 @@
     <string name="pref_exchange_frequency_title">Интервал обновления данных</string>
     <string name="progress_dialog_title">Данные обновляются</string>
     <string name="progress_dialog_message">Дождитесь обновления данных</string>
-    <string name="progress_exception_message">Идёт обновление данных. Пожалуйста, дождитесь его окончания.</string>
+    <string name="update_in_progress">Идёт обновление данных. Пожалуйста, дождитесь его окончания.</string>
     <string name="data_update_success">Обновлено успешно</string>
     <string name="data_update_fail">Не удалось загрузить данные</string>
     <string name="update_data_files_dialog_disclaimer">Перед обновлением все справочные данные
         будут сперва удалены. Продолжить?</string>
+    <string name="remote_db_exception_message">Идёт обновление данных. Пожалуйста, дождитесь его окончания.</string>
+    <string name="title_activity_error_message">View Error Message</string>
+    <string name="error_disclaimer">Здесь отображаются ошибки приложения, для технических нужд.</string>
 </resources>

@@ -9,7 +9,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import by.ingman.ice.retailerrequest.v2.structure.Product;
@@ -27,20 +26,18 @@ public class ProductDao {
         this.ctx = context;
     }
 
-    public Long getUnloadDate() {
+    public Long getUnloadDate() throws Exception {
         Long date = null;
         Connection conn = new ConnectionFactory(ctx).getConnection();
 
         if (conn != null) {
             try {
-                PreparedStatement stat = conn.prepareStatement("SELECT datetime_unload FROM rests TOP 1");
+                PreparedStatement stat = conn.prepareStatement("SELECT TOP(1) datetime_unload FROM rests order by datetime_unload desc");
                 ResultSet rs = stat.executeQuery();
 
                 if (rs.next()) {
                     date = rs.getDate("datetime_unload").getTime();
                 }
-            } catch (Exception e) {
-                log.error("Error getting Products unload date from remote DB.", e);
             } finally {
                 try {
                     if (!conn.isClosed()) {
@@ -57,7 +54,7 @@ public class ProductDao {
         return date;
     }
 
-    public List<Product> getAll() {
+    public List<Product> getAll()throws Exception {
         List<Product> products = new ArrayList<>();
         Connection conn = new ConnectionFactory(ctx).getConnection();
 
@@ -83,8 +80,6 @@ public class ProductDao {
 
                     products.add(pr);
                 }
-            } catch (Exception e) {
-                log.error("Error getting Products from remote DB.", e);
             } finally {
                 try {
                     if (!conn.isClosed()) {

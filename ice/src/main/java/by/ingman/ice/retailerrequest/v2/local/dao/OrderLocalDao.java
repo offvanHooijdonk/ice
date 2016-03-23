@@ -18,8 +18,8 @@ import by.ingman.ice.retailerrequest.v2.structure.Order;
  * Created by Yahor_Fralou on 3/21/2016.
  */
 public class OrderLocalDao {
-    public static String TABLE = "order";
-    public static String TABLE_ANSWER = "order";
+    public static String TABLE = "orders";
+    public static String TABLE_ANSWER = "answers";
 
     private DBHelper dbHelper;
 
@@ -76,6 +76,24 @@ public class OrderLocalDao {
         return orderIds;
     }
 
+    public Map<String, List<Order>> getOrdersSince(Date date) {
+        Map<String, List<Order>> ordersMap = new HashMap<>();
+
+        Cursor c = dbHelper.getReadableDatabase().query(TABLE, null, "order_date >= ?", new String[]{String.valueOf(date.getTime())}, null, null, "order_id");
+
+        while (c.moveToNext()) {
+            String orderId = c.getString(c.getColumnIndex("order_id"));
+            if (!ordersMap.containsKey(orderId)) {
+                ordersMap.put(orderId, new ArrayList<Order>());
+            }
+            ordersMap.get(orderId).add(fromCursor(c));
+        }
+
+        c.close();
+
+        return ordersMap;
+    }
+
     public void markOrderSent(String reqId) {
         ContentValues cv = new ContentValues();
         cv.put("sent", 1);
@@ -94,6 +112,22 @@ public class OrderLocalDao {
         cvAnswer.put("description", answer.getDescription());
         cvAnswer.put("date_unload", answer.getUnloadTime().getTime());
         db.insert(TABLE_ANSWER, null, cvAnswer);
+    }
+
+    public Answer findAnswerByOrderId(String orderId) {
+        Answer answer = null;
+
+        Cursor c = dbHelper.getReadableDatabase().query(TABLE_ANSWER, null, "order_id = ?", new String[]{orderId}, null, null, null);
+        if (c.moveToFirst()) {
+            answer = new Answer();
+            answer.setOrderId(orderId);
+            answer.setDescription(c.getString(c.getColumnIndex("description")));
+            answer.setUnloadTime(new Date(c.getLong(c.getColumnIndex("date_unload"))));
+        }
+
+        c.close();
+
+        return answer;
     }
 
     private ContentValues toContentValues(Order o) {

@@ -1,7 +1,6 @@
 package by.ingman.ice.retailerrequest.v2.remote.dao;
 
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 
 import org.apache.log4j.Logger;
 
@@ -10,7 +9,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import by.ingman.ice.retailerrequest.v2.structure.ContrAgent;
@@ -27,20 +25,18 @@ public class ContrAgentDao {
         this.ctx = context;
     }
 
-    public Long getUnloadDate() {
+    public Long getUnloadDate() throws Exception {
         Long date = null;
         Connection conn = new ConnectionFactory(ctx).getConnection();
 
         if (conn != null) {
             try {
-                PreparedStatement stat = conn.prepareStatement("SELECT datetime_unload FROM clients TOP 1");
+                PreparedStatement stat = conn.prepareStatement("SELECT TOP(1) datetime_unload FROM clients order by datetime_unload desc");
                 ResultSet rs = stat.executeQuery();
 
                 if (rs.next()) {
                     date = rs.getDate("datetime_unload").getTime();
                 }
-            } catch (Exception e) {
-                log.error("Error getting contrAgents unload date from remote DB.", e);
             } finally {
                 try {
                     if (!conn.isClosed()) {
@@ -57,13 +53,13 @@ public class ContrAgentDao {
         return date;
     }
 
-    public List<ContrAgent> getAll() {
+    public List<ContrAgent> getAll() throws Exception {
         List<ContrAgent> contrAgents = new ArrayList<>();
         Connection conn = new ConnectionFactory(ctx).getConnection();
 
         if (conn != null) {
             try {
-                PreparedStatement stat = conn.prepareStatement("SELECT * FROM clients WHERE ORDER BY name_k");
+                PreparedStatement stat = conn.prepareStatement("SELECT * FROM clients ORDER BY name_k");
                 ResultSet rs = stat.executeQuery();
                 ContrAgent ca = null;
                 while (rs != null && rs.next()) {
@@ -82,8 +78,6 @@ public class ContrAgentDao {
                     contrAgents.add(ca);
                 }
 
-            } catch (Exception e) {
-                log.error("Error getting contrAgents from remote DB.", e);
             } finally {
                 try {
                     if (!conn.isClosed()) {

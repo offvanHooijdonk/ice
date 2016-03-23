@@ -84,6 +84,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + ProductLocalDao.TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + DebtsLocalDao.TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + ContrAgentLocalDao.TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + OrderLocalDao.TABLE_ANSWER);
         db.execSQL("DROP TABLE IF EXISTS request");
         onCreate(db);
     }

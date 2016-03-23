@@ -18,6 +18,12 @@ import by.ingman.ice.retailerrequest.v2.structure.Answer;
  * Created by off on 07.07.2015.
  */
 public class OrderDao {
+    private static final String TABLE_ORDERS = "orders";
+    private static final String TABLE_RESULTS = "results";
+    private static final String ORDER_ID = "order_ids";
+    private static final String DESCRIPTION = "description";
+    private static final String UNLOAD_TIME = "datetime_unload";
+
     private final Logger log = Logger.getLogger(OrderDao.class);
 
     private Context ctx;
@@ -26,15 +32,14 @@ public class OrderDao {
         this.ctx = context;
     }
 
-    public boolean batchInsertOrders(List<Order> orders) {
+    public boolean batchInsertOrders(List<Order> orders) throws Exception {
         boolean success = false;
         Connection conn = new ConnectionFactory(ctx).getConnection();
 
         if (conn != null) {
             try {
-                PreparedStatement stat = conn.prepareStatement("INSERT INTO ice_requests(REQ_ID, AGENT_NAME, " +
-                        "REQUEST_DATE, IS_COMMERCIAL, CONTRAGENT_CODE, SALE_POINT_CODE, STORE_HOUSE_CODE, PRODUCT_CODE, " +
-                        "PRODUCT_PACKS_NUM, PRODUCT_NUM, COMMENT) " +
+                PreparedStatement stat = conn.prepareStatement("INSERT INTO " + TABLE_ORDERS + "(ORDER_ID, name_m, " +
+                        "order_date, is_advertising, code_k, name_k, code_r, name_r, code_s, name_s, code_p, name_p, amt_packs, amount, comments, in_datetime) " +
                         "VALUES(?,?,?,?,?,?,?,?,?,?,?)");
 
                 for (Order r : orders) {
@@ -54,6 +59,7 @@ public class OrderDao {
                 } catch (SQLException e1) {
                     log.error("Error closing connection to remote DB after insert failure.", e1);
                 }
+                throw e;
             } finally {
                 try {
                     if (!conn.isClosed()) {
@@ -77,6 +83,7 @@ public class OrderDao {
     }
 
     private void addRequestToBatch(Order order, PreparedStatement stat) throws Exception {
+        // TODO set right data
         stat.setString(1, order.getOrderId());
         stat.setString(2, order.getManager());
         stat.setDate(3, new Date(order.getOrderDate().getTime()));
@@ -88,28 +95,27 @@ public class OrderDao {
         stat.setDouble(9, order.getProductPacksCount());
         stat.setInt(10, order.getProductCount());
         stat.setString(11, order.getComment());
+        stat.setDate(0, new Date(new java.util.Date().getTime()));
 
         stat.addBatch();
 
     }
 
-    public Answer findAnswer(String orderId) {
+    public Answer findAnswer(String orderId) throws Exception {
         Connection conn = new ConnectionFactory(ctx).getConnection();
         Answer answer = null;
 
         try {
-            PreparedStatement stat = conn.prepareStatement("SELECT * FROM " + Answer.TABLE + " WHERE " + Answer.ORDER_ID + " = ? ");
+            PreparedStatement stat = conn.prepareStatement("SELECT * FROM " + TABLE_RESULTS + " WHERE " + ORDER_ID + " = ? ");
             stat.setString(0, orderId);
             ResultSet rs = stat.executeQuery();
 
             if (rs.next()) {
                 answer = new Answer();
-                answer.setOrderId(rs.getString(Answer.ORDER_ID));
-                answer.setDescription(rs.getString(Answer.DESCRIPTION));
-                answer.setUnloadTime(rs.getString(Answer.UNLOAD_TIME));
+                answer.setOrderId(rs.getString(ORDER_ID));
+                answer.setDescription(rs.getString(DESCRIPTION));
+                answer.setUnloadTime(rs.getDate(UNLOAD_TIME));
             }
-        } catch (SQLException e) {
-            log.error(e);
         } finally {
             try {
                 conn.close();

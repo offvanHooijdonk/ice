@@ -25,20 +25,18 @@ public class DebtsDao {
         this.ctx = context;
     }
 
-    public Long getUnloadDate() {
+    public Long getUnloadDate() throws Exception {
         Long date = null;
         Connection conn = new ConnectionFactory(ctx).getConnection();
 
         if (conn != null) {
             try {
-                PreparedStatement stat = conn.prepareStatement("SELECT datetime_unload FROM debts TOP 1");
+                PreparedStatement stat = conn.prepareStatement("SELECT TOP(1) datetime_unload FROM debts order by datetime_unload desc");
                 ResultSet rs = stat.executeQuery();
 
                 if (rs.next()) {
                     date = rs.getDate("datetime_unload").getTime();
                 }
-            } catch (Exception e) {
-                log.error("Error getting Debts unload date from remote DB.", e);
             } finally {
                 try {
                     if (!conn.isClosed()) {
@@ -55,7 +53,7 @@ public class DebtsDao {
         return date;
     }
 
-    public List<Debt> getDebts() {
+    public List<Debt> getDebts() throws Exception {
         List<Debt> debts = new ArrayList<>();
         Connection conn = new ConnectionFactory(ctx).getConnection();
 
@@ -74,8 +72,6 @@ public class DebtsDao {
 
                     debts.add(d);
                 }
-            } catch (Exception e) {
-                log.error("Error getting Debts from remote DB.", e);
             } finally {
                 try {
                     if (!conn.isClosed()) {
