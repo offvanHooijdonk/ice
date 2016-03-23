@@ -26,7 +26,9 @@ public class DataExchangeBR extends BroadcastReceiver {
                     util.sendRequests();
                 } catch (Exception e) {
                     NotificationsUtil notificationsUtil = new NotificationsUtil(ctx);
-                    notificationsUtil.showErrorNotification(ctx.getString(R.string.notif_error_orders_title), ctx.getString(R.string.notif_error_orders_updating), e);
+                    notificationsUtil.showErrorNotification(NotificationsUtil.NOTIF_ORDERS_ERROR_ID, ctx.getString(R.string
+                                    .notif_error_orders_title),
+                            ctx.getString(R.string.notif_error_orders_updating), e);
                 }
             } finally {
                 AlarmHelper.createExchangeAlarm(ctx);

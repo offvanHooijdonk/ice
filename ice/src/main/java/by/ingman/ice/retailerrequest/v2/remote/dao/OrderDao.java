@@ -20,7 +20,7 @@ import by.ingman.ice.retailerrequest.v2.structure.Answer;
 public class OrderDao {
     private static final String TABLE_ORDERS = "orders";
     private static final String TABLE_RESULTS = "results";
-    private static final String ORDER_ID = "order_ids";
+    private static final String ORDER_ID = "order_id";
     private static final String DESCRIPTION = "description";
     private static final String UNLOAD_TIME = "datetime_unload";
 
@@ -40,7 +40,7 @@ public class OrderDao {
             try {
                 PreparedStatement stat = conn.prepareStatement("INSERT INTO " + TABLE_ORDERS + "(ORDER_ID, name_m, " +
                         "order_date, is_advertising, code_k, name_k, code_r, name_r, code_s, name_s, code_p, name_p, amt_packs, amount, comments, in_datetime) " +
-                        "VALUES(?,?,?,?,?,?,?,?,?,?,?)");
+                        "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
                 for (Order r : orders) {
                     addRequestToBatch(r, stat);
@@ -83,22 +83,25 @@ public class OrderDao {
     }
 
     private void addRequestToBatch(Order order, PreparedStatement stat) throws Exception {
-        // TODO set right data
-        stat.setString(1, order.getOrderId());
-        stat.setString(2, order.getManager());
-        stat.setDate(3, new Date(order.getOrderDate().getTime()));
-        stat.setBoolean(4, Boolean.valueOf(order.getIsCommercial()));
-        stat.setString(5, order.getContrAgentCode());
-        stat.setString(6, order.getSalePointCode());
-        stat.setString(7, order.getStorehouseCode());
-        stat.setString(8, order.getProductCode());
-        stat.setDouble(9, order.getProductPacksCount());
-        stat.setInt(10, order.getProductCount());
-        stat.setString(11, order.getComment());
-        stat.setDate(0, new Date(new java.util.Date().getTime()));
+        int i = 1;
+        stat.setString(i++, order.getOrderId());
+        stat.setString(i++, order.getManager());
+        stat.setDate(i++, new Date(order.getOrderDate().getTime()));
+        stat.setBoolean(i++, Boolean.valueOf(order.getIsCommercial()));
+        stat.setString(i++, order.getContrAgentCode());
+        stat.setString(i++, order.getContrAgentName());
+        stat.setString(i++, order.getSalePointCode());
+        stat.setString(i++, order.getSalePointName());
+        stat.setString(i++, order.getStorehouseCode());
+        stat.setString(i++, order.getStorehouseName());
+        stat.setString(i++, order.getProductCode());
+        stat.setString(i++, order.getProductName());
+        stat.setDouble(i++, order.getProductPacksCount());
+        stat.setInt(i++, order.getProductCount());
+        stat.setString(i++, order.getComment());
+        stat.setDate(i, new Date(new java.util.Date().getTime()));
 
         stat.addBatch();
-
     }
 
     public Answer findAnswer(String orderId) throws Exception {
@@ -107,7 +110,7 @@ public class OrderDao {
 
         try {
             PreparedStatement stat = conn.prepareStatement("SELECT * FROM " + TABLE_RESULTS + " WHERE " + ORDER_ID + " = ? ");
-            stat.setString(0, orderId);
+            stat.setString(1, orderId);
             ResultSet rs = stat.executeQuery();
 
             if (rs.next()) {

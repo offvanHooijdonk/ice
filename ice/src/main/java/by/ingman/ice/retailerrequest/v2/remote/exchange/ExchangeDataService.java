@@ -44,7 +44,7 @@ import by.ingman.ice.retailerrequest.v2.structure.Product;
  */
 public class ExchangeDataService extends IntentService {
     public static final String FLAG_UPDATE_IN_PROGRESS = "FLAG_UPDATE_IN_PROGRESS";
-
+    public static final String EXTRA_RECEIVER = "extra_receiver";
     private static final String PREF_LAST_UPDATE_DATE = "PREF_LAST_UPDATE_DATE";
 
     static {
@@ -52,14 +52,10 @@ public class ExchangeDataService extends IntentService {
     }
 
     private final Logger log = Logger.getLogger(ExchangeDataService.class);
-
-    public static final String EXTRA_RECEIVER = "extra_receiver";
-
     ExecutorService executorService;
     SharedPreferences sharedPreferences;
-    private Context that;
-
     OrderLocalDao orderLocalDao;
+    private Context that;
     private NotificationsUtil notifUtil;
     private OrderDao orderDao;
 
@@ -68,10 +64,13 @@ public class ExchangeDataService extends IntentService {
 
     /**
      * Creates an IntentService. Invoked by your subclass's constructor.
-     *
      */
     public ExchangeDataService() {
         super("ExchangeDataService");
+    }
+
+    public static boolean isUpdateInProgress(Context ctx) {
+        return PreferenceManager.getDefaultSharedPreferences(ctx).getBoolean(FLAG_UPDATE_IN_PROGRESS, false);
     }
 
     @Override
@@ -131,7 +130,9 @@ public class ExchangeDataService extends IntentService {
             }
         } catch (Exception e) {
             log.error("Error in file updating service", e);
-            notifUtil.showErrorNotification(that.getString(R.string.notif_error_orders_title), that.getString(R.string.notif_error_orders_updating), e);
+            notifUtil.showErrorNotification(NotificationsUtil.NOTIF_ORDERS_ERROR_ID, that.getString(R.string.notif_error_orders_title),
+                    that.getString(R.string
+                            .notif_error_orders_updating), e);
             if (isResponseToSend()) {
                 receiver.send(Activity.RESULT_CANCELED, null);
             }
@@ -150,6 +151,7 @@ public class ExchangeDataService extends IntentService {
 
     /**
      * update lists of clients+, rests+, debts+
+     *
      * @throws Exception
      */
     private void updateAllData() throws Exception {
@@ -173,7 +175,10 @@ public class ExchangeDataService extends IntentService {
 
             log.error("Error loading data from remote", e);
             notifUtil.dismissAllUpdateProgressNotifications();
-            notifUtil.showErrorNotification(that.getString(R.string.notif_error_updating), that.getString(R.string.notif_error_updating), e);
+            notifUtil.showErrorNotification(NotificationsUtil.NOTIF_DATA_UPDATE_ERROR_ID, that.getString(R.string.notif_error_updating),
+                    that.getString(R.string
+                            .notif_error_updating)
+                    , e);
         } finally {
             setProgressFlag(false);
         }
@@ -226,10 +231,6 @@ public class ExchangeDataService extends IntentService {
         }// otherwise data might be in unload process or nothing new
     }
 
-    public static boolean isUpdateInProgress(Context ctx) {
-        return PreferenceManager.getDefaultSharedPreferences(ctx).getBoolean(FLAG_UPDATE_IN_PROGRESS, false);
-    }
-
     private void setProgressFlag(boolean inProgress) {
         sharedPreferences.edit().putBoolean(FLAG_UPDATE_IN_PROGRESS, inProgress).apply();
     }
@@ -240,23 +241,19 @@ public class ExchangeDataService extends IntentService {
 
     /**
      * Read orders for which we got answer (approved/not approved)
+     *
      * @param orderId order id
      */
-    private void readRemoteAnswer(String orderId) {
-        try {
-            Answer answer = orderDao.findAnswer(orderId);
-            if (answer == null) {
-                return;
-            }
-
-            orderLocalDao.saveRemoteAnswer(answer);
-            Order singleOrder = orderLocalDao.getOrderById(answer.getOrderId());
-
-            notifUtil.showOrderNotification(singleOrder, answer);
-        } catch (Exception e) {
-            log.error("Error reading remote answer.", e);
+    private void readRemoteAnswer(String orderId) throws Exception {
+        Answer answer = orderDao.findAnswer(orderId);
+        if (answer == null) {
+            return;
         }
 
+        orderLocalDao.saveRemoteAnswer(answer);
+        Order singleOrder = orderLocalDao.getOrderById(answer.getOrderId());
+
+        notifUtil.showOrderNotification(singleOrder, answer);
     }
 
 }

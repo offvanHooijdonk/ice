@@ -21,7 +21,8 @@ public class NotificationsUtil {
     public static final int NOTIF_UPDATE_PROGRESS_PRODUCTS_ID = 11;
     public static final int NOTIF_UPDATE_PROGRESS_DEBTS_ID = 12;
     public static final int NOTIF_UPDATE_PROGRESS_ORDERS_ID = 13;
-    private static final int NOTIF_DATA_UPDATE_ERROR_ID = 2;
+    public static final int NOTIF_DATA_UPDATE_ERROR_ID = 20;
+    public static final int NOTIF_ORDERS_ERROR_ID = 21;
     private static final int NOTIF_ORDER_SENT_ID = 3;
     private static final int NOTIF_ORDER_ACCEPT_ID = 4;
 
@@ -32,9 +33,9 @@ public class NotificationsUtil {
         this.ctx = context;
     }
 
-    public void showUpdateProgressNotification(int id) {
+    public void showUpdateProgressNotification(int notificationId) {
         String dataName = "";
-        switch (id) {
+        switch (notificationId) {
             case NOTIF_UPDATE_PROGRESS_CONTR_AGENTS_ID : dataName = ctx.getString(R.string.notif_data_contragents);
                 break;
             case NOTIF_UPDATE_PROGRESS_PRODUCTS_ID : dataName = ctx.getString(R.string.notif_data_products);
@@ -51,7 +52,7 @@ public class NotificationsUtil {
                 .setSmallIcon(android.R.drawable.stat_sys_download).setOngoing(true)
                 .setProgress(0, 0, true).setUsesChronometer(true);
 
-        getNotificationManager().notify(id, builder.build());
+        getNotificationManager().notify(notificationId, builder.build());
     }
 
     public void dismissUpdateProgressNotification(int id) {
@@ -65,8 +66,7 @@ public class NotificationsUtil {
         getNotificationManager().cancel(NOTIF_UPDATE_PROGRESS_ORDERS_ID);
     }
 
-    // TODO set different ID to error notification for data and orders
-    public void showErrorNotification(String title, String message, Throwable th) {
+    public void showErrorNotification(int notificationId, String title, String message, Throwable th) {
         Notification.Builder builder = setupCommonNotification(title, message, true)
                 .setSmallIcon(android.R.drawable.stat_notify_error);
 
@@ -74,7 +74,7 @@ public class NotificationsUtil {
             builder.setContentIntent(createErrorIntent(th));
         }
 
-        getNotificationManager().notify(NOTIF_DATA_UPDATE_ERROR_ID, builder.build());
+        getNotificationManager().notify(notificationId, builder.build());
     }
 
     public void showOrderSentNotification(Order order) {
@@ -111,6 +111,7 @@ public class NotificationsUtil {
 
     public void dismissUpdateErrorNotifications() {
         getNotificationManager().cancel(NOTIF_DATA_UPDATE_ERROR_ID);
+        getNotificationManager().cancel(NOTIF_ORDERS_ERROR_ID);
     }
 
     private NotificationManager getNotificationManager() {

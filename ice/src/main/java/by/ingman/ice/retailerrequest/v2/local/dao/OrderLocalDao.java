@@ -29,7 +29,7 @@ public class OrderLocalDao {
 
     public Order getOrderById(String orderId) {
         Order order = null;
-        Cursor c = dbHelper.getReadableDatabase().query(TABLE, null, "order_id", new String[]{orderId}, null, null, null);
+        Cursor c = dbHelper.getReadableDatabase().query(TABLE, null, "order_id = ?", new String[]{orderId}, null, null, null);
         if (c.moveToFirst()) {
             order = fromCursor(c);
         }
@@ -53,9 +53,9 @@ public class OrderLocalDao {
             if (orders.containsKey(order.getOrderId())) {
                 orders.get(order.getOrderId()).add(order);
             } else {
-                List<Order> reqList = new ArrayList<>();
-                reqList.add(order);
-                orders.put(order.getOrderId(), reqList);
+                List<Order> orderList = new ArrayList<>();
+                orderList.add(order);
+                orders.put(order.getOrderId(), orderList);
             }
         }
         c.close();
@@ -94,10 +94,10 @@ public class OrderLocalDao {
         return ordersMap;
     }
 
-    public void markOrderSent(String reqId) {
+    public void markOrderSent(String orderId) {
         ContentValues cv = new ContentValues();
         cv.put("sent", 1);
-        dbHelper.getWritableDatabase().update(TABLE, cv, "req_id = ?", new String[]{reqId});
+        dbHelper.getWritableDatabase().update(TABLE, cv, "order_id = ?", new String[]{orderId});
     }
 
     public void saveRemoteAnswer(Answer answer) {
