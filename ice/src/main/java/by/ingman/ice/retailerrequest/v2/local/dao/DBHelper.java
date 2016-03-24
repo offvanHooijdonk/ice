@@ -3,6 +3,7 @@ package by.ingman.ice.retailerrequest.v2.local.dao;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.text.TextUtils;
 
 /**
  * Created with IntelliJ IDEA.
@@ -89,5 +90,11 @@ public class DBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    public static String addWildcards(String filter) {
+        String filterWildcards = TextUtils.isEmpty(filter) ? "" : filter;
+        filterWildcards = String.format("%%%s%%", filterWildcards);
+
+        return filterWildcards;
+    }
 
 }

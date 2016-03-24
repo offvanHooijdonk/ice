@@ -6,11 +6,9 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
-import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -20,6 +18,7 @@ import android.widget.Toast;
 import org.apache.log4j.Logger;
 
 import by.ingman.ice.retailerrequest.v2.helpers.AlarmHelper;
+import by.ingman.ice.retailerrequest.v2.helpers.PreferenceHelper;
 import by.ingman.ice.retailerrequest.v2.remote.exchange.ExchangeDataService;
 
 /**
@@ -29,8 +28,8 @@ import by.ingman.ice.retailerrequest.v2.remote.exchange.ExchangeDataService;
  * Time: 0:44
  * To change this template use File | Settings | File Templates.
  */
-public class ApkUpdateActivity extends Activity {
-    private final Logger log = Logger.getLogger(ApkUpdateActivity.class);
+public class UpdateDataActivity extends Activity {
+    private final Logger log = Logger.getLogger(UpdateDataActivity.class);
 
     Button pubFilesUpdateButton;
     ProgressBar progressBar;
@@ -38,7 +37,6 @@ public class ApkUpdateActivity extends Activity {
     private TextView textFail;
     ProgressDialog progressDialog;
     private Context ctx;
-    private SharedPreferences sharedPreferences;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,9 +47,6 @@ public class ApkUpdateActivity extends Activity {
         if (getActionBar() != null) {
             getActionBar().setDisplayHomeAsUpEnabled(true);
         }
-
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         textSuccess = (TextView) findViewById(R.id.textSuccess);
         textFail = (TextView) findViewById(R.id.textFail);
@@ -84,7 +79,7 @@ public class ApkUpdateActivity extends Activity {
 
     private void startForceUpdate() {
         try {
-            sharedPreferences.edit().putLong("lastUpdateDate", 0).apply();
+            PreferenceHelper.Runtime.setLastUpdateDate(ctx, 0);
 
             displayFailureMessage(false);
             displaySuccessMessage(false);
@@ -108,7 +103,7 @@ public class ApkUpdateActivity extends Activity {
 
     private void displayProgressDialog(boolean display) {
         if (display) {
-            progressDialog = new ProgressDialog(ApkUpdateActivity.this);
+            progressDialog = new ProgressDialog(UpdateDataActivity.this);
             progressDialog.setTitle(ctx.getString(R.string.progress_dialog_title));
             progressDialog.setMessage(ctx.getString(R.string.progress_dialog_message));
             progressDialog.setCancelable(false);

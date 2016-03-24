@@ -63,6 +63,8 @@
     <string name="pref_db_username_title">Имя пользователя в базе</string>
     <string name="pref_db_username_summ">Не связано с именем менеджера в приложении</string>
     <string name="pref_db_password_title">Пароль</string>
+    <string name="pref_order_days_ahead_title">Ограничение даты заказа</string>
+    <string name="pref_order_days_ahead_summ">На сколько дней вперёд можно выбрать дату заказа</string>
     <string name="pref_exchange_frequency_summ">Время в секундах</string>
     <string name="pref_exchange_frequency_title">Интервал обновления данных</string>
     <string name="progress_dialog_title">Данные обновляются</string>

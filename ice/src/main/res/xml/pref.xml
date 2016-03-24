@@ -5,10 +5,18 @@
         android:key="username"
         android:summary="@string/pref_manager_db_summ"
         android:title="@string/pref_manager_db"/>
+
     <EditTextPreference
         android:key="storehouseDefaultCode"
         android:summary="@string/pref_default_storehouse_summ"
         android:title="@string/pref_default_storehouse_title"/>
+
+    <EditTextPreference
+        android:defaultValue="20"
+        android:key="orderDaysAhead"
+        android:summary="@string/pref_order_days_ahead_summ"
+        android:title="@string/pref_order_days_ahead_title"
+        android:inputType="number"/>
 
     <CheckBoxPreference
         android:defaultValue="true"
@@ -21,21 +29,6 @@
         android:summary="@string/pref_screen_sys_options_summ"
         android:title="@string/pref_screen_sys_options_title"
         android:persistent="false">
-        <EditTextPreference
-            android:defaultValue="80.249.87.247/AndroidExchange/New/"
-            android:key="androidExchangeNewDirPref"
-            android:summary="Адрес папки для новых запросов"
-            android:title="Адрес папки"/>
-        <EditTextPreference
-            android:defaultValue="80.249.87.247/AndroidExchange/Out/"
-            android:key="androidExchangeOutDirPref"
-            android:summary="Адрес папки для ответов базы данных"
-            android:title="Адрес папки"/>
-        <EditTextPreference
-            android:defaultValue="80.249.87.247/AndroidExchange/Pub/"
-            android:key="androidExchangePubDirPref"
-            android:summary="Адрес папки для выгрузки информации из БД"
-            android:title="Адрес папки"/>
 
         <EditTextPreference
             android:defaultValue="30"
@@ -43,12 +36,6 @@
             android:summary="@string/pref_exchange_frequency_summ"
             android:title="@string/pref_exchange_frequency_title"
             android:inputType="number"/>
-
-        <EditTextPreference
-            android:defaultValue="80.249.87.247/AndroidExchange/apk/"
-            android:key="androidExchangeApkDirPref"
-            android:summary="@string/pref_apk_update_folder_summ"
-            android:title="@string/pref_apk_update_folder"/>
 
         <PreferenceCategory
             android:key="catDB"

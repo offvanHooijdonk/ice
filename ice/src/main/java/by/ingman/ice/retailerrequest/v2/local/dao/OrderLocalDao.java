@@ -76,10 +76,11 @@ public class OrderLocalDao {
         return orderIds;
     }
 
-    public Map<String, List<Order>> getOrdersSince(Date date) {
+    public Map<String, List<Order>> getOrdersSince(Date dateSince, Date dateTo) {
         Map<String, List<Order>> ordersMap = new HashMap<>();
 
-        Cursor c = dbHelper.getReadableDatabase().query(TABLE, null, "order_date >= ?", new String[]{String.valueOf(date.getTime())}, null, null, "order_id");
+        Cursor c = dbHelper.getReadableDatabase().query(TABLE, null, "order_date >= ? AND order_date <= ?",
+                new String[]{String.valueOf(dateSince.getTime()), String.valueOf(dateTo.getTime())}, null, null, "order_id");
 
         while (c.moveToNext()) {
             String orderId = c.getString(c.getColumnIndex("order_id"));

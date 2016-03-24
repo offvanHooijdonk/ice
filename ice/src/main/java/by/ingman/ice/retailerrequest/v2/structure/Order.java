@@ -1,12 +1,13 @@
 package by.ingman.ice.retailerrequest.v2.structure;
 
 import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+
+import by.ingman.ice.retailerrequest.v2.helpers.Helper;
 
 /**
  * Created with IntelliJ IDEA.
@@ -19,8 +20,6 @@ public class Order {
 
     private static final String NEWLINE_HTML = "<br>";
     private static final String NEWLINE = "\n";
-
-    private static DecimalFormat decimalFormat = new DecimalFormat("#.###");
 
     private String orderId;
     private String manager;
@@ -133,7 +132,7 @@ public class Order {
                     .append(" ")
                     .append(r.getProductName()).append(NEWLINE)
                     .append("упаковок ")
-                    .append(decimalFormat.format(r.getProductPacksCount())).append(NEWLINE)
+                    .append(Helper.formatPacks(r.getProductPacksCount())).append(NEWLINE)
                     .append("штук ")
                     .append(r.getProductCount()).append(NEWLINE);
             sb.append(sbProd.toString());

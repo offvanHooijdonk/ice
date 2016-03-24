@@ -4,11 +4,9 @@ import android.app.Activity;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.os.ResultReceiver;
-import android.preference.PreferenceManager;
 
 import org.apache.log4j.Logger;
 
@@ -21,6 +19,7 @@ import by.ingman.ice.retailerrequest.v2.R;
 import by.ingman.ice.retailerrequest.v2.helpers.AlarmHelper;
 import by.ingman.ice.retailerrequest.v2.helpers.ConfigureLog4J;
 import by.ingman.ice.retailerrequest.v2.helpers.NotificationsUtil;
+import by.ingman.ice.retailerrequest.v2.helpers.PreferenceHelper;
 import by.ingman.ice.retailerrequest.v2.local.dao.ContrAgentLocalDao;
 import by.ingman.ice.retailerrequest.v2.local.dao.DebtsLocalDao;
 import by.ingman.ice.retailerrequest.v2.local.dao.OrderLocalDao;
@@ -45,7 +44,6 @@ import by.ingman.ice.retailerrequest.v2.structure.Product;
 public class ExchangeDataService extends IntentService {
     public static final String FLAG_UPDATE_IN_PROGRESS = "FLAG_UPDATE_IN_PROGRESS";
     public static final String EXTRA_RECEIVER = "extra_receiver";
-    private static final String PREF_LAST_UPDATE_DATE = "PREF_LAST_UPDATE_DATE";
 
     static {
         ConfigureLog4J.configure();
@@ -53,7 +51,6 @@ public class ExchangeDataService extends IntentService {
 
     private final Logger log = Logger.getLogger(ExchangeDataService.class);
     ExecutorService executorService;
-    SharedPreferences sharedPreferences;
     OrderLocalDao orderLocalDao;
     private Context that;
     private NotificationsUtil notifUtil;
@@ -70,7 +67,7 @@ public class ExchangeDataService extends IntentService {
     }
 
     public static boolean isUpdateInProgress(Context ctx) {
-        return PreferenceManager.getDefaultSharedPreferences(ctx).getBoolean(FLAG_UPDATE_IN_PROGRESS, false);
+        return PreferenceHelper.Runtime.getUpdateInProgress(ctx);
     }
 
     @Override
@@ -102,7 +99,6 @@ public class ExchangeDataService extends IntentService {
         orderDao = new OrderDao(that);
         executorService = Executors.newFixedThreadPool(1);
         orderLocalDao = new OrderLocalDao(that);
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(that);
         util = new ExchangeUtil(that);
     }
 
@@ -155,12 +151,10 @@ public class ExchangeDataService extends IntentService {
      * @throws Exception
      */
     private void updateAllData() throws Exception {
-        setProgressFlag(true);
-
         notifUtil.dismissUpdateErrorNotifications();
 
         long timeUpdateStart = new Date().getTime();
-        long timeLastUpdate = sharedPreferences.getLong(PREF_LAST_UPDATE_DATE, 0);
+        long timeLastUpdate = PreferenceHelper.Runtime.getLastUpdateDate(that);
         Date dateLastUpdate = new Date(timeLastUpdate);
         try {
             updateProducts(dateLastUpdate);
@@ -169,9 +163,9 @@ public class ExchangeDataService extends IntentService {
 
             updateDebts(dateLastUpdate);
 
-            sharedPreferences.edit().putLong(PREF_LAST_UPDATE_DATE, timeUpdateStart).apply();
+            PreferenceHelper.Runtime.setLastUpdateDate(that, timeUpdateStart);
         } catch (Exception e) {
-            sharedPreferences.edit().putLong(PREF_LAST_UPDATE_DATE, timeLastUpdate).apply();
+            PreferenceHelper.Runtime.setLastUpdateDate(that, timeLastUpdate);
 
             log.error("Error loading data from remote", e);
             notifUtil.dismissAllUpdateProgressNotifications();
@@ -180,7 +174,7 @@ public class ExchangeDataService extends IntentService {
                             .notif_error_updating)
                     , e);
         } finally {
-            setProgressFlag(false);
+            PreferenceHelper.Runtime.setUpdateInProgress(that, false); // do here - if update started, then block Agent till all updates finished, as changes in one table often go with changes in others
         }
     }
 
@@ -189,7 +183,8 @@ public class ExchangeDataService extends IntentService {
         Long lastUnloadDate = productDao.getUnloadDate();
 
         if (lastUnloadDate != null && lastUnloadDate > dateLastUpdate.getTime()) {
-            if (enabledNotifications()) {
+            PreferenceHelper.Runtime.setUpdateInProgress(that, true); // do it here in order not to block Agent work with UI
+            if (PreferenceHelper.Settings.getNotificationsEnabled(that)) {
                 notifUtil.showUpdateProgressNotification(NotificationsUtil.NOTIF_UPDATE_PROGRESS_PRODUCTS_ID);
             }
 
@@ -205,7 +200,8 @@ public class ExchangeDataService extends IntentService {
 
         Long lastUnloadDate = contrAgentDao.getUnloadDate();
         if (lastUnloadDate != null && lastUnloadDate > dateLastUpdate.getTime()) {
-            if (enabledNotifications()) {
+            PreferenceHelper.Runtime.setUpdateInProgress(that, true); // do it here in order not to block Agent work with UI
+            if (PreferenceHelper.Settings.getNotificationsEnabled(that)) {
                 notifUtil.showUpdateProgressNotification(NotificationsUtil.NOTIF_UPDATE_PROGRESS_CONTR_AGENTS_ID);
             }
             List<ContrAgent> caList = contrAgentDao.getAll();
@@ -220,7 +216,8 @@ public class ExchangeDataService extends IntentService {
         Long lastUnloadDate = debtsDao.getUnloadDate();
 
         if (lastUnloadDate != null && lastUnloadDate > dateLastUpdate.getTime()) {
-            if (enabledNotifications()) {
+            PreferenceHelper.Runtime.setUpdateInProgress(that, true); // do it here in order not to block Agent work with UI
+            if (PreferenceHelper.Settings.getNotificationsEnabled(that)) {
                 notifUtil.showUpdateProgressNotification(NotificationsUtil.NOTIF_UPDATE_PROGRESS_DEBTS_ID);
             }
 
@@ -229,14 +226,6 @@ public class ExchangeDataService extends IntentService {
             debtsLocalDao.updateAll(debts);
             notifUtil.dismissUpdateProgressNotification(NotificationsUtil.NOTIF_UPDATE_PROGRESS_DEBTS_ID);
         }// otherwise data might be in unload process or nothing new
-    }
-
-    private void setProgressFlag(boolean inProgress) {
-        sharedPreferences.edit().putBoolean(FLAG_UPDATE_IN_PROGRESS, inProgress).apply();
-    }
-
-    private boolean enabledNotifications() {
-        return sharedPreferences.getBoolean("updateNotificationsEnabled", true);
     }
 
     /**

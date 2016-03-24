@@ -25,6 +25,7 @@
             android:id="@+id/textErrorMessage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textIsSelectable="true"
             android:layout_marginTop="@dimen/activity_vertical_margin"/>
     </LinearLayout>
 

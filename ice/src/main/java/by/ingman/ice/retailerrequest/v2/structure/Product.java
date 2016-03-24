@@ -108,7 +108,7 @@ public class Product {
         sb.append(code).append(" ").append(name)
                 .append("\n\rВыбрано упаковок: ").append(packs)
                 .append("\n\rВыбрано штук: ").append(rest)
-                .append("\n\rЦена: ").append(price)
+                .append("\n\rЦена: ").append(String.format("%.2f", price))
                 .append("\n\rНа складе: (").append(storehousePacks).append(" уп., ").append(storehouseRest).append(" шт)");
         return sb.toString();
     }

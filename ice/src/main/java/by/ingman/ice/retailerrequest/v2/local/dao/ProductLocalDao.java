@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.TextUtils;
 
 import org.apache.log4j.Logger;
 
@@ -27,11 +28,13 @@ public class ProductLocalDao {
         dbHelper = new DBHelper(context);
     }
 
-    public List<Product> getAll() {
+    public List<Product> getAll(String filter) {
         List<Product> products = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-        Cursor c = db.query(TABLE, null, null, null, null, null, "name, code");
+        filter = TextUtils.isEmpty(filter) ? "" : filter;
+        filter = String.format("%%%s%%", filter);
+        Cursor c = db.query(TABLE, null, "name like ?", new String[]{filter}, null, null, "name, code");
 
         while (c.moveToNext()) {
             products.add(fromCursor(c));

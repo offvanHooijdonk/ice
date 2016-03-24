@@ -3,8 +3,6 @@ package by.ingman.ice.retailerrequest.v2.helpers;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -16,10 +14,9 @@ import by.ingman.ice.retailerrequest.v2.remote.exchange.ExchangeIntends;
  */
 public class AlarmHelper {
     private static AlarmManager alarmManager;
-    private static SharedPreferences sharedPreferences;
 
     public static void createExchangeAlarm(Context ctx) {
-        int intervalSec = Integer.valueOf(getSharedPreferences(ctx).getString("exchangeFrequency", "30"));
+        int intervalSec = PreferenceHelper.Settings.getDataUpdateInterval(ctx);
         Calendar startTime = Calendar.getInstance();
         startTime.add(Calendar.SECOND, intervalSec);
 
@@ -42,11 +39,4 @@ public class AlarmHelper {
         return alarmManager;
     }
 
-    private static SharedPreferences getSharedPreferences(Context ctx) {
-        if (sharedPreferences == null) {
-            sharedPreferences = PreferenceManager.getDefaultSharedPreferences(ctx);
-        }
-
-        return sharedPreferences;
-    }
 }

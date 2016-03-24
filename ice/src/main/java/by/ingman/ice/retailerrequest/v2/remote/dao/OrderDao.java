@@ -5,14 +5,15 @@ import android.content.Context;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
-import by.ingman.ice.retailerrequest.v2.structure.Order;
 import by.ingman.ice.retailerrequest.v2.structure.Answer;
+import by.ingman.ice.retailerrequest.v2.structure.Order;
 
 /**
  * Created by off on 07.07.2015.
@@ -86,7 +87,7 @@ public class OrderDao {
         int i = 1;
         stat.setString(i++, order.getOrderId());
         stat.setString(i++, order.getManager());
-        stat.setDate(i++, new Date(order.getOrderDate().getTime()));
+        stat.setTimestamp(i++, new Timestamp(order.getOrderDate().getTime()));
         stat.setBoolean(i++, Boolean.valueOf(order.getIsCommercial()));
         stat.setString(i++, order.getContrAgentCode());
         stat.setString(i++, order.getContrAgentName());
@@ -99,7 +100,7 @@ public class OrderDao {
         stat.setDouble(i++, order.getProductPacksCount());
         stat.setInt(i++, order.getProductCount());
         stat.setString(i++, order.getComment());
-        stat.setDate(i, new Date(new java.util.Date().getTime()));
+        stat.setTimestamp(i, new Timestamp(new Date().getTime()));
 
         stat.addBatch();
     }
@@ -108,23 +109,27 @@ public class OrderDao {
         Connection conn = new ConnectionFactory(ctx).getConnection();
         Answer answer = null;
 
-        try {
-            PreparedStatement stat = conn.prepareStatement("SELECT * FROM " + TABLE_RESULTS + " WHERE " + ORDER_ID + " = ? ");
-            stat.setString(1, orderId);
-            ResultSet rs = stat.executeQuery();
-
-            if (rs.next()) {
-                answer = new Answer();
-                answer.setOrderId(rs.getString(ORDER_ID));
-                answer.setDescription(rs.getString(DESCRIPTION));
-                answer.setUnloadTime(rs.getDate(UNLOAD_TIME));
-            }
-        } finally {
+        if (conn != null) {
             try {
-                conn.close();
-            } catch (SQLException e) {
-                log.error(e);
+                PreparedStatement stat = conn.prepareStatement("SELECT * FROM " + TABLE_RESULTS + " WHERE " + ORDER_ID + " = ? ");
+                stat.setString(1, orderId);
+                ResultSet rs = stat.executeQuery();
+
+                if (rs.next()) {
+                    answer = new Answer();
+                    answer.setOrderId(rs.getString(ORDER_ID));
+                    answer.setDescription(rs.getString(DESCRIPTION));
+                    answer.setUnloadTime(rs.getDate(UNLOAD_TIME));
+                }
+            } finally {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    log.error(e);
+                }
             }
+        } else {
+            log.error("Connection to remote DB is null.");
         }
 
         return answer;

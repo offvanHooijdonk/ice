@@ -48,11 +48,13 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
             getActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
+        reportDate = initTodayDate();
+
         mainLayout = (LinearLayout) findViewById(R.id.linearLayoutCAReportMain);
         reqLayout = (LinearLayout) findViewById(R.id.linearLayoutCAReportReq);
 
         textDate = (TextView) findViewById(R.id.textDate);
-        reportDate = Calendar.getInstance();
+
         textDate.setText(Order.getDateFormat().format(reportDate.getTime()));
         textDate.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,7 +70,7 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
         orderLocalDao = new OrderLocalDao(that);
 
         //вычитываем один раз все запросы
-        orders = orderLocalDao.getOrdersSince(reportDate.getTime());
+        orders = orderLocalDao.getOrdersSince(reportDate.getTime(), getDayEndDate(reportDate).getTime());
         //главный метод
         showRequestsForDate(reportDate.getTime());
     }
@@ -116,14 +118,32 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
     @Override
     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
         if (reportDate == null) {
-            reportDate = Calendar.getInstance();
+            reportDate = initTodayDate();
         }
         reportDate.set(Calendar.YEAR, year);
         reportDate.set(Calendar.MONTH, monthOfYear);
         reportDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
         textDate.setText(Order.getDateFormat().format(reportDate.getTime()));
 
-        orders = orderLocalDao.getOrdersSince(reportDate.getTime());
+        orders = orderLocalDao.getOrdersSince(reportDate.getTime(), getDayEndDate(reportDate).getTime());
         showRequestsForDate(reportDate.getTime());
+    }
+
+    private Calendar getDayEndDate(Calendar date) {
+        Calendar dayEndDate = (Calendar) date.clone();
+        dayEndDate.add(Calendar.DAY_OF_MONTH, 1);
+        dayEndDate.add(Calendar.MILLISECOND, -1);
+
+        return dayEndDate;
+    }
+
+    private Calendar initTodayDate() {
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
+
+        return c;
     }
 }

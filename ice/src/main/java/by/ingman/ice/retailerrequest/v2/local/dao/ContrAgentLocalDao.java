@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.TextUtils;
 
 import org.apache.log4j.Logger;
 
@@ -26,11 +27,12 @@ public class ContrAgentLocalDao {
         dbHelper = new DBHelper(context);
     }
 
-    public List<ContrAgent> getContrAgents() {
+    public List<ContrAgent> getContrAgents(String filter) {
         List<ContrAgent> caList = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-        Cursor c = db.query(true, TABLE, new String[]{"code", "name"}, null, null, null, null, "name, code", null);
+        filter = DBHelper.addWildcards(filter);
+        Cursor c = db.query(true, TABLE, new String[]{"code", "name"}, "name like ?", new String[]{filter}, null, null, "name, code", null);
         while (c.moveToNext()) {
             caList.add(new ContrAgent(
                     c.getString(c.getColumnIndex("code")),
@@ -42,11 +44,13 @@ public class ContrAgentLocalDao {
         return caList;
     }
 
-    public List<SalePoint> getSalePointsByContrAgent(ContrAgent ca) {
+    public List<SalePoint> getSalePointsByContrAgent(ContrAgent ca, String filter) {
         List<SalePoint> salePoints = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-        Cursor c = db.query(TABLE, new String[]{"sp_code", "sp_name"}, "code=?", new String[]{ca.getCode()}, null, null, "sp_name, sp_code");
+        filter = TextUtils.isEmpty(filter) ? "" : filter;
+        filter = DBHelper.addWildcards(filter);
+        Cursor c = db.query(TABLE, new String[]{"sp_code", "sp_name"}, "code=? AND sp_name like ?", new String[]{ca.getCode(), filter}, null, null, "sp_name, sp_code");
         while (c.moveToNext()) {
             salePoints.add(new SalePoint(
                     ca.getCode(),

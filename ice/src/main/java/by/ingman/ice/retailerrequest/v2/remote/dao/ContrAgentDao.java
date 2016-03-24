@@ -59,7 +59,7 @@ public class ContrAgentDao {
 
         if (conn != null) {
             try {
-                PreparedStatement stat = conn.prepareStatement("SELECT * FROM clients ORDER BY name_k");
+                PreparedStatement stat = conn.prepareStatement("SELECT * FROM clients ORDER BY name_k, code_k");
                 ResultSet rs = stat.executeQuery();
                 ContrAgent ca = null;
                 while (rs != null && rs.next()) {
