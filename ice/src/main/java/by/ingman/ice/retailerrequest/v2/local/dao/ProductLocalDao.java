@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.text.TextUtils;
 
 import org.apache.log4j.Logger;
 
@@ -28,13 +27,12 @@ public class ProductLocalDao {
         dbHelper = new DBHelper(context);
     }
 
-    public List<Product> getAll(String filter) {
+    public List<Product> getAllInStorehouse(String storehouseCode, String filter) {
         List<Product> products = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-        filter = TextUtils.isEmpty(filter) ? "" : filter;
-        filter = String.format("%%%s%%", filter);
-        Cursor c = db.query(TABLE, null, "name like ?", new String[]{filter}, null, null, "name, code");
+        filter = DBHelper.addWildcards(filter);
+        Cursor c = db.query(TABLE, null, "store_code = ? AND name like ?", new String[]{storehouseCode, filter}, null, null, "name, code");
 
         while (c.moveToNext()) {
             products.add(fromCursor(c));
@@ -59,6 +57,21 @@ public class ProductLocalDao {
         c.close();
 
         return storehouses;
+    }
+
+    public Storehouse getStorehouseById(String storehouseId) {
+        Storehouse s = null;
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        Cursor c = db.query(true, TABLE, new String[]{"store_code", "store_name"}, "store_code = ?", new String[]{storehouseId}, null, null, "store_name, store_code", null);
+        if (c.moveToNext()) {
+            s = new Storehouse(
+                    c.getString(c.getColumnIndex("store_code")),
+                    c.getString(c.getColumnIndex("store_name")));
+        }
+        c.close();
+
+        return s;
     }
 
     public Product findProductInStorehouse(String productCode, String storehouseCode) {

@@ -112,4 +112,9 @@ public class Product {
                 .append("\n\rНа складе: (").append(storehousePacks).append(" уп., ").append(storehouseRest).append(" шт)");
         return sb.toString();
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s %s", getCode(), getName());
+    }
 }

@@ -53,4 +53,9 @@ public class ContrAgent {
     public void addSalePoint(SalePoint salePoint) {
         salePoints.add(salePoint);
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s %s", getCode(), getName());
+    }
 }
