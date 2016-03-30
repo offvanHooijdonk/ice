@@ -15,7 +15,7 @@ import android.text.TextUtils;
 public class DBHelper extends SQLiteOpenHelper {
     public static String DATABASE_NAME = "iceDB";
 
-    private static final int DATABASE_VERSION = 10;
+    private static final int DATABASE_VERSION = 13;
 
 
     public DBHelper(Context context) {

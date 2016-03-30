@@ -149,6 +149,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                             orderDate.get(Calendar.MONTH),
                             orderDate.get(Calendar.DAY_OF_MONTH));
                     Calendar now = Calendar.getInstance();
+                    now = Helper.roundDayToStart(now);
                     Calendar maxDate = (Calendar) now.clone();
                     maxDate.add(Calendar.DAY_OF_MONTH, PreferenceHelper.Settings.getOrderDaysAhead(that));
                     dateDialog.getDatePicker().setMinDate(now.getTimeInMillis());

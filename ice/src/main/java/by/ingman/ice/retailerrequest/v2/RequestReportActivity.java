@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import by.ingman.ice.retailerrequest.v2.helpers.Helper;
 import by.ingman.ice.retailerrequest.v2.local.dao.OrderLocalDao;
 import by.ingman.ice.retailerrequest.v2.structure.Answer;
 import by.ingman.ice.retailerrequest.v2.structure.Order;
@@ -139,10 +140,7 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
 
     private Calendar initTodayDate() {
         Calendar c = Calendar.getInstance();
-        c.set(Calendar.HOUR_OF_DAY, 0);
-        c.set(Calendar.MINUTE, 0);
-        c.set(Calendar.SECOND, 0);
-        c.set(Calendar.MILLISECOND, 0);
+        c = Helper.roundDayToStart(c);
 
         return c;
     }
