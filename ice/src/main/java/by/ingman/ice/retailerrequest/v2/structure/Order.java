@@ -39,6 +39,8 @@ public class Order {
     private Boolean sent;
     private Boolean processed;
 
+    private Double productPrice;
+
     public static String generateNewId() {
         return UUID.randomUUID().toString();
     }
@@ -108,6 +110,7 @@ public class Order {
 
     public static String toReportString(Order order) {
         StringBuilder sb = new StringBuilder();
+        double summ = 0.0;
         sb.append("<b>ЗАЯВКА</b><br>")
                 .append("<b>Клиент: </b>").append(order.getContrAgentCode()).append(" ").append(order.getContrAgentName()).append(NEWLINE_HTML)
                 .append("<b>Разгрузка: </b>").append(order.getSalePointCode()).append(" ").append(order.getSalePointName()).append(NEWLINE_HTML);
@@ -209,4 +212,11 @@ public class Order {
         return processed;
     }
 
+    public Double getProductPrice() {
+        return productPrice;
+    }
+
+    public void setProductPrice(Double productPrice) {
+        this.productPrice = productPrice;
+    }
 }

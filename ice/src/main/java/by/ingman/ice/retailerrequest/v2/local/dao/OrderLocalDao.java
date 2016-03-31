@@ -13,6 +13,7 @@ import java.util.Map;
 
 import by.ingman.ice.retailerrequest.v2.structure.Answer;
 import by.ingman.ice.retailerrequest.v2.structure.Order;
+import by.ingman.ice.retailerrequest.v2.structure.Product;
 
 /**
  * Created by Yahor_Fralou on 3/21/2016.
@@ -22,8 +23,10 @@ public class OrderLocalDao {
     public static String TABLE_ANSWER = "answers";
 
     private DBHelper dbHelper;
+    private Context ctx;
 
     public OrderLocalDao(Context context) {
+        this.ctx = context;
         dbHelper = new DBHelper(context);
     }
 
@@ -78,6 +81,7 @@ public class OrderLocalDao {
 
     public Map<String, List<Order>> getOrdersSince(Date dateSince, Date dateTo, Boolean answeredOnly) {
         Map<String, List<Order>> ordersMap = new HashMap<>();
+        ProductLocalDao productLocalDao = new ProductLocalDao(ctx);
 
         Cursor c;
         if (answeredOnly == null) {
@@ -93,7 +97,10 @@ public class OrderLocalDao {
             if (!ordersMap.containsKey(orderId)) {
                 ordersMap.put(orderId, new ArrayList<Order>());
             }
-            ordersMap.get(orderId).add(fromCursor(c));
+            Order o = fromCursor(c);
+            Product p = productLocalDao.findProductInStorehouse(o.getProductCode(), o.getStorehouseCode());
+            o.setProductPrice(p.getPrice());
+            ordersMap.get(orderId).add(o);
         }
 
         c.close();

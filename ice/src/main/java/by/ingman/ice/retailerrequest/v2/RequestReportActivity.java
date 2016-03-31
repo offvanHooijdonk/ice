@@ -47,6 +47,7 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
     private Spinner spOptions;
     private ListView lvReport;
     private ReportAdapter reportAdapter;
+    private TextView textSummary;
 
     private Calendar reportDate;
     Map<String, List<Order>> orders = new HashMap<>();
@@ -71,6 +72,7 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
 
         textDate = (TextView) findViewById(R.id.textDate);
         spOptions = (Spinner) findViewById(R.id.spOptions);
+        textSummary = (TextView) findViewById(R.id.textSummary);
 
         textDate.setText(Order.getDateFormat().format(reportDate.getTime()));
         textDate.setOnClickListener(new View.OnClickListener() {
@@ -106,6 +108,21 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
         orders.clear();
         orders.putAll(orderLocalDao.getOrdersSince(reportDate.getTime(), getDayEndDate(reportDate).getTime(), answeredOnly));
         reportAdapter.notifyDataSetChanged();
+
+        if (!orders.isEmpty()) {
+            double summ = 0.0;
+            for (String key : orders.keySet()) {
+                List<Order> list = orders.get(key);
+                for (Order o : list) {
+                    summ += o.getProductPrice() * o.getProductCount();
+                }
+            }
+
+            textSummary.setText(getString(R.string.report_summary, Helper.formatMoney(summ)));
+            textSummary.setVisibility(View.VISIBLE);
+        } else {
+            textSummary.setVisibility(View.INVISIBLE);
+        }
     }
 
     @Override
@@ -188,6 +205,13 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
                     adb.show();
                 }
             });
+
+            TextView textSummary = (TextView) v.findViewById(R.id.textSummary);
+            double summ = 0.0;
+            for (Order o : list) {
+                summ += o.getProductPrice() * o.getProductCount();
+            }
+            textSummary.setText(ctx.getString(R.string.report_summary, Helper.formatMoney(summ)));
 
             TextView textAnswer = (TextView) v.findViewById(R.id.textAnswer);
             Answer answer = orderLocalDao.findAnswerByOrderId(list.get(0).getOrderId());

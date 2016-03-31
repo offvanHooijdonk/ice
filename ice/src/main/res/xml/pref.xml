@@ -41,8 +41,7 @@
             android:defaultValue="http://ingman.by/agent/ice-release.apk"
             android:key="apkUpdateUrl"
             android:summary="@string/pref_apk_update_url_summ"
-            android:title="@string/pref_apk_update_url_title"
-            android:inputType="number"/>
+            android:title="@string/pref_apk_update_url_title"/>
 
         <PreferenceCategory
             android:key="catDB"

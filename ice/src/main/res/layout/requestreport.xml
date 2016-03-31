@@ -32,10 +32,9 @@
             android:id="@id/spOptions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBaseline="@id/textDate"
+            android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
-            android:layout_marginBottom="8dp"
             android:entries="@array/report_options"/>
     </RelativeLayout>
 
