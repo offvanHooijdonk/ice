@@ -212,6 +212,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             storehouseTextView = (TextView) findViewById(R.id.textViewStorehouse);
 
             buttonAddProduct = (Button) findViewById(R.id.buttonAddProduct);
+            buttonAddProduct.setEnabled(false);
 
             sortProductEditText = (EditText) findViewById(R.id.editTextProductFilter);
             sortProductEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
@@ -255,6 +256,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             storehouse = productLocalDao.getStorehouseById(storehouseDefaultCode);
             if (storehouse != null) {
                 storehouseTextView.setText(storehouse.toString());
+                buttonAddProduct.setEnabled(true);
             }
 
             if (storehouse == null) {

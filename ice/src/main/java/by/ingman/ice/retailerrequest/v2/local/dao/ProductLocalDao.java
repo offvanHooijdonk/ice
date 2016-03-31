@@ -31,8 +31,9 @@ public class ProductLocalDao {
         List<Product> products = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-        filter = DBHelper.addWildcards(filter);
-        Cursor c = db.query(TABLE, null, "store_code = ? AND name like ?", new String[]{storehouseCode, filter}, null, null, "name, code");
+        filter = DBHelper.addWildcards(filter).toUpperCase();
+        Cursor c = db.query(TABLE, null, "store_code = ? AND product_filter like ?", new String[]{storehouseCode, filter}, null, null,
+                "name, code");
 
         while (c.moveToNext()) {
             products.add(fromCursor(c));
@@ -137,6 +138,7 @@ public class ProductLocalDao {
 
         cv.put("code", p.getCode());
         cv.put("name", p.getName());
+        cv.put("product_filter", String.format("%s %s", p.getCode(), p.getName().toUpperCase()));
         cv.put("store_code", p.getStorehouse().getCode());
         cv.put("store_name", p.getStorehouse().getName());
         cv.put("store_packs", p.getStorehousePacks());

@@ -15,7 +15,7 @@ import android.text.TextUtils;
 public class DBHelper extends SQLiteOpenHelper {
     public static String DATABASE_NAME = "iceDB";
 
-    private static final int DATABASE_VERSION = 13;
+    private static final int DATABASE_VERSION = 14;
 
 
     public DBHelper(Context context) {
@@ -56,6 +56,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 + "_id integer primary key autoincrement,"
                 + "code text not null,"
                 + "name text not null,"
+                + "product_filter text not null,"
                 + "store_code text not null,"
                 + "store_name text not null,"
                 + "store_packs text not null,"
@@ -75,8 +76,10 @@ public class DBHelper extends SQLiteOpenHelper {
                 + "_id integer primary key autoincrement,"
                 + "code text not null,"
                 + "name text not null,"
+                + "contragent_filter text not null,"
                 + "sp_code text not null,"
-                + "sp_name text not null" + ");");
+                + "sp_name text not null,"
+                + "sp_filter text not null"+ ");");
     }
 
     @Override

@@ -31,8 +31,9 @@ public class ContrAgentLocalDao {
         List<ContrAgent> caList = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-        filter = DBHelper.addWildcards(filter);
-        Cursor c = db.query(true, TABLE, new String[]{"code", "name"}, "name like ?", new String[]{filter}, null, null, "name, code", null);
+        filter = DBHelper.addWildcards(filter).toUpperCase();
+        Cursor c = db.query(true, TABLE, new String[]{"code", "name"}, "contragent_filter like ?", new String[]{filter}, null, null,
+                "name, code", null);
         while (c.moveToNext()) {
             caList.add(new ContrAgent(
                     c.getString(c.getColumnIndex("code")),
@@ -48,9 +49,9 @@ public class ContrAgentLocalDao {
         List<SalePoint> salePoints = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-        filter = TextUtils.isEmpty(filter) ? "" : filter;
-        filter = DBHelper.addWildcards(filter);
-        Cursor c = db.query(TABLE, new String[]{"sp_code", "sp_name"}, "code=? AND sp_name like ?", new String[]{ca.getCode(), filter}, null, null, "sp_name, sp_code");
+        filter = DBHelper.addWildcards(filter).toUpperCase();
+        Cursor c = db.query(TABLE, new String[]{"sp_code", "sp_name"}, "code=? AND sp_filter like ?", new String[]{ca.getCode(), filter},
+                null, null, "sp_name, sp_code");
         while (c.moveToNext()) {
             salePoints.add(new SalePoint(
                     ca.getCode(),
@@ -83,23 +84,6 @@ public class ContrAgentLocalDao {
         }
     }
 
-    /*public boolean exists(ContrAgent ca, SalePoint sp) {
-        boolean exists;
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-
-        Cursor c = db.query(TABLE, null, "code, sp_code", new String[]{ca.getCode(), sp.getCode()}, null, null, null);
-        exists = c.getCount() > 0;
-        c.close();
-
-        return exists;
-    }
-
-    public void update(ContrAgent ca, SalePoint sp) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-
-        db.update(TABLE, toContentValues(ca, sp), "code = ? AND sp_code = ?", new String[]{ca.getCode(), sp.getCode()});
-    }*/
-
     public void insert(SQLiteDatabase db, ContrAgent ca, SalePoint sp) {
         db = dbHelper.getWritableDatabase();
 
@@ -111,8 +95,10 @@ public class ContrAgentLocalDao {
 
         cv.put("code", ca.getCode());
         cv.put("name", ca.getName());
+        cv.put("contragent_filter", String.format("%s %s", ca.getCode(), ca.getName().toUpperCase()));
         cv.put("sp_code", sp.getCode());
         cv.put("sp_name", sp.getName());
+        cv.put("sp_filter", String.format("%s %s", sp.getCode(), sp.getName().toUpperCase()));
 
         return cv;
     }
