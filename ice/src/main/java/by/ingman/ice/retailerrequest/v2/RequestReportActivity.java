@@ -20,7 +20,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,7 +87,7 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
         spOptions.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                showRequestsForDate(reportDate.getTime(), position);
+                showRequestsForDate(position);
             }
 
             @Override
@@ -100,49 +99,13 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
         spOptions.setSelection(OPTION_ALL);
     }
 
-    private void showRequestsForDate(Date date, int option) {
+    private void showRequestsForDate(int option) {
         orderLocalDao = new OrderLocalDao(that);
         //вычитываем один раз все запросы
+        Boolean answeredOnly = option == OPTION_ALL ? null : (option == OPTION_ANSWERED) ? Boolean.TRUE : Boolean.FALSE;
         orders.clear();
-        orders.putAll(orderLocalDao.getOrdersSince(reportDate.getTime(), getDayEndDate(reportDate).getTime()));
+        orders.putAll(orderLocalDao.getOrdersSince(reportDate.getTime(), getDayEndDate(reportDate).getTime(), answeredOnly));
         reportAdapter.notifyDataSetChanged();
-
-        /*if (orders.size() == 0) {
-            TextView textView = new TextView(this);
-            textView.setText(String.format("Нет заявок на %s", Order.getDateFormat().format(date)));
-            reqLayout.addView(textView);
-        } else {
-            for (final String orderId : orders.keySet()) {
-                String s = "";
-                TextView textView = new TextView(RequestReportActivity.this);
-
-                s = s.concat(Order.toReportString(orders.get(orderId).get(0)));
-
-                Answer answer = orderLocalDao.findAnswerByOrderId(orderId);
-                if (answer == null) {
-                    s = s.concat("<br><br><b>ОТВЕТА НЕТ</b>");
-                } else {
-                    s = s.concat("<br><br><b>ОТВЕТ: </b>").concat(answer.toStringForViewing());
-                }
-                s = s.concat("<br><br><br>");
-                textView.setText(Html.fromHtml(s));
-                textView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        AlertDialog.Builder adb = new AlertDialog.Builder(RequestReportActivity.this);
-                        adb.setTitle("Заявка " + orderId);
-                        adb.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                // continue with delete
-                            }
-                        });
-                        adb.setMessage(Order.toReportVerboseString(orders.get(orderId)));
-                        adb.show();
-                    }
-                });
-                reqLayout.addView(textView);
-            }
-        }*/
     }
 
     @Override
@@ -155,7 +118,7 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
         reportDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
         textDate.setText(Order.getDateFormat().format(reportDate.getTime()));
 
-        showRequestsForDate(reportDate.getTime(), spOptions.getSelectedItemPosition());
+        showRequestsForDate(spOptions.getSelectedItemPosition());
     }
 
     private Calendar getDayEndDate(Calendar date) {
