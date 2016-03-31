@@ -1,34 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScrollView
+<RelativeLayout
     android:id="@+id/scrollView"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:paddingTop="@dimen/activity_vertical_margin">
 
-    <LinearLayout
-        android:id="@+id/linearLayoutCAReportMain"
+    <RelativeLayout
+        android:id="@+id/blockCAReportOptions"
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="horizontal">
 
         <TextView
             android:id="@+id/textDate"
+            style="@style/AppBaseTheme.DatePickerText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/reportDate"
-            style="@style/AppBaseTheme.DatePickerText" />
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_toLeftOf="@+id/spOptions"
+            android:layout_toStartOf="@+id/spOptions"
+            android:text="@string/reportDate"/>
 
-        <LinearLayout
-            android:id="@+id/linearLayoutCAReportReq"
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:orientation="vertical"/>
+        <Spinner
+            android:id="@id/spOptions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/textDate"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:entries="@array/report_options"/>
+    </RelativeLayout>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/blockSummary"
+        android:layout_below="@id/blockCAReportOptions">
+
+        <ListView
+            android:id="@+id/lvReport"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/textEmptyReport"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/report_empty"
+            android:visibility="gone"/>
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@id/blockSummary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+
+        <TextView
+            android:id="@+id/textSummary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/report_summary"/>
     </LinearLayout>
-</ScrollView>
+</RelativeLayout>

@@ -9,22 +9,6 @@
               android:paddingRight="@dimen/activity_horizontal_margin"
               android:paddingTop="@dimen/activity_vertical_margin">
 
-    <!--<Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/update_app"
-            android:id="@+id/apkUpdateButton"
-            android:layout_gravity="start|center_vertical"
-            />
-
-    <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/update_app_comment"
-            android:id="@+id/textView1"
-            android:layout_gravity="start|center_vertical"
-            android:layout_marginBottom="20dp"/>-->
-
     <ProgressBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -37,7 +21,6 @@
             android:layout_height="wrap_content"
             android:text="@string/update_data_files_button"
             android:id="@+id/pubFilesUpdateButton"
-            android:layout_gravity="start|center_vertical"
             />
 
     <TextView
@@ -65,5 +48,28 @@
         android:textSize="16sp"
         android:textStyle="bold"
         android:text="@string/data_update_fail"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginRight="2dp"
+        android:layout_marginLeft="2dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="16dp"
+        android:background="@color/divider"/>
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/update_app"
+            android:id="@+id/apkUpdateButton"/>
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/update_app_comment"
+            android:id="@+id/textView1"
+            android:layout_gravity="start|center_vertical"
+            android:layout_marginBottom="20dp"/>
 
 </LinearLayout>

@@ -37,6 +37,13 @@
             android:title="@string/pref_exchange_frequency_title"
             android:inputType="number"/>
 
+        <EditTextPreference
+            android:defaultValue="http://ingman.by/agent/ice-release.apk"
+            android:key="apkUpdateUrl"
+            android:summary="@string/pref_apk_update_url_summ"
+            android:title="@string/pref_apk_update_url_title"
+            android:inputType="number"/>
+
         <PreferenceCategory
             android:key="catDB"
             android:summary="@string/pref_cat_DB_options_summ"

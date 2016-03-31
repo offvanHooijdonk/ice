@@ -14,6 +14,7 @@ public class PreferenceHelper {
     private static final String PREF_DEFAULT_STOREHOUSE_CODE = "storehouseDefaultCode";
     private static final String PREF_NOTIFICATIONS_ENABLED = "updateNotificationsEnabled";
     private static final String PREF_DATA_UPDATE_INTERVAL = "exchangeFrequency";
+    private static final String PREF_APK_UPDATE_URL = "apkUpdateUrl";
     private static final String PREF_ORDER_DAYS_AHEAD = "orderDaysAhead";
 
     private static final String PREF_REMOTE_DB_HOST = "host";
@@ -55,6 +56,10 @@ public class PreferenceHelper {
 
         public static int getDataUpdateInterval(Context ctx) {
             return Integer.valueOf(PreferenceManager.getDefaultSharedPreferences(ctx).getString(PREF_DATA_UPDATE_INTERVAL, "30"));
+        }
+
+        public static String getApkUpdateUrl(Context ctx) {
+            return PreferenceManager.getDefaultSharedPreferences(ctx).getString(PREF_APK_UPDATE_URL, null);
         }
 
         public static int getOrderDaysAhead(Context ctx) {

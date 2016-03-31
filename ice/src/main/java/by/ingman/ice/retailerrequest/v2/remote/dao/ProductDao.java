@@ -32,7 +32,7 @@ public class ProductDao {
 
         if (conn != null) {
             try {
-                PreparedStatement stat = conn.prepareStatement("SELECT TOP(1) datetime_unload FROM rests order by datetime_unload desc");
+                PreparedStatement stat = conn.prepareStatement("SELECT TOP(1) datetime_unload FROM rests WHERE datetime_unload IS NOT NULL order by datetime_unload desc");
                 ResultSet rs = stat.executeQuery();
 
                 if (rs.next()) {

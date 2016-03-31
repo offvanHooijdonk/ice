@@ -8,6 +8,8 @@ import java.util.Calendar;
  * Created by Yahor_Fralou on 3/24/2016.
  */
 public class Helper {
+    public static final String APP_FOLDER = "icev2";
+
     public static final String MONEY_DECIMAL_FORMAT = "#,##0.00";
     public static final String PACKS_DECIMAL_FORMAT = "0.00";
 

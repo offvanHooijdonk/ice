@@ -10,4 +10,6 @@
     <color name="productBckg">#FFE0B2</color>
 
     <color name="themeAccent">#00BFA5</color>
+
+    <color name="divider">#CFD8DC</color>
 </resources>
