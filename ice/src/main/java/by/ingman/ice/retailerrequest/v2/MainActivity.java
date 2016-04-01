@@ -462,7 +462,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             Order order = new Order(
                     orderId,
                     username,
-                    checkBoxCommercial.isChecked(),
+                    checkBoxCommercial.isChecked() ? 1 : 0,
                     contrAgent.getCode(),
                     contrAgent.getName(),
                     salePoint.getCode(),
@@ -688,6 +688,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
         //сохраняем значение фильтра (он будет очищен)
         lastValueProductFilter = sortProductEditText.getText().toString();
+        products = productLocalDao.getAllInStorehouse(storehouse.getCode(), lastValueProductFilter);
 
         if (products != null && products.size() == 0) {
             deleteProductButton.performClick();
@@ -798,7 +799,6 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             ((AlertDialog) dialog).getListView().setAdapter(mergeAdapter);
         }
         if (id == DIALOG_PRODUCTS) {
-            products = productLocalDao.getAllInStorehouse(storehouse.getCode(), lastValueProductFilter);
             if (products.size() == 0) {
                 return;
             }
@@ -936,10 +936,6 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
             if (which == Dialog.BUTTON_POSITIVE) {
                 if (lv.getCheckedItemPosition() >= 0) {
                     Product product;
-                    //находим строку-фильтр продуктов
-                    //отбираем продукты только текущего склада
-                    List<Product> storehouseProducts = productLocalDao.getAllInStorehouse(storehouse.getCode(), lastValueProductFilter);
-                    //находим выбранный продукт
 
                     product = (Product) lv.getAdapter().getItem(lv.getCheckedItemPosition());
                     selectedProducts.put(currentProductId, product);

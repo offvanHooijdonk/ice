@@ -88,7 +88,7 @@ public class OrderDao {
         stat.setString(i++, order.getOrderId());
         stat.setString(i++, order.getManager());
         stat.setTimestamp(i++, new Timestamp(order.getOrderDate().getTime()));
-        stat.setBoolean(i++, Boolean.valueOf(order.getIsCommercial()));
+        stat.setBoolean(i++, order.getIsCommercial() == 1);
         stat.setString(i++, order.getContrAgentCode());
         stat.setString(i++, order.getContrAgentName());
         stat.setString(i++, order.getSalePointCode());

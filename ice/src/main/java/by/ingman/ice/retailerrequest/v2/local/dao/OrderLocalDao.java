@@ -172,7 +172,7 @@ public class OrderLocalDao {
         return new Order(
                 c.getString(c.getColumnIndex("order_id")),
                 c.getString(c.getColumnIndex("manager")),
-                c.getInt(c.getColumnIndex("is_advertising")) == 1,
+                c.getInt(c.getColumnIndex("is_advertising")),
                 c.getString(c.getColumnIndex("contragent_code")),
                 c.getString(c.getColumnIndex("contragent_name")),
                 c.getString(c.getColumnIndex("sale_point_code")),

@@ -24,7 +24,7 @@ public class Order {
     private String orderId;
     private String manager;
     private Date orderDate;
-    private String isCommercial;
+    private Integer isCommercial;
     private String contrAgentCode;
     private String contrAgentName;
     private String salePointCode;
@@ -49,14 +49,14 @@ public class Order {
         return SimpleDateFormat.getDateInstance(DateFormat.SHORT, new Locale("ru", "RU"));
     }
 
-    public Order(String orderId, String manager, boolean isCommercial, String contrAgentCode, String contrAgentName, String salePointCode, String salePointName,
+    public Order(String orderId, String manager, Integer isCommercial, String contrAgentCode, String contrAgentName, String salePointCode, String salePointName,
                  String storehouseCode, String storehouseName, String productCode, String productName, Double packsNum, Integer productNum, Date orderDate,
                  String comment, Boolean sent, Boolean processed)
     {
         this.orderId = orderId;
         this.manager = manager;
         this.orderDate = orderDate;
-        this.isCommercial = isCommercial ? "1" : "0";
+        this.isCommercial = isCommercial;
         this.contrAgentCode = contrAgentCode;
         this.contrAgentName = contrAgentName;
         this.salePointCode = salePointCode;
@@ -156,7 +156,7 @@ public class Order {
         return manager;
     }
 
-    public String getIsCommercial() {
+    public Integer getIsCommercial() {
         return isCommercial;
     }
 
