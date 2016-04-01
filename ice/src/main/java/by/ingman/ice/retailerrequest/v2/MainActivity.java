@@ -688,7 +688,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
         //сохраняем значение фильтра (он будет очищен)
         lastValueProductFilter = sortProductEditText.getText().toString();
-        products = productLocalDao.getAllInStorehouse(storehouse.getCode(), lastValueProductFilter);
+        products = productLocalDao.getAllInStorehouse(storehouse.getCode(), lastValueProductFilter, checkBoxProductFilterType.isChecked());
 
         if (products != null && products.size() == 0) {
             deleteProductButton.performClick();

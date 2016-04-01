@@ -27,12 +27,12 @@ public class ProductLocalDao {
         dbHelper = new DBHelper(context);
     }
 
-    public List<Product> getAllInStorehouse(String storehouseCode, String filter) {
+    public List<Product> getAllInStorehouse(String storehouseCode, String filter, boolean searchCodes) {
         List<Product> products = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
         filter = DBHelper.addWildcards(filter).toUpperCase();
-        Cursor c = db.query(TABLE, null, "store_code = ? AND product_filter like ?", new String[]{storehouseCode, filter}, null, null,
+        Cursor c = db.query(TABLE, null, "store_code = ? AND " + (searchCodes ? "code" : "product_filter") + " like ?", new String[]{storehouseCode, filter}, null, null,
                 "name, code");
 
         while (c.moveToNext()) {
