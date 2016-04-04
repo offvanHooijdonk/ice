@@ -211,11 +211,12 @@ public class UpdateDataActivity extends Activity {
         }
     }
 
-    private class UpdateAPKTask extends AsyncTask<Void, Long, Void> {
+    private class UpdateAPKTask extends AsyncTask<Void, Integer, Void> {
         private static final int batchSize = 4096;
         private static final int progressSizeDivider = 1000;
 
         private String errorMessage = null;
+        private boolean maxSet = false;
 
         @Override
         protected Void doInBackground(Void... params) {
@@ -251,7 +252,6 @@ public class UpdateDataActivity extends Activity {
                 output = new FileOutputStream(apkFile);
 
                 byte data[] = new byte[batchSize];
-                long total = 0;
                 int count;
                 while ((count = input.read(data)) != -1) {
                     // allow canceling with back button
@@ -259,10 +259,9 @@ public class UpdateDataActivity extends Activity {
                         input.close();
                         return null;
                     }
-                    total += count;
                     // publishing the progress....
                     if (fileLength > 0) {// only if total length is known
-                        publishProgress(total, (long) fileLength);
+                        publishProgress(count, fileLength);
                     }
                     output.write(data, 0, count);
                 }
@@ -285,14 +284,14 @@ public class UpdateDataActivity extends Activity {
         }
 
         @Override
-        protected void onProgressUpdate(Long... values) {
-            int max = (int) (values[1] / progressSizeDivider);
-            int progress = (int) (values[0] / progressSizeDivider);
-            if (progressDialog.getMax() == 0) {
+        protected void onProgressUpdate(Integer... values) {
+            int max = values[1] / progressSizeDivider;
+            int progress = values[0] / progressSizeDivider;
+            if (!maxSet) {
                 progressDialog.setMax(max);
+                maxSet = true;
             }
-            progress = progress > progressDialog.getMax() ? progressDialog.getMax() : progress;
-            progressDialog.setProgress(progress);
+            progressDialog.incrementProgressBy(progress);
         }
 
         @Override

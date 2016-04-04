@@ -28,7 +28,7 @@
     <string name="notif_error_orders_updating">Ошибка отправки/проверки заявок</string>
     <string name="notif_update_data_message">Обновляются %1$s</string>
     <string name="notif_data_products">остатки</string>
-    <string name="notif_data_contragents">котнрагенты</string>
+    <string name="notif_data_contragents">контрагенты</string>
     <string name="notif_data_debts">задолженности</string>
     <string name="notif_data_orders">заявки</string>
 

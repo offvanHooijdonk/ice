@@ -121,6 +121,8 @@ public class OrderLocalDao {
         cvOrder.put("processed", 1);
         db.update(TABLE, cvOrder, "order_id = ?", new String[]{answer.getOrderId()});
 
+        db.delete(TABLE_ANSWER, "order_id = ?", new String[]{answer.getOrderId()});
+
         ContentValues cvAnswer = new ContentValues();
         cvAnswer.put("order_id", answer.getOrderId());
         cvAnswer.put("description", answer.getDescription());

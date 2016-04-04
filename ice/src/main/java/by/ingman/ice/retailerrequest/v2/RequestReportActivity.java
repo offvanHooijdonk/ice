@@ -3,8 +3,10 @@ package by.ingman.ice.retailerrequest.v2;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.LayoutInflater;
@@ -19,6 +21,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.apache.log4j.Logger;
+
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +30,7 @@ import java.util.Map;
 
 import by.ingman.ice.retailerrequest.v2.helpers.Helper;
 import by.ingman.ice.retailerrequest.v2.local.dao.OrderLocalDao;
+import by.ingman.ice.retailerrequest.v2.remote.dao.OrderDao;
 import by.ingman.ice.retailerrequest.v2.structure.Answer;
 import by.ingman.ice.retailerrequest.v2.structure.Order;
 
@@ -37,6 +42,8 @@ import by.ingman.ice.retailerrequest.v2.structure.Order;
  * To change this template use File | Settings | File Templates.
  */
 public class RequestReportActivity extends Activity implements DatePickerDialog.OnDateSetListener {
+    private final Logger log = Logger.getLogger(RequestReportActivity.class);
+
     private static final int OPTION_ALL = 0;
     private static final int OPTION_NO_ANSWER = 1;
     private static final int OPTION_ANSWERED = 2;
@@ -48,6 +55,7 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
     private ListView lvReport;
     private ReportAdapter reportAdapter;
     private TextView textSummary;
+    private ProgressDialog progressDialog;
 
     private Calendar reportDate;
     Map<String, List<Order>> orders = new HashMap<>();
@@ -73,6 +81,8 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
         textDate = (TextView) findViewById(R.id.textDate);
         spOptions = (Spinner) findViewById(R.id.spOptions);
         textSummary = (TextView) findViewById(R.id.textSummary);
+
+        orderLocalDao = new OrderLocalDao(that);
 
         textDate.setText(Order.getDateFormat().format(reportDate.getTime()));
         textDate.setOnClickListener(new View.OnClickListener() {
@@ -102,7 +112,6 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
     }
 
     private void showRequestsForDate(int option) {
-        orderLocalDao = new OrderLocalDao(that);
         //вычитываем один раз все запросы
         Boolean answeredOnly = option == OPTION_ALL ? null : (option == OPTION_ANSWERED) ? Boolean.TRUE : Boolean.FALSE;
         orders.clear();
@@ -151,6 +160,20 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
         c = Helper.roundDayToStart(c);
 
         return c;
+    }
+
+    private void initProgressDialog(boolean display) {
+        if (display) {
+            progressDialog = new ProgressDialog(that);
+            progressDialog.setTitle(that.getString(R.string.progress_dialog_title));
+            progressDialog.setMessage(that.getString(R.string.progress_dialog_message));
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        } else {
+            if (progressDialog != null) {
+                progressDialog.cancel();
+            }
+        }
     }
 
     private class ReportAdapter extends BaseAdapter {
@@ -225,11 +248,53 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
             btnCheckAnswer.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(ctx, list.get(0).getContrAgentName(), Toast.LENGTH_LONG).show();
+                    new CheckAnswerTask().execute(list.get(0).getOrderId());
                 }
             });
 
             return v;
+        }
+    }
+
+    private class CheckAnswerTask extends AsyncTask<String, Void, Void> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            initProgressDialog(true);
+        }
+
+        @Override
+        protected Void doInBackground(String... params) {
+            String orderId = params[0];
+            Answer answer;
+
+            OrderDao orderDao = new OrderDao(that);
+            try {
+                answer = orderDao.findAnswer(orderId);
+            } catch (Exception e) {
+                answer = null;
+
+                log.error("Error getting remote answer", e);
+
+                Toast.makeText(that, "Ошибка чтения ответа из базы!", Toast.LENGTH_LONG).show();
+            }
+
+            if (answer != null) {
+                OrderLocalDao orderLocalDao = new OrderLocalDao(that);
+                orderLocalDao.saveRemoteAnswer(answer);
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            initProgressDialog(false);
+
+            showRequestsForDate(spOptions.getSelectedItemPosition());
         }
     }
 }
