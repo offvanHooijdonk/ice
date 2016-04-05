@@ -236,6 +236,13 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
             }
             textSummary.setText(ctx.getString(R.string.report_summary, Helper.formatMoney(summ)));
 
+            TextView textSent = (TextView) v.findViewById(R.id.textSent);
+            if (list.get(0).getSent()) {
+                textSent.setText(R.string.report_order_sent);
+            } else {
+                textSent.setText(R.string.report_order_not_sent);
+            }
+
             TextView textAnswer = (TextView) v.findViewById(R.id.textAnswer);
             Answer answer = orderLocalDao.findAnswerByOrderId(list.get(0).getOrderId());
             if (answer == null) {
@@ -272,17 +279,20 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
             OrderDao orderDao = new OrderDao(that);
             try {
                 answer = orderDao.findAnswer(orderId);
+
+                if (answer != null) {
+                    OrderLocalDao orderLocalDao = new OrderLocalDao(that);
+                    orderLocalDao.saveRemoteAnswer(answer);
+                } else {
+                    boolean existsOrderInRemote = orderDao.existsOrder(orderId);
+                    orderLocalDao.markOrderSent(orderId, existsOrderInRemote);
+                }
             } catch (Exception e) {
                 answer = null;
 
                 log.error("Error getting remote answer", e);
 
                 Toast.makeText(that, "Ошибка чтения ответа из базы!", Toast.LENGTH_LONG).show();
-            }
-
-            if (answer != null) {
-                OrderLocalDao orderLocalDao = new OrderLocalDao(that);
-                orderLocalDao.saveRemoteAnswer(answer);
             }
 
             return null;

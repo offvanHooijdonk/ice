@@ -135,4 +135,29 @@ public class OrderDao {
         return answer;
     }
 
+    public boolean existsOrder(String orderId) throws Exception {
+        Connection conn = new ConnectionFactory(ctx).getConnection();
+        boolean exists = false;
+
+        if (conn != null) {
+            try {
+                PreparedStatement stat = conn.prepareStatement("SELECT " + ORDER_ID + " FROM " + TABLE_ORDERS + " WHERE " + ORDER_ID + "=?");
+                stat.setString(1, orderId);
+                ResultSet rs = stat.executeQuery();
+
+                exists = rs.next();
+            } finally {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    log.error(e);
+                }
+            }
+        } else {
+            log.error("Connection to remote DB is null.");
+        }
+
+        return exists;
+    }
+
 }

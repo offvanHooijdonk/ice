@@ -242,7 +242,7 @@ public class ExchangeDataService extends IntentService {
         }
 
         orderLocalDao.saveRemoteAnswer(answer);
-        Order singleOrder = orderLocalDao.getOrderById(answer.getOrderId());
+        Order singleOrder = orderLocalDao.getSingleOrderById(answer.getOrderId());
 
         notifUtil.showOrderNotification(singleOrder, answer);
     }

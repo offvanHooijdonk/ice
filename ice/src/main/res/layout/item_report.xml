@@ -33,11 +33,19 @@
         android:layout_below="@id/textInfo"/>
 
     <TextView
-        android:id="@+id/textAnswer"
+        android:id="@+id/textSent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_below="@id/textSummary"/>
+
+    <TextView
+        android:id="@+id/textAnswer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/textSent"/>
 
 </RelativeLayout>

@@ -30,7 +30,7 @@ public class OrderLocalDao {
         dbHelper = new DBHelper(context);
     }
 
-    public Order getOrderById(String orderId) {
+    public Order getSingleOrderById(String orderId) {
         Order order = null;
         Cursor c = dbHelper.getReadableDatabase().query(TABLE, null, "order_id = ?", new String[]{orderId}, null, null, null);
         if (c.moveToFirst()) {
@@ -108,9 +108,9 @@ public class OrderLocalDao {
         return ordersMap;
     }
 
-    public void markOrderSent(String orderId) {
+    public void markOrderSent(String orderId, boolean sent) {
         ContentValues cv = new ContentValues();
-        cv.put("sent", 1);
+        cv.put("sent", sent ? 1 : 0);
         dbHelper.getWritableDatabase().update(TABLE, cv, "order_id = ?", new String[]{orderId});
     }
 

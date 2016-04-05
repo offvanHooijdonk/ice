@@ -34,10 +34,10 @@ public class ExchangeUtil {
             List<Order> list = requests.get(reqId);
 
             boolean success = orderDao.batchInsertOrders(list);
-            if (success) {
-                orderLocalDao.markOrderSent(reqId);
+            if (success && orderDao.existsOrder(list.get(0).getOrderId())) {
+                orderLocalDao.markOrderSent(reqId, true);
 
-                if (list.size() > 0) { // just make sure, though 'else' case must not be possible
+                if (list.size() > 0) { // just make sure, though 'else' case must not be ever possible
                     Order order = list.get(0);
                     notifUtil.showOrderSentNotification(order);
                 }

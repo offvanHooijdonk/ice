@@ -87,6 +87,8 @@
     <string name="order_no_answer">ОТВЕТА НЕТ</string>
     <string name="btn_check_order_answer">Проверить ответ</string>
     <string name="report_empty">Ничего не найдено</string>
+    <string name="report_order_sent">Отправлена</string>
+    <string name="report_order_not_sent">Не отправлена</string>
 
     <string-array name="report_options">
         <item>Все</item>
