@@ -9,7 +9,8 @@
     <EditTextPreference
         android:key="storehouseDefaultCode"
         android:summary="@string/pref_default_storehouse_summ"
-        android:title="@string/pref_default_storehouse_title"/>
+        android:title="@string/pref_default_storehouse_title"
+        android:inputType="number"/>
 
     <EditTextPreference
         android:defaultValue="20"

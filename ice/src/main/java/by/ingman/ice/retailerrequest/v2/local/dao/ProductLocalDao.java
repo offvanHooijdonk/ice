@@ -90,6 +90,8 @@ public class ProductLocalDao {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         try {
             db.beginTransaction();
+            db.delete(TABLE, null, null);
+
             for (Product p : products) {
                 insert(db, p);
             }

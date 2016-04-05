@@ -9,6 +9,7 @@ import android.preference.PreferenceManager;
 public class PreferenceHelper {
     private static final String PREF_LAST_UPDATE_DATE = "PREF_LAST_UPDATE_DATE";
     private static final String PREF_UPDATE_IN_PROGRESS = "PREF_UPDATE_IN_PROGRESS";
+    private static final String PREF_PRODUCTS_IN_SELECT = "PREF_PRODUCTS_IN_SELECT";
 
     private static final String PREF_MANAGER_NAME = "username";
     private static final String PREF_DEFAULT_STOREHOUSE_CODE = "storehouseDefaultCode";
@@ -24,6 +25,11 @@ public class PreferenceHelper {
     private static final String PREF_REMOTE_DB_PWD = "password";
 
     public static class Runtime {
+        /**
+         *
+         * @param ctx Context
+         * @return 0 if never updated
+         */
         public static long getLastUpdateDate(Context ctx) {
             return PreferenceManager.getDefaultSharedPreferences(ctx).getLong(PREF_LAST_UPDATE_DATE, 0);
         }
@@ -38,6 +44,14 @@ public class PreferenceHelper {
 
         public static void setUpdateInProgress(Context ctx, boolean inProgress) {
             PreferenceManager.getDefaultSharedPreferences(ctx).edit().putBoolean(PREF_UPDATE_IN_PROGRESS, inProgress).apply();
+        }
+
+        public static void setProductsInSelect(Context ctx, boolean inSelect) {
+            PreferenceManager.getDefaultSharedPreferences(ctx).edit().putBoolean(PREF_PRODUCTS_IN_SELECT, inSelect).apply();
+        }
+
+        public static boolean getProductsInSelect(Context ctx) {
+            return PreferenceManager.getDefaultSharedPreferences(ctx).getBoolean(PREF_PRODUCTS_IN_SELECT, false);
         }
     }
 

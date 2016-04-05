@@ -118,6 +118,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         that = this;
 
         PreferenceManager.setDefaultValues(that, R.xml.pref, false);
+        PreferenceHelper.Runtime.setProductsInSelect(that, false);
 
         productLocalDao = new ProductLocalDao(that);
         contrAgentLocalDao = new ContrAgentLocalDao(that);
@@ -195,8 +196,8 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
 
             usernameText = (TextView) findViewById(R.id.textViewUsername);
-            username = PreferenceHelper.Settings.getManagerName(that);
-            usernameText.setText(username);
+            /*username = PreferenceHelper.Settings.getManagerName(that);
+            usernameText.setText(username);*/
 
             salesPointsButton = (Button) findViewById(R.id.buttonSalespoints);
             salesPointsButton.setEnabled(false);
@@ -243,25 +244,36 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
         }
 
-        //устанавливаем склад по умолчанию из настроек
+        //устанавливаем склад по умолчанию из настроек в onResume
+        //setDefaultStorehouse();
+
+        //обновляем отображение заявки в onResume
+        //refreshFinalView();
+    }
+
+    protected void onResume() {
+        username = PreferenceHelper.Settings.getManagerName(that);
+        usernameText.setText(username);
         setDefaultStorehouse();
 
-        //обновляем отображение заявки
         refreshFinalView();
+        super.onResume();
     }
 
     private void setDefaultStorehouse() {
-        String storehouseDefaultCode = PreferenceHelper.Settings.getDefaultStoreHouseCode(that);
-        if (!storehouseDefaultCode.equals("")) {
-            storehouse = productLocalDao.getStorehouseById(storehouseDefaultCode);
-            if (storehouse != null) {
-                storehouseTextView.setText(storehouse.toString());
-                buttonAddProduct.setEnabled(true);
-            }
+        if (storehouse == null) {
+            String storehouseDefaultCode = PreferenceHelper.Settings.getDefaultStoreHouseCode(that);
+            if (!storehouseDefaultCode.equals("")) {
+                storehouse = productLocalDao.getStorehouseById(storehouseDefaultCode);
+                if (storehouse != null) {
+                    storehouseTextView.setText(storehouse.toString());
+                    buttonAddProduct.setEnabled(true);
+                }
 
-            if (storehouse == null) {
-                storehouseTextView.setText("");
-                buttonAddProduct.setEnabled(false);
+                if (storehouse == null) {
+                    storehouseTextView.setText("");
+                    buttonAddProduct.setEnabled(false);
+                }
             }
         }
     }
@@ -360,12 +372,6 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
         findViewById(R.id.buttonSendRequest).setEnabled(requestIsReady);
     }
 
-    protected void onResume() {
-        username = PreferenceHelper.Settings.getManagerName(that);
-        usernameText.setText(username);
-        refreshFinalView();
-        super.onResume();
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -412,6 +418,12 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        PreferenceHelper.Runtime.setProductsInSelect(that, false);
     }
 
     public void onclick(View v) {
@@ -481,6 +493,8 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
             updateRestsLocal();
 
+            PreferenceHelper.Runtime.setProductsInSelect(that, false);
+
             clearForm();
         }
     }
@@ -525,6 +539,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
 
     private void addProduct() {
         //int width = (findViewById(R.id.buttonStorehouses)).getWidth();
+        buttonAddProduct.setEnabled(false);
 
         //полный лайоут товара (для его удаления, если что)
         LinearLayout layout = (LinearLayout) findViewById(R.id.layoutProducts);
@@ -696,6 +711,7 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                     "Товар не подобран по фильтру \"" + lastValueProductFilter + "\"",
                     Toast.LENGTH_SHORT).show();
             sortProductEditText.setText("");
+            buttonAddProduct.setEnabled(true);
             return;
         }
         //и вызываем диалог
@@ -937,6 +953,8 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                 if (lv.getCheckedItemPosition() >= 0) {
                     Product product;
 
+                    PreferenceHelper.Runtime.setProductsInSelect(that, true);
+
                     product = (Product) lv.getAdapter().getItem(lv.getCheckedItemPosition());
                     selectedProducts.put(currentProductId, product);
 
@@ -957,6 +975,8 @@ public class MainActivity extends Activity implements DatePickerDialog.OnDateSet
                     editTextPacks.setText("");
                     editTextPacks.requestFocus();
                     final TextView textViewFinal = (TextView) findViewById(editTextPacks.getId());
+
+                    buttonAddProduct.setEnabled(true);
                     editTextPacks.postDelayed(new Runnable() {
                         @Override
                         public void run() {

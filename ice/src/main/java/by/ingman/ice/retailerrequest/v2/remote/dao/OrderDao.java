@@ -119,7 +119,7 @@ public class OrderDao {
                     answer = new Answer();
                     answer.setOrderId(rs.getString(ORDER_ID));
                     answer.setDescription(rs.getString(DESCRIPTION));
-                    answer.setUnloadTime(rs.getDate(UNLOAD_TIME));
+                    answer.setUnloadTime(rs.getTimestamp(UNLOAD_TIME));
                 }
             } finally {
                 try {

@@ -88,6 +88,7 @@ public class ExchangeDataService extends IntentService {
         }
 
         doExchangeData();
+
     }
 
     @Override
@@ -112,7 +113,9 @@ public class ExchangeDataService extends IntentService {
     private void doExchangeData() {
         try {
             // updating public files from remote db
-            updateAllData();
+            if (!PreferenceHelper.Runtime.getProductsInSelect(that)) {
+                updateAllData();
+            }
 
             // send unsent requests
             util.sendRequests();
@@ -155,13 +158,12 @@ public class ExchangeDataService extends IntentService {
 
         long timeUpdateStart = new Date().getTime();
         long timeLastUpdate = PreferenceHelper.Runtime.getLastUpdateDate(that);
-        Date dateLastUpdate = new Date(timeLastUpdate);
         try {
-            updateProducts(dateLastUpdate);
+            updateProducts(timeLastUpdate);
 
-            updateContrAgents(dateLastUpdate);
+            updateContrAgents(timeLastUpdate);
 
-            updateDebts(dateLastUpdate);
+            updateDebts(timeLastUpdate);
 
             PreferenceHelper.Runtime.setLastUpdateDate(that, timeUpdateStart);
         } catch (Exception e) {
@@ -178,11 +180,11 @@ public class ExchangeDataService extends IntentService {
         }
     }
 
-    private void updateProducts(Date dateLastUpdate) throws Exception {
+    private void updateProducts(long dateLastUpdate) throws Exception {
         ProductDao productDao = new ProductDao(that);
         Long lastUnloadDate = productDao.getUnloadDate();
 
-        if (lastUnloadDate != null && lastUnloadDate > dateLastUpdate.getTime()) {
+        if (lastUnloadDate != null && lastUnloadDate > dateLastUpdate) {
             PreferenceHelper.Runtime.setUpdateInProgress(that, true); // do it here in order not to block Agent work with UI
             if (PreferenceHelper.Settings.getNotificationsEnabled(that)) {
                 notifUtil.showUpdateProgressNotification(NotificationsUtil.NOTIF_UPDATE_PROGRESS_PRODUCTS_ID);
@@ -195,11 +197,11 @@ public class ExchangeDataService extends IntentService {
         }// otherwise data might be in unload process or nothing new
     }
 
-    private void updateContrAgents(Date dateLastUpdate) throws Exception {
+    private void updateContrAgents(long dateLastUpdate) throws Exception {
         ContrAgentDao contrAgentDao = new ContrAgentDao(that);
 
         Long lastUnloadDate = contrAgentDao.getUnloadDate();
-        if (lastUnloadDate != null && lastUnloadDate > dateLastUpdate.getTime()) {
+        if (lastUnloadDate != null && lastUnloadDate > dateLastUpdate) {
             PreferenceHelper.Runtime.setUpdateInProgress(that, true); // do it here in order not to block Agent work with UI
             if (PreferenceHelper.Settings.getNotificationsEnabled(that)) {
                 notifUtil.showUpdateProgressNotification(NotificationsUtil.NOTIF_UPDATE_PROGRESS_CONTR_AGENTS_ID);
@@ -211,11 +213,11 @@ public class ExchangeDataService extends IntentService {
         }// otherwise data might be in unload process or nothing new
     }
 
-    private void updateDebts(Date dateLastUpdate) throws Exception {
+    private void updateDebts(long dateLastUpdate) throws Exception {
         DebtsDao debtsDao = new DebtsDao(that);
         Long lastUnloadDate = debtsDao.getUnloadDate();
 
-        if (lastUnloadDate != null && lastUnloadDate > dateLastUpdate.getTime()) {
+        if (lastUnloadDate != null && lastUnloadDate > dateLastUpdate) {
             PreferenceHelper.Runtime.setUpdateInProgress(that, true); // do it here in order not to block Agent work with UI
             if (PreferenceHelper.Settings.getNotificationsEnabled(that)) {
                 notifUtil.showUpdateProgressNotification(NotificationsUtil.NOTIF_UPDATE_PROGRESS_DEBTS_ID);

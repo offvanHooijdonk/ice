@@ -36,7 +36,7 @@ public class ProductDao {
                 ResultSet rs = stat.executeQuery();
 
                 if (rs.next()) {
-                    date = rs.getDate("datetime_unload").getTime();
+                    date = rs.getTimestamp("datetime_unload").getTime();
                 }
             } finally {
                 try {
