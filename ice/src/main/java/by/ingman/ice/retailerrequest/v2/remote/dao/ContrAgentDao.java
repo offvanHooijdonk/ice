@@ -31,7 +31,7 @@ public class ContrAgentDao {
 
         if (conn != null) {
             try {
-                PreparedStatement stat = conn.prepareStatement("SELECT TOP(1) datetime_unload FROM clients order by datetime_unload desc");
+                PreparedStatement stat = conn.prepareStatement("SELECT TOP(1) datetime_unload FROM clients WHERE datetime_unload IS NOT NULL order by datetime_unload desc");
                 ResultSet rs = stat.executeQuery();
 
                 if (rs.next()) {

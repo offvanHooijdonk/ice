@@ -108,29 +108,39 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
             }
         });
 
-        spOptions.setSelection(OPTION_ALL);
+        // TODO remove this when error source found
+        try {
+            spOptions.setSelection(OPTION_ALL);
+        } catch (Exception e) {
+            log.error("Error when setting default selection on order type", e);
+        }
     }
 
     private void showRequestsForDate(int option) {
         //вычитываем один раз все запросы
-        Boolean answeredOnly = option == OPTION_ALL ? null : (option == OPTION_ANSWERED) ? Boolean.TRUE : Boolean.FALSE;
-        orders.clear();
-        orders.putAll(orderLocalDao.getOrdersSince(reportDate.getTime(), getDayEndDate(reportDate).getTime(), answeredOnly));
-        reportAdapter.notifyDataSetChanged();
+        // TODO remove this when error source found
+        try {
+            Boolean answeredOnly = option == OPTION_ALL ? null : (option == OPTION_ANSWERED) ? Boolean.TRUE : Boolean.FALSE;
+            orders.clear();
+            orders.putAll(orderLocalDao.getOrdersSince(reportDate.getTime(), getDayEndDate(reportDate).getTime(), answeredOnly));
+            reportAdapter.notifyDataSetChanged();
 
-        if (!orders.isEmpty()) {
-            double summ = 0.0;
-            for (String key : orders.keySet()) {
-                List<Order> list = orders.get(key);
-                for (Order o : list) {
-                    summ += o.getProductPrice() * o.getProductCount();
+            if (!orders.isEmpty()) {
+                double summ = 0.0;
+                for (String key : orders.keySet()) {
+                    List<Order> list = orders.get(key);
+                    for (Order o : list) {
+                        summ += o.getProductPrice() * o.getProductCount();
+                    }
                 }
-            }
 
-            textSummary.setText(getString(R.string.report_summary, Helper.formatMoney(summ)));
-            textSummary.setVisibility(View.VISIBLE);
-        } else {
-            textSummary.setVisibility(View.INVISIBLE);
+                textSummary.setText(getString(R.string.report_summary, Helper.formatMoney(summ)));
+                textSummary.setVisibility(View.VISIBLE);
+            } else {
+                textSummary.setVisibility(View.INVISIBLE);
+            }
+        } catch (Exception e) {
+            log.error("Error when preparing report data", e);
         }
     }
 
@@ -208,56 +218,60 @@ public class RequestReportActivity extends Activity implements DatePickerDialog.
             if (v == null) {
                 v = LayoutInflater.from(ctx).inflate(R.layout.item_report, parent, false);
             }
+            // TODO remove this when error source found
+            try {
+                final List<Order> list = (List<Order>) getItem(position);
 
-            final List<Order> list = (List<Order>) getItem(position);
+                TextView textInfo = (TextView) v.findViewById(R.id.textInfo);
+                String s = Order.toReportString(list.get(0));
+                textInfo.setText(Html.fromHtml(s));
+                textInfo.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        AlertDialog.Builder adb = new AlertDialog.Builder(RequestReportActivity.this);
+                        adb.setTitle("Заявка " + list.get(0).getOrderId());
+                        adb.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // continue with delete
+                            }
+                        });
+                        adb.setMessage(Order.toReportVerboseString(list));
+                        adb.show();
+                    }
+                });
 
-            TextView textInfo = (TextView) v.findViewById(R.id.textInfo);
-            String s = Order.toReportString(list.get(0));
-            textInfo.setText(Html.fromHtml(s));
-            textInfo.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    AlertDialog.Builder adb = new AlertDialog.Builder(RequestReportActivity.this);
-                    adb.setTitle("Заявка " + list.get(0).getOrderId());
-                    adb.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            // continue with delete
-                        }
-                    });
-                    adb.setMessage(Order.toReportVerboseString(list));
-                    adb.show();
+                TextView textSummary = (TextView) v.findViewById(R.id.textSummary);
+                double summ = 0.0;
+                for (Order o : list) {
+                    summ += o.getProductPrice() * o.getProductCount();
                 }
-            });
+                textSummary.setText(ctx.getString(R.string.report_summary, Helper.formatMoney(summ)));
 
-            TextView textSummary = (TextView) v.findViewById(R.id.textSummary);
-            double summ = 0.0;
-            for (Order o : list) {
-                summ += o.getProductPrice() * o.getProductCount();
-            }
-            textSummary.setText(ctx.getString(R.string.report_summary, Helper.formatMoney(summ)));
-
-            TextView textSent = (TextView) v.findViewById(R.id.textSent);
-            if (list.get(0).getSent()) {
-                textSent.setText(R.string.report_order_sent);
-            } else {
-                textSent.setText(R.string.report_order_not_sent);
-            }
-
-            TextView textAnswer = (TextView) v.findViewById(R.id.textAnswer);
-            Answer answer = orderLocalDao.findAnswerByOrderId(list.get(0).getOrderId());
-            if (answer == null) {
-                textAnswer.setText(ctx.getString(R.string.order_no_answer));
-            } else {
-                textAnswer.setText(ctx.getString(R.string.order_answer, answer.getDescription()));
-            }
-
-            ImageButton btnCheckAnswer = (ImageButton) v.findViewById(R.id.btnCheckStatus);
-            btnCheckAnswer.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    new CheckAnswerTask().execute(list.get(0).getOrderId());
+                TextView textSent = (TextView) v.findViewById(R.id.textSent);
+                if (list.get(0).getSent()) {
+                    textSent.setText(R.string.report_order_sent);
+                } else {
+                    textSent.setText(R.string.report_order_not_sent);
                 }
-            });
+
+                TextView textAnswer = (TextView) v.findViewById(R.id.textAnswer);
+                Answer answer = orderLocalDao.findAnswerByOrderId(list.get(0).getOrderId());
+                if (answer == null) {
+                    textAnswer.setText(ctx.getString(R.string.order_no_answer));
+                } else {
+                    textAnswer.setText(ctx.getString(R.string.order_answer, answer.getDescription()));
+                }
+
+                ImageButton btnCheckAnswer = (ImageButton) v.findViewById(R.id.btnCheckStatus);
+                btnCheckAnswer.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        new CheckAnswerTask().execute(list.get(0).getOrderId());
+                    }
+                });
+            } catch (Exception e) {
+                log.error("Error in Report Adapter", e);
+            }
 
             return v;
         }

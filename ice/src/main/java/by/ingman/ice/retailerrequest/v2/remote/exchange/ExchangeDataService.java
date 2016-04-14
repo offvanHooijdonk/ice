@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.os.ResultReceiver;
@@ -87,7 +88,11 @@ public class ExchangeDataService extends IntentService {
             receiver = (ResultReceiver) p;
         }
 
-        doExchangeData();
+        if (isNetworkConnected()) {
+            doExchangeData();
+        } else {
+            log.warn("Internet network not accessible when trying to update data!");
+        }
 
     }
 
@@ -245,6 +250,12 @@ public class ExchangeDataService extends IntentService {
         Order singleOrder = orderLocalDao.getSingleOrderById(answer.getOrderId());
 
         notifUtil.showOrderNotification(singleOrder, answer);
+    }
+
+    private boolean isNetworkConnected() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        return cm.getActiveNetworkInfo() != null;
     }
 
 }
