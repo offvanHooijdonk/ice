@@ -36,6 +36,7 @@ public class OrderDao {
     public boolean batchInsertOrders(List<Order> orders) throws Exception {
         boolean success = false;
         Connection conn = new ConnectionFactory(ctx).getConnection();
+        int[] batchResults = new int[]{};
 
         if (conn != null) {
             try {
@@ -47,7 +48,7 @@ public class OrderDao {
                     addRequestToBatch(r, stat);
                 }
 
-                stat.executeBatch();
+                batchResults = stat.executeBatch();
                 success = true;
             } catch (Exception e) {
                 log.error("Error batch inserting request to remote DB.", e);
@@ -62,6 +63,10 @@ public class OrderDao {
                 }
                 throw e;
             } finally {
+                if (isAnyFailed(batchResults)) {
+                    log.warn("Some orders where not saved, transaction will be rolled back!");
+                    success = false;
+                }
                 try {
                     if (!conn.isClosed()) {
                         if (success) {
@@ -81,6 +86,18 @@ public class OrderDao {
         }
 
         return success;
+    }
+
+    private boolean isAnyFailed(int[] results) {
+        boolean isFailed = false;
+        for (int r : results) {
+            if (r == PreparedStatement.EXECUTE_FAILED) {
+                isFailed = true;
+                break;
+            }
+        }
+
+        return isFailed;
     }
 
     private void addRequestToBatch(Order order, PreparedStatement stat) throws Exception {
